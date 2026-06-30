@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
+/* ==================================
+   ROOT
+================================== */
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --primary: #ec6aae;
+  --primary-light: #ff8ac2;
+  --secondary: #243d7a;
+  --light: #f8f9fd;
 }
 
 @theme inline {
@@ -12,15 +21,248 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ==================================
+   BODY
+================================== */
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: #f8f9fd;
+  color: #171717;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ==================================
+   CONTAINER
+================================== */
+
+.container-custom {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ==================================
+   HERO
+================================== */
+
+.hero-overlay {
+  background: linear-gradient(to bottom,
+      rgba(0, 0, 0, .35),
+      rgba(0, 0, 0, .65));
+}
+
+.hero-title {
+  text-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+
+.hero-subtitle {
+  text-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+}
+
+/* ==================================
+   BUTTON
+================================== */
+
+.btn-primary {
+  background: linear-gradient(135deg,
+      var(--primary),
+      var(--primary-light));
+  color: white;
+  transition: .3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(236, 106, 174, .35);
+}
+
+.btn-outline {
+  border: 1px solid white;
+  transition: .3s;
+}
+
+.btn-outline:hover {
+  background: white;
+  color: #111827;
+}
+
+/* ==================================
+   CARD
+================================== */
+
+.service-card,
+.contact-card {
+  background: white;
+  border-radius: 24px;
+  transition: .35s;
+}
+
+.service-card:hover,
+.contact-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 50px rgba(236, 106, 174, .15);
+}
+
+/* ==================================
+   CONTACT
+================================== */
+
+.contact-section {
+  background: linear-gradient(to bottom,
+      #ffffff,
+      #fff5fa);
+}
+
+.contact-badge {
+  background: #fde7f2;
+  color: var(--primary);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.contact-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.contact-title {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.contact-card p {
+  line-height: 1.8;
+}
+
+/* ==================================
+   SECTION TITLE
+================================== */
+
+.section-title {
+  position: relative;
+  display: inline-block;
+}
+
+.section-title::after {
+  content: "";
+  width: 70px;
+  height: 4px;
+  background: var(--primary);
+  position: absolute;
+  left: 50%;
+  bottom: -15px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+}
+
+/* ==================================
+   FOOTER
+================================== */
+
+.footer-gradient {
+  background: linear-gradient(135deg,
+      #243d7a,
+      #1b2f63);
+}
+
+/* ==================================
+   NAVBAR
+================================== */
+
+.nav-link {
+  transition: .3s;
+}
+
+.nav-link:hover {
+  color: var(--primary);
+}
+
+/* ==================================
+   SCROLLBAR
+================================== */
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d84f96;
+}
+
+```css
+/* =========================
+   GALLERY SECTION
+========================= */
+
+.gallery-section {
+  background: white;
+}
+
+.gallery-badge {
+  background: #fde7f2;
+  color: #ec6aae;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gallery-card {
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
+  transition: all .35s ease;
+}
+
+.gallery-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 50px rgba(236, 106, 174, .18);
+}
+
+.gallery-card img {
+  transition: .5s ease;
+}
+
+.gallery-card:hover img {
+  transform: scale(1.08);
+}
+
+.gallery-button {
+  background: linear-gradient(135deg,
+      #ec6aae,
+      #ff8ac2);
+  color: white;
+  padding: 14px 32px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition: .3s ease;
+}
+
+.gallery-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(236, 106, 174, .3);
+}
+
+```
