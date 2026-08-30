@@ -1,43 +1,175 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-/* ==================================
-   ROOT
-================================== */
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   KOKO Memory
+   Global Styles
+   ------------------------------------------------------------
+   ไฟล์นี้ใช้สำหรับ:
+   - สีหลักของเว็บไซต์
+   - Font
+   - Body
+   - Scroll ของเว็บไซต์
+   - Button
+   - Card
+   - Gallery
+   - Navbar
+   - Footer
+   - Shadcn UI
+   ============================================================ */
+
+
+/* ============================================================
+   ROOT / COLOR VARIABLES
+   ============================================================ */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-
-  --primary: #ec6aae;
+  --primary: oklch(0.205 0 0);
   --primary-light: #ff8ac2;
-  --secondary: #243d7a;
+
+  --secondary: oklch(0.97 0 0);
   --light: #f8f9fd;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  --primary-foreground: oklch(0.985 0 0);
+
+  --secondary-foreground: oklch(0.205 0 0);
+
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+
+  --radius: 0.625rem;
+
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
+
+
+/* ============================================================
+   TAILWIND THEME
+   ============================================================ */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+
+  --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ==================================
-   BODY
-================================== */
+
+/* ============================================================
+   PAGE / BODY
+   ------------------------------------------------------------
+   สำคัญ:
+   เว็บไซต์ KOKO Memory มีหลาย Section
+   ดังนั้นต้องปล่อยให้หน้าเว็บสูงเกินหน้าจอได้
+   และต้องสามารถ Scroll ขึ้นลงได้
+   ============================================================ */
 
 html {
+  min-height: 100%;
   scroll-behavior: smooth;
 }
 
 body {
+  min-height: 100%;
+  width: 100%;
+  margin: 0;
+
   background: #f8f9fd;
   color: #171717;
-  font-family: Arial, Helvetica, sans-serif;
+
+  /* ป้องกันการเลื่อนซ้าย */
+  overflow-x: hidden;
+
+  /* อนุญาตให้เลื่อนขึ้นลง */
+  overflow-y: auto;
 }
 
-/* ==================================
+
+/* ============================================================
    CONTAINER
-================================== */
+   ============================================================ */
 
 .container-custom {
   max-width: 1280px;
@@ -45,44 +177,47 @@ body {
   padding: 0 24px;
 }
 
-/* ==================================
+
+/* ============================================================
    HERO
-================================== */
+   ============================================================ */
 
 .hero-overlay {
   background: linear-gradient(to bottom,
-      rgba(0, 0, 0, .35),
-      rgba(0, 0, 0, .65));
+      rgba(0, 0, 0, 0.35),
+      rgba(0, 0, 0, 0.65));
 }
 
 .hero-title {
-  text-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  text-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .hero-subtitle {
-  text-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-/* ==================================
+
+/* ============================================================
    BUTTON
-================================== */
+   ============================================================ */
 
 .btn-primary {
   background: linear-gradient(135deg,
       var(--primary),
       var(--primary-light));
+
   color: white;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .btn-primary:hover {
   transform: translateY(-4px);
-  box-shadow: 0 15px 30px rgba(236, 106, 174, .35);
+  box-shadow: 0 15px 30px rgba(236, 106, 174, 0.35);
 }
 
 .btn-outline {
   border: 1px solid white;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .btn-outline:hover {
@@ -90,26 +225,28 @@ body {
   color: #111827;
 }
 
-/* ==================================
+
+/* ============================================================
    CARD
-================================== */
+   ============================================================ */
 
 .service-card,
 .contact-card {
   background: white;
   border-radius: 24px;
-  transition: .35s;
+  transition: 0.35s;
 }
 
 .service-card:hover,
 .contact-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 25px 50px rgba(236, 106, 174, .15);
+  box-shadow: 0 25px 50px rgba(236, 106, 174, 0.15);
 }
 
-/* ==================================
+
+/* ============================================================
    CONTACT
-================================== */
+   ============================================================ */
 
 .contact-section {
   background: linear-gradient(to bottom,
@@ -120,8 +257,11 @@ body {
 .contact-badge {
   background: #fde7f2;
   color: var(--primary);
+
   padding: 10px 18px;
+
   border-radius: 999px;
+
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -130,11 +270,15 @@ body {
 .contact-icon {
   width: 70px;
   height: 70px;
+
   border-radius: 18px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   font-size: 32px;
+
   margin-bottom: 20px;
 }
 
@@ -147,9 +291,10 @@ body {
   line-height: 1.8;
 }
 
-/* ==================================
+
+/* ============================================================
    SECTION TITLE
-================================== */
+   ============================================================ */
 
 .section-title {
   position: relative;
@@ -158,19 +303,26 @@ body {
 
 .section-title::after {
   content: "";
+
   width: 70px;
   height: 4px;
+
   background: var(--primary);
+
   position: absolute;
+
   left: 50%;
   bottom: -15px;
+
   transform: translateX(-50%);
+
   border-radius: 999px;
 }
 
-/* ==================================
+
+/* ============================================================
    FOOTER
-================================== */
+   ============================================================ */
 
 .footer-gradient {
   background: linear-gradient(135deg,
@@ -178,21 +330,23 @@ body {
       #1b2f63);
 }
 
-/* ==================================
+
+/* ============================================================
    NAVBAR
-================================== */
+   ============================================================ */
 
 .nav-link {
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .nav-link:hover {
   color: var(--primary);
 }
 
-/* ==================================
+
+/* ============================================================
    SCROLLBAR
-================================== */
+   ============================================================ */
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -211,10 +365,10 @@ body {
   background: #d84f96;
 }
 
-```css
-/* =========================
+
+/* ============================================================
    GALLERY SECTION
-========================= */
+   ============================================================ */
 
 .gallery-section {
   background: white;
@@ -223,26 +377,33 @@ body {
 .gallery-badge {
   background: #fde7f2;
   color: #ec6aae;
+
   padding: 10px 18px;
+
   border-radius: 999px;
+
   font-size: 13px;
   font-weight: 700;
 }
 
 .gallery-card {
   overflow: hidden;
+
   border-radius: 24px;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, .08);
-  transition: all .35s ease;
+
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+
+  transition: all 0.35s ease;
 }
 
 .gallery-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 25px 50px rgba(236, 106, 174, .18);
+
+  box-shadow: 0 25px 50px rgba(236, 106, 174, 0.18);
 }
 
 .gallery-card img {
-  transition: .5s ease;
+  transition: 0.5s ease;
 }
 
 .gallery-card:hover img {
@@ -253,16 +414,91 @@ body {
   background: linear-gradient(135deg,
       #ec6aae,
       #ff8ac2);
+
   color: white;
+
   padding: 14px 32px;
+
   border-radius: 999px;
+
   font-weight: 600;
-  transition: .3s ease;
+
+  transition: 0.3s ease;
 }
 
 .gallery-button:hover {
   transform: translateY(-4px);
-  box-shadow: 0 15px 30px rgba(236, 106, 174, .3);
+
+  box-shadow: 0 15px 30px rgba(236, 106, 174, 0.3);
 }
 
-```
+
+/* ============================================================
+   DARK MODE
+   ============================================================ */
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+
+  --destructive: oklch(0.704 0.191 22.216);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+
+/* ============================================================
+   SHADCN / BASE
+   ============================================================ */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  html {
+    @apply font-sans;
+  }
+}

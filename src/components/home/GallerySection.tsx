@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+
 const photos = [
     "/gallery/1.jpg",
     "/gallery/2.jpg",
@@ -9,30 +10,30 @@ const photos = [
 
 export default function GallerySection() {
     return (
-        <section className="bg-white py-24">
+        <section className="bg-white py-16 sm:py-20 lg:py-24">
 
-            <div className="mx-auto max-w-7xl px-6">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
-                <div className="mb-12 text-center">
+                <div className="mb-8 sm:mb-12 text-center">
 
-                    <h2 className="text-5xl font-bold text-slate-900">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">
                         Wedding Gallery
                     </h2>
 
-                    <p className="mt-4 text-gray-500">
+                    <p className="mt-3 sm:mt-4 text-sm sm:text-base text-gray-500">
                         Capture every beautiful moment
                     </p>
 
                 </div>
 
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 sm:gap-6 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
 
                     {photos.map((photo) => (
                         <div
                             key={photo}
                             className="
                 overflow-hidden
-                rounded-3xl
+                rounded-2xl sm:rounded-3xl
                 shadow-lg
               "
                         >
