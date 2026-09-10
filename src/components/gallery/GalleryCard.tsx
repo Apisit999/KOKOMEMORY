@@ -33,6 +33,8 @@ interface GalleryCardProps {
 
     index?: number;
 
+    loading?: "eager" | "lazy";
+
 }
 
 
@@ -51,6 +53,8 @@ export default function GalleryCard({
     featured = false,
 
     index = 0,
+
+    loading = index < 4 ? "eager" : "lazy",
 
 }: GalleryCardProps) {
 
@@ -127,11 +131,7 @@ export default function GalleryCard({
                                         ? `${category} - ผลงาน KOKO Memory`
                                         : `ผลงาน KOKO Memory ${index + 1}`
                             }
-                            loading={
-                                index < 4
-                                    ? "eager"
-                                    : "lazy"
-                            }
+                            loading={loading}
                             decoding="async"
                             className="
                                 h-full

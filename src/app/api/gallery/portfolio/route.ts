@@ -28,13 +28,26 @@ type PortfolioDocument = {
     images?: unknown[];
     featured?: boolean;
     status?: string;
+    createdAt?: unknown;
 };
+
+function timestampValue(value: unknown): number {
+    if (value && typeof value === "object") {
+        const seconds = (value as { seconds?: unknown }).seconds;
+
+        if (typeof seconds === "number") {
+            return seconds;
+        }
+    }
+
+    return 0;
+}
 
 /* ============================================================
    GET PORTFOLIO
 ============================================================ */
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
         console.log("=================================");
         console.log("PORTFOLIO GALLERY API");
@@ -48,6 +61,18 @@ export async function GET() {
         const snapshot = await adminDb
             .collection("portfolio")
             .get();
+
+        const requestUrl = new URL(request.url);
+        const featuredOnly =
+            requestUrl.searchParams.get("featured") === "true";
+        const requestedLimit = Number.parseInt(
+            requestUrl.searchParams.get("limit") || "",
+            10
+        );
+        const limit =
+            Number.isFinite(requestedLimit) && requestedLimit > 0
+                ? Math.min(requestedLimit, 12)
+                : null;
 
         console.log(
             "Portfolio found:",
@@ -69,8 +94,9 @@ export async function GET() {
                  */
 
                 if (
-                    data.status &&
-                    data.status !== "active"
+                    featuredOnly
+                        ? data.status !== "active" || data.featured !== true
+                        : data.status && data.status !== "active"
                 ) {
                     return null;
                 }
@@ -206,6 +232,8 @@ export async function GET() {
                     featured:
                         data.featured === true,
 
+                    createdAt: data.createdAt,
+
                     images,
                 };
             })
@@ -238,13 +266,25 @@ export async function GET() {
                         : 1;
                 }
 
-                return (
-                    b.eventDate.localeCompare(
-                        a.eventDate
-                    )
-                );
+                if (featuredOnly) {
+                    const createdAtDifference =
+                        timestampValue(b.createdAt) -
+                        timestampValue(a.createdAt);
+
+                    if (createdAtDifference !== 0) {
+                        return createdAtDifference;
+                    }
+
+                    return a.id.localeCompare(b.id);
+                }
+
+                return b.eventDate.localeCompare(a.eventDate);
             }
         );
+
+        const selectedPortfolios = limit
+            ? portfolios.slice(0, limit)
+            : portfolios;
 
         /* -------------------------------------------------------
            CONVERT TO GALLERY IMAGES
@@ -259,7 +299,7 @@ export async function GET() {
            categoryLabel
         ------------------------------------------------------- */
 
-        const images = portfolios.flatMap(
+        const images = selectedPortfolios.flatMap(
             (
                 portfolio
             ) =>
@@ -302,7 +342,7 @@ export async function GET() {
 
         console.log(
             "Active portfolios:",
-            portfolios.length
+            selectedPortfolios.length
         );
 
         console.log(
@@ -324,7 +364,7 @@ export async function GET() {
                 portfolioCount:
                     portfolios.length,
 
-                portfolios,
+                    portfolios: selectedPortfolios,
 
                 images,
             },
