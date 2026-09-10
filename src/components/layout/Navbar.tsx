@@ -12,7 +12,7 @@ import {
 
 const menus = [
     { title: "หน้าแรก", href: "/" },
-    { title: "ผลงาน", href: "/gallery" },
+    { title: "ผลงาน", href: "/gallery/portfolio" },
     { title: "บริการ", href: "/services" },
     { title: "แพ็กเกจ", href: "/packages" },
     { title: "เกี่ยวกับเรา", href: "/about" },

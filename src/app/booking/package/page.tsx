@@ -20,7 +20,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, type ReactNode } from "react";
+import {
+    Suspense,
+    useEffect,
+    type ReactNode,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -571,7 +575,7 @@ function GroupHeader({
    MAIN PAGE
 ============================================================ */
 
-export default function PackagePage() {
+function PackageContent() {
 
     const searchParams = useSearchParams();
 
@@ -939,5 +943,13 @@ export default function PackagePage() {
             </section>
 
         </main>
+    );
+}
+
+export default function PackagePage() {
+    return (
+        <Suspense fallback={null}>
+            <PackageContent />
+        </Suspense>
     );
 }

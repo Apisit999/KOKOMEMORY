@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense } from "react";
+
 /**
  * ============================================================
  * KOKO Memory - Booking Step 6 : Success
@@ -44,7 +46,7 @@ import {
     Copy,
 } from "lucide-react";
 
-export default function SuccessPage() {
+function SuccessContent() {
     const router = useRouter();
 
     const searchParams = useSearchParams();
@@ -428,5 +430,13 @@ export default function SuccessPage() {
             </section>
 
         </main>
+    );
+}
+
+export default function SuccessPage() {
+    return (
+        <Suspense fallback={null}>
+            <SuccessContent />
+        </Suspense>
     );
 }

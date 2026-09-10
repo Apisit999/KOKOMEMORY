@@ -245,7 +245,7 @@ export default function AdminBookingsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-50 px-3 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
+        <main className="bg-slate-50 px-3 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
             <div className="mx-auto w-full max-w-7xl">
                 {/* Header */}
                 <div className="mb-6 flex flex-col gap-4 sm:mb-8 md:flex-row md:items-end md:justify-between">

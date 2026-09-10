@@ -61,7 +61,13 @@
  * ============================================================
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+    Suspense,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 
@@ -82,7 +88,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ิbutton";
 import { provinces } from "@/data/thailand/provinces";
 
 import {
@@ -1283,7 +1289,7 @@ function formatMoney(value: number) {
    MAIN COMPONENT
 ============================================================ */
 
-export default function CustomerPage() {
+function CustomerContent() {
 
     const router = useRouter();
 
@@ -2568,7 +2574,7 @@ export default function CustomerPage() {
 
                     <div>
 
-                        <Card className="sticky top-24 rounded-3xl border-0 shadow-xl">
+                        <Card className="rounded-3xl border-0 shadow-xl lg:sticky lg:top-24">
 
                             <CardContent className="p-7">
 
@@ -2844,5 +2850,13 @@ export default function CustomerPage() {
             </section>
 
         </main>
+    );
+}
+
+export default function CustomerPage() {
+    return (
+        <Suspense fallback={null}>
+            <CustomerContent />
+        </Suspense>
     );
 }

@@ -239,7 +239,7 @@ export default function AdminBookingDetailPage() {
 
                 setBooking(data);
                 setStatus(data.bookingStatus || "pending_payment");
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error(
                     "Load booking detail error:",
                     err
@@ -248,8 +248,9 @@ export default function AdminBookingDetailPage() {
                 if (!active) return;
 
                 setError(
-                    err?.message ||
-                    "ไม่สามารถโหลดรายละเอียดการจองได้"
+                    err instanceof Error
+                        ? err.message
+                        : "ไม่สามารถโหลดรายละเอียดการจองได้"
                 );
             } finally {
                 if (active) {
@@ -296,15 +297,16 @@ export default function AdminBookingDetailPage() {
             setSuccess(
                 "อัปเดตสถานะการจองเรียบร้อยแล้ว"
             );
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(
                 "Update booking status error:",
                 err
             );
 
             setError(
-                err?.message ||
-                "ไม่สามารถอัปเดตสถานะได้"
+                err instanceof Error
+                    ? err.message
+                    : "ไม่สามารถอัปเดตสถานะได้"
             );
         } finally {
             setSaving(false);
@@ -378,7 +380,7 @@ export default function AdminBookingDetailPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 px-3 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
+        <main className="bg-slate-50 px-3 py-5 sm:px-5 sm:py-7 md:px-8 md:py-10">
             <div className="mx-auto w-full max-w-6xl">
 
                 {/* HEADER */}

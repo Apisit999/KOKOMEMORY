@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+    Suspense,
+    useEffect,
+    useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import {
@@ -30,7 +34,7 @@ import {
     XCircle,
 } from "lucide-react";
 
-export default function PaymentPage() {
+function PaymentContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -750,5 +754,13 @@ function InfoRow({
             </span>
 
         </div>
+    );
+}
+
+export default function PaymentPage() {
+    return (
+        <Suspense fallback={null}>
+            <PaymentContent />
+        </Suspense>
     );
 }

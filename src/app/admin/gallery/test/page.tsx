@@ -71,10 +71,21 @@ export default function R2UploadTestPage() {
             // เพื่อป้องกัน JSON error
             const text = await response.text();
 
-            let data: any;
+            let data: Record<string, unknown>;
 
             try {
-                data = JSON.parse(text);
+                const parsed: unknown = JSON.parse(text);
+
+                if (
+                    typeof parsed !== "object" ||
+                    parsed === null
+                ) {
+                    throw new Error(
+                        "API ส่งข้อมูล JSON รูปแบบไม่ถูกต้อง"
+                    );
+                }
+
+                data = parsed as Record<string, unknown>;
             } catch {
                 console.error(
                     "API RESPONSE:",
@@ -97,16 +108,20 @@ export default function R2UploadTestPage() {
 
             if (!response.ok) {
                 throw new Error(
-                    data.error ||
-                    data.message ||
+                    typeof data.error === "string"
+                        ? data.error
+                        : typeof data.message === "string"
+                            ? data.message
+                            :
                     "Upload ไม่สำเร็จ"
                 );
             }
 
-            if (!data.success) {
+            if (data.success !== true) {
                 throw new Error(
-                    data.error ||
-                    "Upload ไม่สำเร็จ"
+                    typeof data.error === "string"
+                        ? data.error
+                        : "Upload ไม่สำเร็จ"
                 );
             }
 
@@ -119,11 +134,15 @@ export default function R2UploadTestPage() {
             );
 
             setUploadedKey(
-                data.key || ""
+                typeof data.key === "string"
+                    ? data.key
+                    : ""
             );
 
             setUploadedUrl(
-                data.url || ""
+                typeof data.url === "string"
+                    ? data.url
+                    : ""
             );
 
             // reset file
@@ -156,7 +175,7 @@ export default function R2UploadTestPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-50 px-6 py-12">
+        <main className="bg-slate-50 px-6 py-12">
 
             <div className="mx-auto max-w-2xl">
 

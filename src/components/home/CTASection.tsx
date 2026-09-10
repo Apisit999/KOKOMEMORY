@@ -10,7 +10,7 @@ export default function CTASection() {
 
             <div className="relative mx-auto flex max-w-7xl flex-col items-center px-4 sm:px-6 text-center text-white">
 
-                <span className="rounded-full border border-white/30 bg-white/10 px-4 sm:px-4 sm:px-6 py-2 text-sm uppercase tracking-[0.3em] backdrop-blur-xl">
+                <span className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm uppercase tracking-[0.3em] backdrop-blur-xl sm:px-6">
                     BOOK NOW
                 </span>
 

@@ -41,7 +41,12 @@
    รวม Library และ Component ที่หน้านี้ต้องใช้
 ========================================================= */
 
-import { useEffect, useMemo, useState } from "react";
+import {
+    Suspense,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 
 import {
     useRouter,
@@ -310,7 +315,7 @@ function formatDate(value?: string) {
    Component หลักของหน้า Payment
 ========================================================= */
 
-export default function PaymentPage() {
+function PaymentContent() {
 
     /* =======================================================
        ROUTER
@@ -496,7 +501,7 @@ export default function PaymentPage() {
                 } as Booking);
 
 
-            } catch (error: any) {
+            } catch (error: unknown) {
 
                 console.error(
                     "Load payment booking error:",
@@ -504,8 +509,9 @@ export default function PaymentPage() {
                 );
 
                 setBookingError(
-                    error?.message ??
-                    "ไม่สามารถโหลดข้อมูลการจองได้"
+                    error instanceof Error
+                        ? error.message
+                        : "ไม่สามารถโหลดข้อมูลการจองได้"
                 );
 
 
@@ -1200,7 +1206,7 @@ export default function PaymentPage() {
             );
 
 
-        } catch (error: any) {
+        } catch (error: unknown) {
 
             console.error(
                 "Submit payment error:",
@@ -1209,8 +1215,9 @@ export default function PaymentPage() {
 
 
             setSubmitError(
-                error?.message ??
-                "ไม่สามารถส่งหลักฐานการชำระเงินได้ กรุณาลองใหม่อีกครั้ง"
+                error instanceof Error
+                    ? error.message
+                    : "ไม่สามารถส่งหลักฐานการชำระเงินได้ กรุณาลองใหม่อีกครั้ง"
             );
 
 
@@ -2233,5 +2240,13 @@ export default function PaymentPage() {
             )}
 
         </main>
+    );
+}
+
+export default function PaymentPage() {
+    return (
+        <Suspense fallback={null}>
+            <PaymentContent />
+        </Suspense>
     );
 }

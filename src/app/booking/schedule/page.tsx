@@ -39,7 +39,11 @@
  * ============================================================
  */
 
-import { useMemo, useState } from "react";
+import {
+    Suspense,
+    useMemo,
+    useState,
+} from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import {
@@ -51,7 +55,7 @@ import {
 
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ิbutton";
 
 
 /* ============================================================
@@ -327,7 +331,7 @@ const bookingSteps = [
    Main Component
 ============================================================ */
 
-export default function SchedulePage() {
+function ScheduleContent() {
 
     /* ========================================================
        Router
@@ -1070,5 +1074,13 @@ export default function SchedulePage() {
             </section>
 
         </main>
+    );
+}
+
+export default function SchedulePage() {
+    return (
+        <Suspense fallback={null}>
+            <ScheduleContent />
+        </Suspense>
     );
 }

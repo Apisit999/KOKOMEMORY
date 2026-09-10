@@ -247,7 +247,7 @@ export default function ContactInfo() {
                     <div className="mx-auto max-w-3xl">
 
                         <span className="text-sm font-semibold uppercase tracking-[0.3em] text-pink-400">
-                            LET'S WORK TOGETHER
+                            LET&apos;S WORK TOGETHER
                         </span>
 
                         <h3 className="mt-4 text-3xl font-black text-white md:text-4xl">

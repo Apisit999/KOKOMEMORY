@@ -4,7 +4,7 @@ import Navbar from "../layout/Navbar";
 
 export default function HeroSection() {
     return (
-        <section className="relative min-h-[760px] h-[100svh] overflow-hidden">
+        <section className="relative min-h-[680px] h-[100svh] overflow-hidden sm:min-h-[760px]">
 
             {/* =====================================================
                 BACKGROUND
@@ -39,7 +39,7 @@ export default function HeroSection() {
                 HERO CONTENT
             ===================================================== */}
 
-            <div className="relative z-20 flex min-h-[760px] h-full items-center justify-center px-5 pt-24 sm:px-6">
+            <div className="relative z-20 flex min-h-[680px] h-full items-center justify-center px-5 pt-24 sm:min-h-[760px] sm:px-6">
 
                 <div className="w-full max-w-5xl text-center text-white">
 
@@ -60,7 +60,7 @@ export default function HeroSection() {
 
                         KOKO
                         <span className="text-pink-400">
-                            {" "}Memory
+                            {" "}MEMORY
                         </span>
 
                     </h1>
@@ -87,7 +87,7 @@ export default function HeroSection() {
                     <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:mt-10 sm:flex-row sm:gap-4">
 
                         <Link
-                            href="/gallery"
+                            href="/gallery/portfolio"
                             className="w-full rounded-full bg-pink-500 px-9 py-3.5 text-sm font-semibold text-white shadow-xl shadow-pink-500/20 transition-all duration-300 hover:-translate-y-1 hover:bg-pink-400 sm:w-auto sm:px-10 sm:py-4 sm:text-base"
                         >
                             ดูผลงาน

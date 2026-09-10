@@ -142,7 +142,7 @@ export default function Footer() {
                             <li>
 
                                 <Link
-                                    href="/gallery"
+                                    href="/gallery/portfolio"
                                     className="flex items-center gap-2 text-white/70 hover:text-pink-300"
                                 >
 

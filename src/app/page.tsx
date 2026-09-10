@@ -3,12 +3,12 @@ import AboutSection from "@/components/home/AboutSection";
 import StatsSection from "@/components/home/StatsSection";
 import ServiceSection from "@/components/home/ServiceSection";
 import GallerySection from "@/components/home/GallerySection";
+import ProcessSection from "@/components/home/ProcessSection";
 import PackageSection from "@/components/home/PackageSection";
 import WhyChooseUs from "@/components/home/WhyChooseUs";
-import ContactSection from "@/components/home/ContactSection";
-import ProcessSection from "@/components/home/ProcessSection";
 import ReviewSection from "@/components/home/ReviewSection";
 import FAQSection from "@/components/home/FAQSection";
+import ContactSection from "@/components/home/ContactSection";
 import CTASection from "@/components/home/CTASection";
 import Footer from "@/components/home/Footer";
 
@@ -19,9 +19,13 @@ export default function Home() {
 
       <AboutSection />
 
-      <CTASection />
+      <StatsSection />
 
       <ServiceSection />
+
+      <GallerySection />
+
+      <ProcessSection />
 
       <PackageSection />
 
@@ -29,11 +33,13 @@ export default function Home() {
 
       <ReviewSection />
 
+      <FAQSection />
+
       <ContactSection />
 
+      <CTASection />
+
       <Footer />
-
-
     </main>
   );
 }

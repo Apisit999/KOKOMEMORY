@@ -33,17 +33,30 @@ export default function AdminLoginPage() {
             // Login สำเร็จ
             router.replace("/admin/dashboard");
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("LOGIN ERROR:", error);
 
+            const errorCode =
+                typeof error === "object" &&
+                error !== null &&
+                "code" in error &&
+                typeof error.code === "string"
+                    ? error.code
+                    : "";
+
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "เข้าสู่ระบบไม่สำเร็จ";
+
             setError(
-                error?.code === "auth/invalid-credential"
+                errorCode === "auth/invalid-credential"
                     ? "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
-                    : error?.code === "auth/user-not-found"
+                    : errorCode === "auth/user-not-found"
                         ? "ไม่พบบัญชีนี้"
-                        : error?.code === "auth/wrong-password"
+                        : errorCode === "auth/wrong-password"
                             ? "รหัสผ่านไม่ถูกต้อง"
-                            : error?.message || "เข้าสู่ระบบไม่สำเร็จ"
+                            : errorMessage
             );
         } finally {
             setLoading(false);

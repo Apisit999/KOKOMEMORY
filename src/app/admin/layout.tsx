@@ -1,0 +1,269 @@
+"use client";
+
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+
+import AdminSidebar from "@/components/admin/AdminSidebar";
+
+import {
+    Menu,
+    Bell,
+} from "lucide-react";
+
+
+export default function AdminLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+
+    const [sidebarOpen, setSidebarOpen] =
+        useState(false);
+    const pathname = usePathname();
+
+    if (pathname === "/admin/login") {
+        return (
+            <div className="min-h-screen">
+                {children}
+            </div>
+        );
+    }
+
+
+    return (
+        <div className="min-h-screen bg-slate-50">
+
+            <div className="flex min-h-screen">
+
+                {/* ==================================================
+                    SIDEBAR
+                ================================================== */}
+
+                <AdminSidebar
+                    open={sidebarOpen}
+                    onClose={() =>
+                        setSidebarOpen(false)
+                    }
+                />
+
+
+                {/* ==================================================
+                    MAIN
+                ================================================== */}
+
+                <div className="flex min-w-0 flex-1 flex-col lg:ml-72">
+
+                    {/* ==================================================
+                        HEADER
+                    ================================================== */}
+
+                    <header
+                        className="
+                            sticky
+                            top-0
+                            z-30
+                            flex
+                            h-20
+                            items-center
+                            justify-between
+                            border-b
+                            border-slate-200
+                            bg-white/90
+                            px-4
+                            backdrop-blur-xl
+                            sm:px-6
+                            lg:px-8
+                        "
+                    >
+
+                        {/* LEFT */}
+
+                        <div className="flex items-center gap-3">
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setSidebarOpen(true)
+                                }
+                                className="
+                                    flex
+                                    h-11
+                                    w-11
+                                    items-center
+                                    justify-center
+                                    rounded-2xl
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    text-slate-600
+                                    shadow-sm
+                                    transition
+                                    hover:border-pink-200
+                                    hover:bg-pink-50
+                                    hover:text-pink-500
+                                    lg:hidden
+                                "
+                                aria-label="เปิดเมนู"
+                            >
+                                <Menu size={20} />
+                            </button>
+
+
+                            <div>
+
+                                <p
+                                    className="
+                                        text-sm
+                                        font-semibold
+                                        text-slate-900
+                                        sm:text-base
+                                    "
+                                >
+                                    Admin Panel
+                                </p>
+
+                                <p
+                                    className="
+                                        hidden
+                                        text-xs
+                                        text-slate-400
+                                        sm:block
+                                    "
+                                >
+                                    KOKO Memory Management
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* RIGHT */}
+
+                        <div className="flex items-center gap-3">
+
+                            <button
+                                type="button"
+                                aria-label="การแจ้งเตือน"
+                                className="
+                                    relative
+                                    flex
+                                    h-11
+                                    w-11
+                                    items-center
+                                    justify-center
+                                    rounded-2xl
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    text-slate-500
+                                    shadow-sm
+                                    transition
+                                    hover:border-pink-200
+                                    hover:bg-pink-50
+                                    hover:text-pink-500
+                                "
+                            >
+
+                                <Bell size={19} />
+
+                                <span
+                                    className="
+                                        absolute
+                                        right-2.5
+                                        top-2.5
+                                        h-2
+                                        w-2
+                                        rounded-full
+                                        bg-pink-500
+                                        ring-2
+                                        ring-white
+                                    "
+                                />
+
+                            </button>
+
+
+                            <div
+                                className="
+                                    hidden
+                                    items-center
+                                    gap-3
+                                    sm:flex
+                                "
+                            >
+
+                                <div className="text-right">
+
+                                    <p
+                                        className="
+                                            text-sm
+                                            font-semibold
+                                            text-slate-800
+                                        "
+                                    >
+                                        Administrator
+                                    </p>
+
+                                    <p
+                                        className="
+                                            text-xs
+                                            text-slate-400
+                                        "
+                                    >
+                                        KOKO Memory
+                                    </p>
+
+                                </div>
+
+
+                                <div
+                                    className="
+                                        flex
+                                        h-11
+                                        w-11
+                                        items-center
+                                        justify-center
+                                        rounded-2xl
+                                        bg-gradient-to-br
+                                        from-pink-400
+                                        to-rose-500
+                                        text-sm
+                                        font-bold
+                                        text-white
+                                        shadow-md
+                                        shadow-pink-200
+                                    "
+                                >
+                                    A
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </header>
+
+
+                    {/* ==================================================
+                        PAGE CONTENT
+                    ================================================== */}
+
+                    <main
+                        className="
+                            flex-1
+                            p-4
+                            sm:p-6
+                            lg:p-8
+                        "
+                    >
+                        {children}
+                    </main>
+
+                </div>
+
+            </div>
+
+        </div>
+    );
+}

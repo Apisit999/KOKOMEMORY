@@ -2,10 +2,10 @@ import Image from "next/image";
 
 
 const photos = [
-    "/gallery/1.jpg",
-    "/gallery/2.jpg",
-    "/gallery/3.jpg",
-    "/gallery/4.jpg",
+    "/gallery/360 Photobooth-02.jpg",
+    "/gallery/03032026 ป้ายโฆษณา-04.jpg",
+    "/gallery/03032026 ป้ายโฆษณา-03.jpg",
+    "/gallery/03032026 ป้ายโฆษณา-02.jpg",
 ];
 
 export default function GallerySection() {

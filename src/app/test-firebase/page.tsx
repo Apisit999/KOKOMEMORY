@@ -26,14 +26,26 @@ export default function TestFirebasePage() {
 
                 setStatus("Firebase เชื่อมต่อสำเร็จ ✅");
                 setError("");
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error("🔥 Firebase ERROR:", error);
+
+                const errorCode =
+                    typeof error === "object" &&
+                    error !== null &&
+                    "code" in error &&
+                    typeof error.code === "string"
+                        ? error.code
+                        : "unknown";
+
+                const errorMessage =
+                    error instanceof Error
+                        ? error.message
+                        : "Unknown error";
 
                 setStatus("Firebase เชื่อมต่อไม่สำเร็จ ❌");
 
                 setError(
-                    `${error?.code || "unknown"}: ${error?.message || "Unknown error"
-                    }`
+                    `${errorCode}: ${errorMessage}`
                 );
             }
         }

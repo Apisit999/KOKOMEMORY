@@ -55,17 +55,17 @@ type Payment = {
 
     accountNumber?: string;
 
-    submittedAt?: any;
+    submittedAt?: unknown;
 
-    createdAt?: any;
+    createdAt?: unknown;
 
-    verifiedAt?: any;
+    verifiedAt?: unknown;
 
     verifiedBy?: string;
 
     rejectReason?: string;
 
-    rejectedAt?: any;
+    rejectedAt?: unknown;
 
     rejectedBy?: string;
 };
@@ -121,12 +121,17 @@ function getStatusDot(status?: string) {
     }
 }
 
-function getTimestampValue(value: any) {
+function getTimestampValue(value: unknown) {
     if (!value) {
         return 0;
     }
 
-    if (typeof value?.toMillis === "function") {
+    if (
+        typeof value === "object" &&
+        value !== null &&
+        "toMillis" in value &&
+        typeof value.toMillis === "function"
+    ) {
         return value.toMillis();
     }
 
@@ -134,14 +139,19 @@ function getTimestampValue(value: any) {
         return value.getTime();
     }
 
-    if (typeof value?.seconds === "number") {
+    if (
+        typeof value === "object" &&
+        value !== null &&
+        "seconds" in value &&
+        typeof value.seconds === "number"
+    ) {
         return value.seconds * 1000;
     }
 
     return 0;
 }
 
-function formatDate(value: any) {
+function formatDate(value: unknown) {
     const timestamp = getTimestampValue(value);
 
     if (!timestamp) {
@@ -158,7 +168,11 @@ function playNotificationSound() {
     try {
         const AudioContext =
             window.AudioContext ||
-            (window as any).webkitAudioContext;
+            (
+                window as typeof window & {
+                    webkitAudioContext?: typeof window.AudioContext;
+                }
+            ).webkitAudioContext;
 
         if (!AudioContext) {
             return;
@@ -603,15 +617,16 @@ export default function AdminPaymentsPage() {
             alert(
                 "ยืนยันการชำระเงินเรียบร้อยแล้ว"
             );
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(
                 "Verify payment error:",
                 error
             );
 
             alert(
-                error?.message ||
-                "ไม่สามารถยืนยันการชำระเงินได้"
+                error instanceof Error
+                    ? error.message
+                    : "ไม่สามารถยืนยันการชำระเงินได้"
             );
         } finally {
             setProcessingId(null);
@@ -736,15 +751,16 @@ export default function AdminPaymentsPage() {
             alert(
                 "ปฏิเสธหลักฐานการชำระเงินเรียบร้อยแล้ว"
             );
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(
                 "Reject payment error:",
                 error
             );
 
             alert(
-                error?.message ||
-                "ไม่สามารถปฏิเสธรายการได้"
+                error instanceof Error
+                    ? error.message
+                    : "ไม่สามารถปฏิเสธรายการได้"
             );
         } finally {
             setProcessingId(null);
@@ -776,7 +792,7 @@ export default function AdminPaymentsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 px-3 py-5 sm:px-5 md:px-8 md:py-10">
+        <main className="bg-slate-50 px-3 py-5 sm:px-5 md:px-8 md:py-10">
             <div className="mx-auto max-w-7xl">
 
                 {/* =================================================

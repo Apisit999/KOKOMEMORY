@@ -40,7 +40,11 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import {
+    Suspense,
+    useRef,
+    useState,
+} from "react";
 
 import {
     ArrowLeft,
@@ -289,7 +293,7 @@ function getBookingId(
    PAGE
 ============================================================ */
 
-export default function ReviewBookingPage() {
+function ReviewBookingContent() {
 
     const router =
         useRouter();
@@ -1900,5 +1904,13 @@ export default function ReviewBookingPage() {
             </section>
 
         </main>
+    );
+}
+
+export default function ReviewBookingPage() {
+    return (
+        <Suspense fallback={null}>
+            <ReviewBookingContent />
+        </Suspense>
     );
 }

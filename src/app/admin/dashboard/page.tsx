@@ -401,7 +401,7 @@ export default function AdminDashboardPage() {
 
 
     return (
-        <main className="min-h-screen bg-slate-50">
+        <main className="bg-slate-50">
 
             {/* =================================================
                 HEADER

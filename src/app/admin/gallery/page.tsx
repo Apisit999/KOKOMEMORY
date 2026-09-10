@@ -296,7 +296,7 @@ export default function AdminGalleryPage() {
     // -----------------------------
 
     return (
-        <main className="min-h-screen bg-slate-50">
+        <main className="bg-slate-50">
 
             {/* Header */}
             <header className="bg-white border-b border-slate-200">

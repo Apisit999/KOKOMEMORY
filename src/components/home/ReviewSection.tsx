@@ -5,21 +5,21 @@ const reviews = [
     {
         name: "คุณออย",
         event: "Wedding",
-        image: "/review/user1.jpg",
+        image: "/gallery/03032026 ป้ายโฆษณา-01.jpg",
         review:
             "ทีมงานบริการดีมาก ตรงเวลา รูปสวย แขกทุกคนประทับใจ แนะนำเลยค่ะ",
     },
     {
         name: "คุณบาส",
         event: "Corporate Event",
-        image: "/review/user2.jpg",
+        image: "/gallery/03032026 ป้ายโฆษณา-02.jpg",
         review:
             "ระบบ Live Gallery ใช้งานง่าย ดาวน์โหลดรูปได้ทันที งานออกมาดูมืออาชีพมาก",
     },
     {
         name: "คุณฝ้าย",
         event: "Birthday",
-        image: "/review/user3.jpg",
+        image: "/gallery/03032026 ป้ายโฆษณา-03.jpg",
         review:
             "ชอบพร็อพและคุณภาพรูปมาก ทีมงานดูแลดี ถ้ามีงานอีกจะใช้บริการแน่นอน",
     },
@@ -70,7 +70,7 @@ export default function ReviewSection() {
 
                             <p className="mt-8 leading-7 sm:leading-8 text-gray-600">
 
-                                "{item.review}"
+                                &quot;{item.review}&quot;
 
                             </p>
 
