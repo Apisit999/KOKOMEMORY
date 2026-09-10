@@ -15,6 +15,7 @@ const menus = [
     { title: "ผลงาน", href: "/gallery/portfolio" },
     { title: "บริการ", href: "/services" },
     { title: "แพ็กเกจ", href: "/packages" },
+    { title: "3D Print", href: "/3d-printing" },
     { title: "เกี่ยวกับเรา", href: "/about" },
     { title: "ติดต่อ", href: "/contact" },
 ];

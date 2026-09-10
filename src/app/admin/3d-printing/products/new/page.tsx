@@ -7,8 +7,8 @@ import { createThreeDProduct } from "@/services/threeDProducts";
 export default function NewThreeDProductPage() {
     const router = useRouter();
 
-    async function handleCreate(value: ThreeDProductInput) {
-        await createThreeDProduct(value);
+    async function handleCreate(value: ThreeDProductInput, productId?: string) {
+        await createThreeDProduct(value, productId);
         router.push("/admin/3d-printing/products");
     }
 

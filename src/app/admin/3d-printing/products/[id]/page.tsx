@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ProductForm, { type ThreeDProductInput } from "../ProductForm";
 import {
-    getThreeDProducts,
+    getThreeDProduct,
     updateThreeDProduct,
     type ThreeDProduct,
 } from "@/services/threeDProducts";
@@ -21,8 +21,7 @@ export default function EditThreeDProductPage() {
 
         async function loadProduct() {
             try {
-                const products = await getThreeDProducts();
-                const found = products.find((item) => item.id === params.id);
+                const found = await getThreeDProduct(params.id);
 
                 if (!active) return;
 
@@ -78,6 +77,8 @@ export default function EditThreeDProductPage() {
         printTime: product.printTime,
         previewImage: product.previewImage,
         modelFile: product.modelFile,
+        modelFileKey: product.modelFileKey,
+        images: product.images,
         status: product.status,
     };
 
@@ -94,6 +95,7 @@ export default function EditThreeDProductPage() {
             </header>
             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
                 <ProductForm
+                    productId={product.id}
                     initialValue={initialValue}
                     submitLabel="บันทึกการแก้ไข"
                     onSubmit={handleUpdate}
