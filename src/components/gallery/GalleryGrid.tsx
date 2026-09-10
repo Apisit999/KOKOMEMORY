@@ -39,6 +39,11 @@ import {
 
 import GalleryCard from "./GalleryCard";
 
+import {
+    normalizeCategorySlug,
+    type PortfolioCategory,
+} from "@/types/portfolioCategory";
+
 
 /* ============================================================
    TYPES
@@ -100,6 +105,14 @@ export default function GalleryGrid() {
         category,
         setCategory,
     ] = useState("all");
+
+    const [
+        categoryOptions,
+        setCategoryOptions,
+    ] = useState<PortfolioCategory[]>([]);
+
+    const [categoryApiLoaded, setCategoryApiLoaded] =
+        useState(false);
 
 
     const [
@@ -428,23 +441,107 @@ export default function GalleryGrid() {
 
 
     /* ========================================================
+       CATEGORY DATA + URL STATE
+    ======================================================== */
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadCategories() {
+            try {
+                const response = await fetch(
+                    "/api/gallery/categories",
+                    {
+                        method: "GET",
+                        cache: "force-cache",
+                    }
+                );
+                const contentType =
+                    response.headers.get("content-type") || "";
+
+                if (!contentType.includes("application/json")) {
+                    throw new Error("Category API ไม่ได้ตอบกลับเป็น JSON");
+                }
+
+                const data = (await response.json()) as {
+                    success?: boolean;
+                    categories?: unknown;
+                };
+
+                if (
+                    !cancelled &&
+                    data.success === true &&
+                    Array.isArray(data.categories)
+                ) {
+                    setCategoryOptions(
+                        data.categories.filter(
+                            (
+                                item
+                            ): item is PortfolioCategory =>
+                                Boolean(
+                                    item &&
+                                        typeof item === "object" &&
+                                        typeof (item as PortfolioCategory)
+                                            .slug === "string"
+                                )
+                        )
+                    );
+                        setCategoryApiLoaded(true);
+                }
+            } catch {
+                // The portfolio list remains usable through its legacy category values.
+                    if (!cancelled) setCategoryApiLoaded(true);
+            }
+        }
+
+        void loadCategories();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        const syncCategoryFromUrl = () => {
+            const value = new URLSearchParams(window.location.search).get(
+                "category"
+            );
+            setCategory(value || "all");
+        };
+
+        syncCategoryFromUrl();
+        window.addEventListener("popstate", syncCategoryFromUrl);
+
+        return () => {
+            window.removeEventListener("popstate", syncCategoryFromUrl);
+        };
+    }, []);
+
+
+    /* ========================================================
        CATEGORIES
     ======================================================== */
 
     const categories = useMemo(() => {
 
-        const unique = Array.from(
-            new Set(
-                portfolios
-                    .map(
-                        (portfolio) =>
-                            portfolio.category.trim()
-                    )
-                    .filter(Boolean)
-            )
-        ).sort(
-            (a, b) =>
-                a.localeCompare(b, "th")
+        const values = new Map<string, string>();
+
+        categoryOptions.forEach((item) => {
+            const slug = normalizeCategorySlug(item.slug);
+            if (slug) values.set(slug, item.name);
+        });
+
+        if (!categoryApiLoaded || categoryOptions.length === 0) {
+            portfolios.forEach((portfolio) => {
+                const slug = normalizeCategorySlug(portfolio.category);
+                if (slug && !values.has(slug)) {
+                    values.set(slug, portfolio.category.trim());
+                }
+            });
+        }
+
+        const unique = Array.from(values.keys()).sort((a, b) =>
+            (values.get(a) || a).localeCompare(values.get(b) || b, "th")
         );
 
 
@@ -453,7 +550,45 @@ export default function GalleryGrid() {
             ...unique,
         ];
 
-    }, [portfolios]);
+    }, [categoryApiLoaded, categoryOptions, portfolios]);
+
+    const categoryLabels = useMemo(() => {
+        const labels = new Map<string, string>();
+
+        categoryOptions.forEach((item) => {
+            labels.set(normalizeCategorySlug(item.slug), item.name);
+        });
+
+        if (!categoryApiLoaded || categoryOptions.length === 0) {
+            portfolios.forEach((portfolio) => {
+                const slug = normalizeCategorySlug(portfolio.category);
+                if (slug && !labels.has(slug)) {
+                    labels.set(slug, portfolio.category.trim());
+                }
+            });
+        }
+
+        return labels;
+    }, [categoryApiLoaded, categoryOptions, portfolios]);
+
+    const selectCategory = (value: string) => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (value === "all") {
+            params.delete("category");
+        } else {
+            params.set("category", value);
+        }
+
+        const query = params.toString();
+        const nextUrl = query
+            ? `${window.location.pathname}?${query}`
+            : window.location.pathname;
+
+        window.history.pushState({}, "", nextUrl);
+        setCategory(value);
+        window.dispatchEvent(new PopStateEvent("popstate"));
+    };
 
 
     /* ========================================================
@@ -472,8 +607,9 @@ export default function GalleryGrid() {
 
             return portfolios.filter(
                 (portfolio) =>
-                    portfolio.category ===
-                    category
+                    normalizeCategorySlug(
+                        portfolio.category
+                    ) === category
             );
 
         }, [
@@ -840,7 +976,8 @@ export default function GalleryGrid() {
                                     item ===
                                     "all"
                                         ? "ทั้งหมด"
-                                        : item;
+                                                                                : categoryLabels.get(item) ||
+                                                                                    item;
 
 
                                 return (
@@ -848,11 +985,8 @@ export default function GalleryGrid() {
                                     <button
                                         key={item}
                                         type="button"
-                                        onClick={() =>
-                                            setCategory(
-                                                item
-                                            )
-                                        }
+                                        onClick={() => selectCategory(item)}
+                                        aria-pressed={active}
                                         className={`
                                             rounded-full
                                             px-5
@@ -990,7 +1124,12 @@ export default function GalleryGrid() {
                             text-slate-800
                         "
                     >
-                        ยังไม่มีผลงาน
+                        {category === "all"
+                            ? "ยังไม่มีผลงาน"
+                            : `ยังไม่มีผลงานในหมวด ${
+                                  categoryLabels.get(category) ||
+                                  category
+                              }`}
                     </h3>
 
 
@@ -1001,7 +1140,17 @@ export default function GalleryGrid() {
                             text-slate-400
                         "
                     >
-                        ผลงานใหม่จะถูกเพิ่มเข้ามาเร็ว ๆ นี้
+                        {category === "all" ? (
+                            "ผลงานใหม่จะถูกเพิ่มเข้ามาเร็ว ๆ นี้"
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => selectCategory("all")}
+                                className="font-semibold text-pink-500 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                            >
+                                ดูผลงานทั้งหมด
+                            </button>
+                        )}
                     </p>
 
                 </div>

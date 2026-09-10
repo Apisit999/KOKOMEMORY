@@ -31,12 +31,29 @@
  * ============================================================
  */
 
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 import GalleryGrid from "@/components/gallery/GalleryGrid";
+
+export const metadata: Metadata = {
+    title: "ผลงาน | KOKO Memory",
+    description:
+        "ชมผลงาน Photobooth และ Event Experience จาก KOKO Memory",
+    alternates: {
+        canonical: "/gallery/portfolio",
+    },
+    openGraph: {
+        title: "ผลงาน | KOKO Memory",
+        description:
+            "ชมผลงาน Photobooth และ Event Experience จาก KOKO Memory",
+        url: "/gallery/portfolio",
+        type: "website",
+    },
+};
 
 
 /* ============================================================

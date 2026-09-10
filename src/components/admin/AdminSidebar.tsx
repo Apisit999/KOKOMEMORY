@@ -171,6 +171,11 @@ const menuItems: MenuItem[] = [
         icon: <PortfolioIcon />,
     },
     {
+        label: "หมวดหมู่ Portfolio",
+        href: "/admin/portfolio/categories",
+        icon: <PortfolioIcon />,
+    },
+    {
         label: "3D Printing",
         href: "/admin/3d-printing",
         icon: <PrinterIcon />,
