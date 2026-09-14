@@ -13,11 +13,16 @@
  * ------------------------------------------------------------
  * 1 วัน = 1 คิว
  *
- * สถานะวันที่:
+ * ระบบ Availability:
  * ------------------------------------------------------------
- * 🟢 ว่าง       = สามารถเลือกได้
- * 🔴 จองแล้ว    = ไม่สามารถเลือกได้
- * ⚫ ปิดรับ      = ไม่สามารถเลือกได้
+ * 🔥 อ่านข้อมูลจาก Firebase Firestore จริง
+ * 🔴 ถ้า bookings มี Booking ในวันนั้น → ปิดวัน
+ * 🔴 ถ้า bookingDates ล็อกวันนั้น → ปิดวัน
+ * 🟢 ถ้าไม่มี Booking → ว่าง
+ *
+ * Real-time:
+ * ------------------------------------------------------------
+ * ใช้ onSnapshot() เพื่ออัปเดตสถานะวันแบบ Real-time
  *
  * Flow:
  * ------------------------------------------------------------
@@ -28,23 +33,28 @@
  * Step 5 → ชำระเงิน
  * Step 6 → สำเร็จ
  *
- * ในอนาคต:
- * ------------------------------------------------------------
- * [ ] Firebase
- * [ ] ดึงวันที่จองแล้วจาก Database
- * [ ] ดึงวันที่ Admin ปิดรับจาก Database
- * [ ] Real-time availability
- * [ ] ป้องกันการจองซ้ำ
- * [ ] ระบบ Admin จัดการวัน
  * ============================================================
  */
 
 import {
     Suspense,
+    useEffect,
     useMemo,
     useState,
 } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+
+import {
+    useSearchParams,
+    useRouter,
+} from "next/navigation";
+
+import {
+    collection,
+    onSnapshot,
+    type Timestamp,
+} from "firebase/firestore";
+
+import { db } from "@/lib/firebase";
 
 import {
     CalendarDays,
@@ -54,24 +64,21 @@ import {
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/ิbutton";
+import {
+    Card,
+    CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 
 /* ============================================================
    Package Data
-   ------------------------------------------------------------
-   ข้อมูลแพ็กเกจสำหรับใช้แสดงใน Step 2
- *
-   ตอนนี้เป็นข้อมูลชั่วคราว
-   ภายหลังสามารถย้ายไป Firebase / package.service.ts ได้
 ============================================================ */
 
 const packages = {
 
     /* --------------------------------------------------------
        แพ็กเกจเริ่มต้น
-       S / M / L
     -------------------------------------------------------- */
 
     "photobooth-s": {
@@ -95,9 +102,9 @@ const packages = {
         hours: 4,
     },
 
+
     /* --------------------------------------------------------
        แพ็กเกจมาตรฐาน
-       SS / MM / LL
     -------------------------------------------------------- */
 
     "photobooth-ss": {
@@ -121,9 +128,9 @@ const packages = {
         hours: 4,
     },
 
+
     /* --------------------------------------------------------
        แพ็กเกจพรีเมียม
-       S1 / M1 / L1
     -------------------------------------------------------- */
 
     "photobooth-s1": {
@@ -146,6 +153,7 @@ const packages = {
         price: 16400,
         hours: 4,
     },
+
 
     /* --------------------------------------------------------
        360 Photo Booth
@@ -172,12 +180,10 @@ const packages = {
         hours: 4,
     },
 
-    /* ========================================================
+
+    /* --------------------------------------------------------
        รองรับ ID เก่า
-       --------------------------------------------------------
-       เผื่อ Step 1 เดิมยังส่ง basic / premium / luxury
-       จะได้ไม่เกิด Error
-    ======================================================== */
+    -------------------------------------------------------- */
 
     basic: {
         name: "Basic",
@@ -198,35 +204,17 @@ const packages = {
         category: "แพ็กเกจ",
         price: 24900,
         hours: 6,
+
     },
 
 } as const;
 
 
 /* ============================================================
-   วันที่มีคนจองแล้ว
+   Admin Closed Dates
    ------------------------------------------------------------
-   ตอนนี้เป็นข้อมูลจำลอง
- *
-   ภายหลัง:
-   Firebase → bookings → date
-============================================================ */
-
-const bookedDates = [
-    "2026-08-15",
-    "2026-08-22",
-    "2026-09-05",
-];
-
-
-/* ============================================================
-   วันที่ Admin ปิดรับ
-   ------------------------------------------------------------
-   เช่น:
-   - ทีมงานไม่ว่าง
-   - วันหยุด
-   - มีงานส่วนตัว
-   - อุปกรณ์ไม่พร้อม
+   ตอนนี้ยังเป็นวันปิดรับแบบ Static
+   ภายหลังสามารถย้ายไป Firebase ได้
 ============================================================ */
 
 const closedDates = [
@@ -237,14 +225,24 @@ const closedDates = [
 
 
 /* ============================================================
+   Booking Status
+   ------------------------------------------------------------
+   สถานะเหล่านี้ถือว่า "คืนคิว"
+============================================================ */
+
+const RELEASED_BOOKING_STATUSES = new Set([
+    "cancelled",
+    "canceled",
+    "rejected",
+    "declined",
+    "released",
+]);
+
+
+/* ============================================================
    Helper
    ------------------------------------------------------------
    Date → YYYY-MM-DD
- *
-   ตัวอย่าง:
-   18 สิงหาคม 2026
-   ↓
-   2026-08-18
 ============================================================ */
 
 function formatDateKey(date: Date) {
@@ -266,10 +264,136 @@ function formatDateKey(date: Date) {
 /* ============================================================
    Helper
    ------------------------------------------------------------
+   Firebase Timestamp / Date / String
+   → YYYY-MM-DD
+============================================================ */
+
+function normalizeDateValue(
+    value: unknown
+): string {
+
+    if (!value) {
+        return "";
+    }
+
+
+    /* --------------------------------------------------------
+       String
+       --------------------------------------------------------
+       รองรับ:
+       2026-09-20
+       2026-09-20T...
+    -------------------------------------------------------- */
+
+    if (typeof value === "string") {
+
+        const trimmed = value.trim();
+
+        if (
+            /^\d{4}-\d{2}-\d{2}$/.test(
+                trimmed
+            )
+        ) {
+            return trimmed;
+        }
+
+
+        const parsed =
+            new Date(trimmed);
+
+        if (
+            !Number.isNaN(
+                parsed.getTime()
+            )
+        ) {
+            return formatDateKey(parsed);
+        }
+
+        return "";
+    }
+
+
+    /* --------------------------------------------------------
+       JavaScript Date
+    -------------------------------------------------------- */
+
+    if (value instanceof Date) {
+
+        if (
+            !Number.isNaN(
+                value.getTime()
+            )
+        ) {
+            return formatDateKey(value);
+        }
+
+        return "";
+    }
+
+
+    /* --------------------------------------------------------
+       Firebase Timestamp
+    -------------------------------------------------------- */
+
+    const timestamp =
+        value as Partial<Timestamp>;
+
+    if (
+        typeof timestamp.toDate ===
+        "function"
+    ) {
+
+        const date =
+            timestamp.toDate();
+
+        if (
+            date instanceof Date &&
+            !Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return formatDateKey(date);
+        }
+    }
+
+
+    /* --------------------------------------------------------
+       Timestamp แบบ object
+       -------------------------------------------------------- */
+
+    if (
+        typeof timestamp.seconds ===
+            "number"
+    ) {
+
+        const date =
+            new Date(
+                timestamp.seconds * 1000
+            );
+
+        if (
+            !Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return formatDateKey(date);
+        }
+    }
+
+
+    return "";
+}
+
+
+/* ============================================================
+   Helper
+   ------------------------------------------------------------
    Date → ภาษาไทย
 ============================================================ */
 
-function formatThaiDate(date: Date) {
+function formatThaiDate(
+    date: Date
+) {
 
     return new Intl.DateTimeFormat(
         "th-TH",
@@ -282,21 +406,6 @@ function formatThaiDate(date: Date) {
 
 /* ============================================================
    Booking Progress
-   ------------------------------------------------------------
-   ใช้แสดงขั้นตอนการจองทั้งหมด
- *
- * Step 1 → แพ็กเกจ
- * Step 2 → วันจัดงาน
- * Step 3 → ข้อมูลผู้จอง
- * Step 4 → ตรวจสอบ
- * Step 5 → ชำระเงิน
- * Step 6 → สำเร็จ
- *
- * Responsive:
- * ------------------------------------------------------------
- * Mobile  → เลื่อนแนวนอนได้
- * Tablet  → แสดงเต็มพื้นที่
- * Desktop → แสดงเต็มพื้นที่
 ============================================================ */
 
 const bookingSteps = [
@@ -335,178 +444,654 @@ function ScheduleContent() {
 
     /* ========================================================
        Router
-       --------------------------------------------------------
-       ใช้สำหรับเปลี่ยนหน้า
     ======================================================== */
 
     const router = useRouter();
 
 
     /* ========================================================
-       อ่านข้อมูลจาก URL
-       --------------------------------------------------------
-       ตัวอย่าง:
-
-       /booking/schedule?package=photobooth-m
+       URL Parameters
     ======================================================== */
 
-    const searchParams = useSearchParams();
+    const searchParams =
+        useSearchParams();
 
-    const packageId = searchParams.get("package");
+    const packageId =
+        searchParams.get("package");
 
 
     /* ========================================================
-       วันที่ลูกค้าเลือก
+       Selected Date
     ======================================================== */
 
-    const [selectedDate, setSelectedDate] =
-        useState<Date>();
+    const [
+        selectedDate,
+        setSelectedDate,
+    ] = useState<Date>();
 
 
     /* ========================================================
-       หา Package จาก packageId
+       Firebase Availability
        --------------------------------------------------------
-       ถ้าไม่มี Package จะใช้ null
+       วันที่ถูกจองจาก bookings
     ======================================================== */
 
-    const selectedPackage = useMemo(() => {
+    const [
+        bookedDates,
+        setBookedDates,
+    ] = useState<string[]>([]);
 
-        if (!packageId) {
-            return null;
-        }
 
-        return packages[
-            packageId as keyof typeof packages
-        ] ?? null;
+    /* ========================================================
+       Firebase bookingDates
+       --------------------------------------------------------
+       ใช้เป็นระบบ lock สำรอง
+    ======================================================== */
 
-    }, [packageId]);
+    const [
+        lockedDates,
+        setLockedDates,
+    ] = useState<string[]>([]);
+
+
+    /* ========================================================
+       Loading
+    ======================================================== */
+
+    const [
+        availabilityLoading,
+        setAvailabilityLoading,
+    ] = useState(true);
+
+
+    /* ========================================================
+       Error
+    ======================================================== */
+
+    const [
+        availabilityError,
+        setAvailabilityError,
+    ] = useState("");
+
+
+    /* ========================================================
+       Real-time Firestore
+       --------------------------------------------------------
+       1. bookings
+       2. bookingDates
+    ======================================================== */
+
+    useEffect(() => {
+
+        setAvailabilityLoading(true);
+        setAvailabilityError("");
+
+
+        let bookingsLoaded = false;
+        let bookingDatesLoaded = false;
+
+
+        const checkLoadingComplete = () => {
+
+            if (
+                bookingsLoaded &&
+                bookingDatesLoaded
+            ) {
+                setAvailabilityLoading(false);
+            }
+
+        };
+
+
+        /* ====================================================
+           Listen: bookings
+        ==================================================== */
+
+        const unsubscribeBookings =
+            onSnapshot(
+                collection(
+                    db,
+                    "bookings"
+                ),
+
+                (snapshot) => {
+
+                    const dates =
+                        new Set<string>();
+
+
+                    snapshot.forEach(
+                        (document) => {
+
+                            const data =
+                                document.data();
+
+
+                            /* ------------------------------------
+                               Booking Status
+                            ------------------------------------ */
+
+                            const rawStatus =
+                                data.bookingStatus ??
+                                data.status ??
+                                "";
+
+                            const status =
+                                typeof rawStatus ===
+                                "string"
+                                    ? rawStatus
+                                        .trim()
+                                        .toLowerCase()
+                                    : "";
+
+
+                            /*
+                             * ถ้า Booking ถูกยกเลิก
+                             * ให้คืนวัน
+                             */
+
+                            if (
+                                RELEASED_BOOKING_STATUSES.has(
+                                    status
+                                )
+                            ) {
+                                return;
+                            }
+
+
+                            /* ------------------------------------
+                               รองรับโครงสร้างวันที่หลายแบบ
+                            ------------------------------------ */
+
+                            const possibleDates = [
+
+                                /* โครงสร้างปัจจุบัน */
+                                data?.event?.date,
+
+                                /* เผื่อระบบเดิม */
+                                data?.eventDate,
+
+                                data?.bookingDate,
+
+                                data?.date,
+
+                            ];
+
+
+                            let eventDate = "";
+
+
+                            for (
+                                const value
+                                of possibleDates
+                            ) {
+
+                                const normalized =
+                                    normalizeDateValue(
+                                        value
+                                    );
+
+                                if (
+                                    normalized
+                                ) {
+                                    eventDate =
+                                        normalized;
+                                    break;
+                                }
+
+                            }
+
+
+                            /* ------------------------------------
+                               เพิ่มวันที่ที่มี Booking
+                            ------------------------------------ */
+
+                            if (
+                                /^\d{4}-\d{2}-\d{2}$/.test(
+                                    eventDate
+                                )
+                            ) {
+
+                                dates.add(
+                                    eventDate
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    setBookedDates(
+                        Array.from(dates)
+                    );
+
+
+                    bookingsLoaded = true;
+
+                    checkLoadingComplete();
+
+                },
+
+                (error) => {
+
+                    console.error(
+                        "Firestore bookings listener error:",
+                        error
+                    );
+
+
+                    setAvailabilityError(
+                        "ไม่สามารถตรวจสอบคิวจากระบบได้ กรุณารีเฟรชหน้าอีกครั้ง"
+                    );
+
+
+                    bookingsLoaded = true;
+
+                    setAvailabilityLoading(
+                        false
+                    );
+
+                }
+            );
+
+
+        /* ====================================================
+           Listen: bookingDates
+           ----------------------------------------------------
+           ใช้เป็น lock สำรอง
+        ==================================================== */
+
+        const unsubscribeBookingDates =
+            onSnapshot(
+                collection(
+                    db,
+                    "bookingDates"
+                ),
+
+                (snapshot) => {
+
+                    const dates =
+                        new Set<string>();
+
+
+                    snapshot.forEach(
+                        (document) => {
+
+                            const data =
+                                document.data();
+
+
+                            /* ------------------------------------
+                               Status
+                            ------------------------------------ */
+
+                            const rawStatus =
+                                data.status ??
+                                "";
+
+                            const status =
+                                typeof rawStatus ===
+                                "string"
+                                    ? rawStatus
+                                        .trim()
+                                        .toLowerCase()
+                                    : "";
+
+
+                            /*
+                             * lock ที่ถูกยกเลิก
+                             * ไม่ต้องปิดวัน
+                             */
+
+                            if (
+                                RELEASED_BOOKING_STATUSES.has(
+                                    status
+                                )
+                            ) {
+                                return;
+                            }
+
+
+                            /* ------------------------------------
+                               วันที่
+                            ------------------------------------ */
+
+                            const possibleDates = [
+
+                                data?.date,
+
+                                data?.eventDate,
+
+                                document.id,
+
+                            ];
+
+
+                            let eventDate = "";
+
+
+                            for (
+                                const value
+                                of possibleDates
+                            ) {
+
+                                const normalized =
+                                    normalizeDateValue(
+                                        value
+                                    );
+
+                                if (
+                                    normalized
+                                ) {
+                                    eventDate =
+                                        normalized;
+                                    break;
+                                }
+
+                            }
+
+
+                            if (
+                                /^\d{4}-\d{2}-\d{2}$/.test(
+                                    eventDate
+                                )
+                            ) {
+
+                                dates.add(
+                                    eventDate
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    setLockedDates(
+                        Array.from(dates)
+                    );
+
+
+                    bookingDatesLoaded = true;
+
+                    checkLoadingComplete();
+
+                },
+
+                (error) => {
+
+                    console.error(
+                        "Firestore bookingDates listener error:",
+                        error
+                    );
+
+
+                    /*
+                     * bookingDates เป็นระบบเสริม
+                     *
+                     * ถ้าอ่านไม่ได้ เราไม่ทำให้ทั้งหน้า
+                     * ใช้งานไม่ได้ เพราะ bookings ยังเป็น
+                     * แหล่งข้อมูลหลัก
+                     */
+
+                    setLockedDates([]);
+
+                    bookingDatesLoaded = true;
+
+                    checkLoadingComplete();
+
+                }
+            );
+
+
+        /* ====================================================
+           Cleanup
+        ==================================================== */
+
+        return () => {
+
+            unsubscribeBookings();
+
+            unsubscribeBookingDates();
+
+        };
+
+    }, []);
+
+
+    /* ========================================================
+       หา Package
+    ======================================================== */
+
+    const selectedPackage =
+        useMemo(() => {
+
+            if (!packageId) {
+                return null;
+            }
+
+            return packages[
+                packageId as keyof typeof packages
+            ] ?? null;
+
+        }, [packageId]);
+
+
+    /* ========================================================
+       รวมวันที่ถูกปิดทั้งหมด
+       --------------------------------------------------------
+       bookings
+       +
+       bookingDates
+       +
+       closedDates
+    ======================================================== */
+
+    const unavailableDates =
+        useMemo(() => {
+
+            return new Set([
+                ...bookedDates,
+                ...lockedDates,
+                ...closedDates,
+            ]);
+
+        }, [
+            bookedDates,
+            lockedDates,
+        ]);
 
 
     /* ========================================================
        ตรวจสอบวันที่ไม่สามารถจองได้
-       --------------------------------------------------------
-       true = ห้ามเลือก
-       false = เลือกได้
     ======================================================== */
 
-    const isDateUnavailable = (date: Date) => {
+    const isDateUnavailable =
+        (date: Date) => {
 
-        const key = formatDateKey(date);
-
-
-        /* ----------------------------------------------------
-           วันที่จองแล้ว
-        ---------------------------------------------------- */
-
-        if (bookedDates.includes(key)) {
-            return true;
-        }
+            const key =
+                formatDateKey(date);
 
 
-        /* ----------------------------------------------------
-           วันที่ Admin ปิดรับ
-        ---------------------------------------------------- */
+            /* -----------------------------------------------
+               ระหว่างโหลดข้อมูล
+               ห้ามเลือกก่อน
+            ----------------------------------------------- */
 
-        if (closedDates.includes(key)) {
-            return true;
-        }
+            if (
+                availabilityLoading
+            ) {
+                return true;
+            }
 
-        return false;
-    };
+
+            /* -----------------------------------------------
+               โหลดข้อมูลไม่ได้
+               ป้องกันการรับคิวซ้ำ
+            ----------------------------------------------- */
+
+            if (
+                availabilityError
+            ) {
+                return true;
+            }
+
+
+            /* -----------------------------------------------
+               Booking / Lock / Closed
+            ----------------------------------------------- */
+
+            return unavailableDates.has(
+                key
+            );
+
+        };
 
 
     /* ========================================================
-       ตรวจสอบสถานะวันที่ที่เลือก
+       ตรวจสอบสถานะวันที่เลือก
     ======================================================== */
 
-    const selectedDateStatus = useMemo(() => {
+    const selectedDateStatus =
+        useMemo(() => {
 
-        if (!selectedDate) {
-            return null;
-        }
-
-        const key = formatDateKey(selectedDate);
-
-
-        /* วันที่จองแล้ว */
-
-        if (bookedDates.includes(key)) {
-            return "booked";
-        }
+            if (!selectedDate) {
+                return null;
+            }
 
 
-        /* วันที่ Admin ปิดรับ */
+            const key =
+                formatDateKey(
+                    selectedDate
+                );
 
-        if (closedDates.includes(key)) {
-            return "closed";
-        }
+
+            if (
+                availabilityLoading ||
+                availabilityError
+            ) {
+                return null;
+            }
 
 
-        /* วันที่ว่าง */
+            /* -----------------------------------------------
+               Booking จริง
+            ----------------------------------------------- */
 
-        return "available";
+            if (
+                bookedDates.includes(
+                    key
+                )
+            ) {
+                return "booked";
+            }
 
-    }, [selectedDate]);
+
+            /* -----------------------------------------------
+               bookingDates lock
+            ----------------------------------------------- */
+
+            if (
+                lockedDates.includes(
+                    key
+                )
+            ) {
+                return "booked";
+            }
+
+
+            /* -----------------------------------------------
+               Admin Closed
+            ----------------------------------------------- */
+
+            if (
+                closedDates.includes(
+                    key
+                )
+            ) {
+                return "closed";
+            }
+
+
+            return "available";
+
+        }, [
+            selectedDate,
+            bookedDates,
+            lockedDates,
+            availabilityLoading,
+            availabilityError,
+        ]);
 
 
     /* ========================================================
        ไป Step 3
-       --------------------------------------------------------
-       ส่งข้อมูล:
-       - package
-       - date
     ======================================================== */
 
     const handleNext = () => {
 
-        /* ยังไม่ได้เลือกวัน */
+        /* -----------------------------------------------
+           ยังไม่ได้เลือกวัน
+        ----------------------------------------------- */
 
         if (!selectedDate) {
             return;
         }
 
 
-        /* วันที่เลือกไม่ว่าง */
+        /* -----------------------------------------------
+           วันที่ไม่ว่าง
+        ----------------------------------------------- */
 
         if (
-            selectedDateStatus !== "available"
+            selectedDateStatus !==
+            "available"
         ) {
             return;
         }
 
 
-        /* ไม่มี Package */
+        /* -----------------------------------------------
+           ไม่มี Package
+        ----------------------------------------------- */
 
         if (!packageId) {
-            router.push("/booking/package");
+
+            router.push(
+                "/booking/package"
+            );
+
             return;
         }
 
 
-        /* แปลงวันที่ */
+        /* -----------------------------------------------
+           แปลงวันที่
+        ----------------------------------------------- */
 
-        const date = formatDateKey(
-            selectedDate
-        );
+        const date =
+            formatDateKey(
+                selectedDate
+            );
 
 
-        /* ----------------------------------------------------
+        /* -----------------------------------------------
            ไป Step 3
-
-           ตัวอย่าง:
-
-           /booking/customer
-           ?package=photobooth-m
-           &date=2026-08-18
-        ---------------------------------------------------- */
+        ----------------------------------------------- */
 
         router.push(
             `/booking/customer?package=${encodeURIComponent(
                 packageId
             )}&date=${date}`
         );
+
     };
 
+
+    /* ========================================================
+       Render
+    ======================================================== */
 
     return (
 
@@ -515,26 +1100,21 @@ function ScheduleContent() {
 
             {/* =================================================
                 Booking Progress
-                -------------------------------------------------
-                แสดงขั้นตอนการจองตามหน้าที่จริง
             ================================================= */}
 
             <section className="border-b bg-white">
 
                 <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
 
-                    {/* ------------------------------------------------
-                       Horizontal Scroll
-                       ------------------------------------------------
-                       บนมือถือถ้าพื้นที่ไม่พอสามารถเลื่อนดูได้
-                    ------------------------------------------------ */}
-
                     <div className="overflow-x-auto pb-1 scrollbar-hide">
 
                         <div className="mx-auto flex min-w-max items-start justify-center px-2 sm:min-w-0">
 
                             {bookingSteps.map(
-                                (step, index) => {
+                                (
+                                    step,
+                                    index
+                                ) => {
 
                                     const isCompleted =
                                         step.number < 2;
@@ -546,7 +1126,9 @@ function ScheduleContent() {
                                         index ===
                                         bookingSteps.length - 1;
 
+
                                     return (
+
                                         <div
                                             key={
                                                 step.number
@@ -554,13 +1136,7 @@ function ScheduleContent() {
                                             className="flex items-start"
                                         >
 
-                                            {/* =================================================
-                                                Step
-                                            ================================================= */}
-
                                             <div className="flex w-[68px] flex-col items-center sm:w-[90px] md:w-[105px]">
-
-                                                {/* Circle */}
 
                                                 <div
                                                     className={`
@@ -573,34 +1149,36 @@ function ScheduleContent() {
                                                         text-xs
                                                         font-bold
                                                         transition-all
-
                                                         sm:h-11
                                                         sm:w-11
                                                         sm:text-sm
 
-                                                        ${isCompleted
-                                                            ? "bg-green-100 text-green-600"
-                                                            : isCurrent
-                                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200 ring-4 ring-pink-50"
-                                                                : "bg-slate-100 text-slate-400"
+                                                        ${
+                                                            isCompleted
+                                                                ? "bg-green-100 text-green-600"
+                                                                : isCurrent
+                                                                    ? "bg-pink-500 text-white shadow-lg shadow-pink-200 ring-4 ring-pink-50"
+                                                                    : "bg-slate-100 text-slate-400"
                                                         }
                                                     `}
                                                 >
 
                                                     {isCompleted ? (
+
                                                         <CheckCircle2
                                                             size={
                                                                 18
                                                             }
                                                         />
+
                                                     ) : (
+
                                                         step.number
+
                                                     )}
 
                                                 </div>
 
-
-                                                {/* Label */}
 
                                                 <span
                                                     className={`
@@ -611,23 +1189,22 @@ function ScheduleContent() {
                                                         sm:text-xs
                                                         md:text-sm
 
-                                                        ${isCompleted
-                                                            ? "text-green-600"
-                                                            : isCurrent
-                                                                ? "text-pink-500"
-                                                                : "text-slate-400"
+                                                        ${
+                                                            isCompleted
+                                                                ? "text-green-600"
+                                                                : isCurrent
+                                                                    ? "text-pink-500"
+                                                                    : "text-slate-400"
                                                         }
                                                     `}
                                                 >
-                                                    {step.label}
+                                                    {
+                                                        step.label
+                                                    }
                                                 </span>
 
                                             </div>
 
-
-                                            {/* =================================================
-                                                Connector
-                                            ================================================= */}
 
                                             {!isLast && (
 
@@ -637,15 +1214,14 @@ function ScheduleContent() {
                                                         h-px
                                                         w-7
                                                         shrink-0
-
                                                         sm:mt-[22px]
                                                         sm:w-10
-
                                                         md:w-14
 
-                                                        ${step.number < 2
-                                                            ? "bg-green-200"
-                                                            : "bg-slate-200"
+                                                        ${
+                                                            step.number < 2
+                                                                ? "bg-green-200"
+                                                                : "bg-slate-200"
                                                         }
                                                     `}
                                                 />
@@ -653,7 +1229,9 @@ function ScheduleContent() {
                                             )}
 
                                         </div>
+
                                     );
+
                                 }
                             )}
 
@@ -698,6 +1276,7 @@ function ScheduleContent() {
 
                                     </div>
 
+
                                     <div className="min-w-0">
 
                                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pink-500 sm:text-sm sm:tracking-[0.2em]">
@@ -712,9 +1291,64 @@ function ScheduleContent() {
 
                                 </div>
 
+
                                 <p className="mt-4 text-sm leading-6 text-slate-500 sm:text-base">
                                     เลือกวันที่ต้องการใช้บริการ Photobooth
                                 </p>
+
+
+                                {/* =================================================
+                                    Loading
+                                ================================================= */}
+
+                                {availabilityLoading && (
+
+                                    <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+
+                                        กำลังตรวจสอบคิวจากระบบ...
+
+                                    </div>
+
+                                )}
+
+
+                                {/* =================================================
+                                    Error
+                                ================================================= */}
+
+                                {availabilityError && (
+
+                                    <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+
+                                        {availabilityError}
+
+                                    </div>
+
+                                )}
+
+
+                                {/* =================================================
+                                    Firebase Connected
+                                ================================================= */}
+
+                                {!availabilityLoading &&
+                                    !availabilityError && (
+
+                                        <div className="mt-4 rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
+
+                                            <div className="flex items-center gap-2">
+
+                                                <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+
+                                                <span className="font-medium">
+                                                    ระบบตรวจสอบคิวแบบ Real-time
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
 
                             </div>
 
@@ -752,8 +1386,6 @@ function ScheduleContent() {
 
                             <div className="mt-7 grid gap-3 border-t pt-6 sm:mt-8 sm:grid-cols-3">
 
-                                {/* ว่าง */}
-
                                 <div className="flex items-center gap-3">
 
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-green-500" />
@@ -765,8 +1397,6 @@ function ScheduleContent() {
                                 </div>
 
 
-                                {/* จองแล้ว */}
-
                                 <div className="flex items-center gap-3">
 
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-red-500" />
@@ -777,8 +1407,6 @@ function ScheduleContent() {
 
                                 </div>
 
-
-                                {/* ปิดรับ */}
 
                                 <div className="flex items-center gap-3">
 
@@ -829,6 +1457,7 @@ function ScheduleContent() {
                                         แพ็กเกจ
                                     </p>
 
+
                                     {selectedPackage ? (
 
                                         <>
@@ -838,6 +1467,7 @@ function ScheduleContent() {
                                                     selectedPackage.name
                                                 }
                                             </p>
+
 
                                             <p className="mt-1 text-sm text-slate-500">
                                                 {
@@ -904,6 +1534,7 @@ function ScheduleContent() {
                                         วันจัดงาน
                                     </p>
 
+
                                     {selectedDate ? (
 
                                         <div className="mt-2 flex items-start gap-2">
@@ -933,7 +1564,7 @@ function ScheduleContent() {
 
 
                                 {/* =================================================
-                                    Available Status
+                                    Available
                                 ================================================= */}
 
                                 {selectedDate &&
@@ -958,15 +1589,67 @@ function ScheduleContent() {
 
 
                                 {/* =================================================
-                                    Next Button
+                                    Booked
+                                ================================================= */}
+
+                                {selectedDate &&
+                                    selectedDateStatus ===
+                                    "booked" && (
+
+                                        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+
+                                            <div className="flex items-center gap-3">
+
+                                                <span className="h-3 w-3 shrink-0 rounded-full bg-red-500" />
+
+                                                <p className="font-semibold text-red-700">
+                                                    วันที่นี้ถูกจองแล้ว
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
+
+
+                                {/* =================================================
+                                    Closed
+                                ================================================= */}
+
+                                {selectedDate &&
+                                    selectedDateStatus ===
+                                    "closed" && (
+
+                                        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-100 p-4">
+
+                                            <div className="flex items-center gap-3">
+
+                                                <span className="h-3 w-3 shrink-0 rounded-full bg-slate-400" />
+
+                                                <p className="font-semibold text-slate-600">
+                                                    วันที่นี้ปิดรับจอง
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
+
+
+                                {/* =================================================
+                                    Next
                                 ================================================= */}
 
                                 <Button
-                                    onClick={handleNext}
+                                    onClick={
+                                        handleNext
+                                    }
                                     disabled={
                                         !selectedDate ||
                                         selectedDateStatus !==
-                                        "available" ||
+                                            "available" ||
                                         !selectedPackage
                                     }
                                     className="mt-5 h-13 w-full rounded-full bg-pink-500 text-sm font-bold text-white shadow-lg shadow-pink-100 hover:bg-pink-400 sm:mt-6 sm:h-14 sm:text-base"
@@ -1018,6 +1701,7 @@ function ScheduleContent() {
                                 💡 หมายเหตุ
                             </h3>
 
+
                             <p className="mt-3 text-sm leading-6 text-slate-600">
 
                                 KOKO Memory รับงานสูงสุด{" "}
@@ -1036,25 +1720,15 @@ function ScheduleContent() {
 
 
                         {/* =================================================
-                            Travel Fee Notice
-                            -------------------------------------------------
-                            ยังไม่คำนวณตรงนี้
-                            
-                            เพราะต้องรอ Step 3:
-                            ลูกค้ากรอกสถานที่จัดงาน
-                            
-                            แล้วระบบจึงคำนวณ:
-                            กรุงเทพฯ
-                            เขต / แขวง
-                            ปริมณฑล
-                            ต่างจังหวัด
-                            ================================================= */}
+                            Travel Fee
+                        ================================================= */}
 
                         <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
 
                             <h3 className="font-bold text-slate-900">
                                 📍 ค่าเดินทาง
                             </h3>
+
 
                             <p className="mt-3 text-sm leading-6 text-slate-500">
 
@@ -1074,13 +1748,25 @@ function ScheduleContent() {
             </section>
 
         </main>
+
     );
 }
 
+
+/* ============================================================
+   Page
+============================================================ */
+
 export default function SchedulePage() {
+
     return (
+
         <Suspense fallback={null}>
+
             <ScheduleContent />
+
         </Suspense>
+
     );
+
 }

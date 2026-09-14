@@ -51,6 +51,7 @@ import {
     ArrowRight,
     CalendarDays,
     CheckCircle2,
+    Clock3,
     Mail,
     MapPin,
     MessageCircle,
@@ -62,11 +63,12 @@ import {
 
 import {
     doc,
-    setDoc,
+    runTransaction,
     serverTimestamp,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
+import { getPackageById, resolvePackageId } from "@/data/booking-packages";
 
 
 /* ============================================================
@@ -77,29 +79,25 @@ import { db } from "@/lib/firebase";
    ที่ Step 3 ส่งมา
 ============================================================ */
 
-const packages = {
-
+const fallbackPackages = {
     basic: {
         name: "Basic",
         price: 8900,
         deposit: 3000,
         hours: 3,
     },
-
     premium: {
         name: "Premium",
         price: 14900,
         deposit: 5000,
         hours: 5,
     },
-
     luxury: {
         name: "Luxury",
         price: 24900,
         deposit: 10000,
         hours: 6,
     },
-
 } as const;
 
 
@@ -312,6 +310,17 @@ function ReviewBookingContent() {
     const eventDate =
         safeParam(searchParams.get("date")) || "";
 
+    const startTime =
+        safeParam(searchParams.get("startTime")) || "";
+
+    const endTime =
+        safeParam(searchParams.get("endTime")) || "";
+
+    const durationHoursFromStep3 =
+        Number(
+            safeParam(searchParams.get("durationHours"))
+        );
+
 
     /* ========================================================
        CUSTOMER
@@ -401,30 +410,49 @@ function ReviewBookingContent() {
        PACKAGE
     ======================================================== */
 
-    const packageKey =
-        packageId as keyof typeof packages;
+    const resolvedPackageId =
+        resolvePackageId(packageId);
 
-    const knownPackage =
-        packages[packageKey];
+    const sharedPackage =
+        getPackageById(resolvedPackageId);
 
+    const fallbackPackage =
+        fallbackPackages[
+            packageId as keyof typeof fallbackPackages
+        ];
 
     /*
-     * ถ้า Package ID จาก Step 1
-     * ไม่ตรงกับ Basic / Premium / Luxury
-     *
-     * เราจะยังใช้ข้อมูลจาก Step 3
-     * ไม่ทำให้ระบบพัง
+     * ใช้ข้อมูล Package ชุดเดียวกับ Step 1-3
+     * เพื่อให้ชื่อ / ชั่วโมง / ราคา ตรงกันทุกหน้า
      */
-
     const packageName =
-        knownPackage?.name ||
+        sharedPackage?.title ||
+        sharedPackage?.name ||
+        fallbackPackage?.name ||
         packageId ||
         "แพ็กเกจ";
 
-
     const packageHours =
-        knownPackage?.hours ||
-        0;
+        Number.isFinite(durationHoursFromStep3) &&
+        durationHoursFromStep3 > 0
+            ? durationHoursFromStep3
+            : (
+                sharedPackage?.hours ||
+                fallbackPackage?.hours ||
+                0
+            );
+
+    const packagePaperSize =
+        sharedPackage?.paperSize || "";
+
+    const packageCategory =
+        sharedPackage?.category || "";
+
+    const packageGroup =
+        sharedPackage?.group || "";
+
+    const packageFeatures =
+        sharedPackage?.features || [];
 
 
     /* ========================================================
@@ -439,7 +467,8 @@ function ReviewBookingContent() {
         )
             ? packagePriceFromStep3
             : (
-                knownPackage?.price ||
+                sharedPackage?.price ||
+                fallbackPackage?.price ||
                 0
             );
 
@@ -487,7 +516,7 @@ function ReviewBookingContent() {
         Number.isFinite(depositFromStep3) &&
             depositFromStep3 > 0
             ? depositFromStep3
-            : (knownPackage?.deposit || 0);
+            : (fallbackPackage?.deposit || 0);
 
 
     const remaining =
@@ -593,6 +622,21 @@ function ReviewBookingContent() {
             }
 
 
+            if (
+                !startTime ||
+                !endTime
+            ) {
+
+                setSubmitError(
+                    "ไม่พบข้อมูลเวลาเริ่มงาน กรุณากลับไปเลือกเวลาอีกครั้ง"
+                );
+                setIsSubmitting(false);
+                submitLockRef.current = false;
+
+                return;
+            }
+
+
             setIsSubmitting(
                 true
             );
@@ -637,6 +681,15 @@ function ReviewBookingContent() {
                         hours:
                             packageHours,
 
+                        category:
+                            packageCategory,
+
+                        group:
+                            packageGroup,
+
+                        paperSize:
+                            packagePaperSize,
+
                         price:
                             packagePrice,
 
@@ -651,6 +704,15 @@ function ReviewBookingContent() {
 
                         date:
                             eventDate,
+
+                        startTime:
+                            startTime,
+
+                        endTime:
+                            endTime,
+
+                        durationHours:
+                            packageHours,
 
                         type:
                             eventType,
@@ -798,6 +860,8 @@ function ReviewBookingContent() {
                     [
                         packageId,
                         eventDate,
+                        startTime,
+                        endTime,
                         customerName,
                         phone,
                         email,
@@ -827,31 +891,187 @@ function ReviewBookingContent() {
 
 
                 /* ==================================================
-                   IDEMPOTENT BOOKING CREATION
+                   ATOMIC DATE + BOOKING RESERVATION
                    --------------------------------------------------
-                   ใช้ bookingId ที่สร้างจาก fingerprint เดิมเสมอ
-                   แทน Firestore transaction
+                   กฎสำคัญ:
+                   1 วัน = 1 คิว
 
-                   เหตุผล:
-                   - กัน double-click ด้วย submitLockRef
-                   - การส่งข้อมูลซ้ำจากหน้าเดิมใช้ document ID เดิม
-                   - ไม่ต้องเปิด transaction/retry loop ของ Firestore
-                   - ข้อมูล Unicode ถูกส่งเป็น Firestore document data
-                     ไม่ได้ถูกใส่ลง HTTP Header
+                   ใช้ Firestore transaction กับ:
+                   - bookingDates/{eventDate} = ตัวล็อกวัน
+                   - bookings/{bookingId} = รายละเอียด Booking
 
-                   ถ้า bookingId เดิมถูกสร้างแล้ว การกดซ้ำจะเขียนข้อมูล
-                   ลง document เดิม ไม่สร้าง document ใหม่
+                   submitLockRef กัน double-click ใน Browser
+                   ส่วน transaction กันคนละ Browser / คนละลูกค้า
+                   จองวันเดียวกันพร้อมกัน
                 ================================================== */
 
-                await setDoc(
-                    bookingRef,
-                    bookingData,
-                    { merge: false }
-                );
+                const dateLockRef =
+                    doc(
+                        db,
+                        "bookingDates",
+                        eventDate
+                    );
+
+                const transactionResult =
+                    await runTransaction(
+                        db,
+                        async (transaction) => {
+
+                            /*
+                             * อ่านก่อนเขียนทุกครั้ง
+                             */
+                            const dateLockSnapshot =
+                                await transaction.get(
+                                    dateLockRef
+                                );
+
+                            const existingBookingSnapshot =
+                                await transaction.get(
+                                    bookingRef
+                                );
+
+                            /* ------------------------------------
+                               Booking เดิมของลูกค้าคนนี้
+                            ------------------------------------ */
+                            if (
+                                existingBookingSnapshot.exists()
+                            ) {
+                                const existingData =
+                                    existingBookingSnapshot.data();
+
+                                const existingStatus =
+                                    typeof existingData?.bookingStatus ===
+                                        "string"
+                                        ? existingData.bookingStatus.toLowerCase()
+                                        : "";
+
+                                if (
+                                    existingStatus === "cancelled" ||
+                                    existingStatus === "canceled"
+                                ) {
+                                    throw new Error(
+                                        "BOOKING_CANCELLED_RETRY"
+                                    );
+                                }
+
+                                if (
+                                    dateLockSnapshot.exists()
+                                ) {
+                                    const lockData =
+                                        dateLockSnapshot.data();
+
+                                    const lockedBookingId =
+                                        typeof lockData?.bookingId ===
+                                            "string"
+                                            ? lockData.bookingId
+                                            : "";
+
+                                    if (
+                                        lockedBookingId &&
+                                        lockedBookingId !== bookingId
+                                    ) {
+                                        throw new Error(
+                                            "DATE_ALREADY_BOOKED"
+                                        );
+                                    }
+                                } else {
+                                    /*
+                                     * ซ่อม Booking เก่าที่ไม่มี date lock
+                                     */
+                                    transaction.set(
+                                        dateLockRef,
+                                        {
+                                            date:
+                                                eventDate,
+
+                                            bookingId:
+                                                bookingId,
+
+                                            status:
+                                                "reserved",
+
+                                            createdAt:
+                                                serverTimestamp(),
+
+                                            updatedAt:
+                                                serverTimestamp(),
+                                        }
+                                    );
+                                }
+
+                                return {
+                                    created: false,
+                                    bookingId,
+                                };
+                            }
+
+                            /* ------------------------------------
+                               วันถูกจองโดยลูกค้าคนอื่นแล้ว
+                            ------------------------------------ */
+                            if (
+                                dateLockSnapshot.exists()
+                            ) {
+                                const lockData =
+                                    dateLockSnapshot.data();
+
+                                const lockedBookingId =
+                                    typeof lockData?.bookingId ===
+                                        "string"
+                                        ? lockData.bookingId
+                                        : "";
+
+                                if (
+                                    lockedBookingId !== bookingId
+                                ) {
+                                    throw new Error(
+                                        "DATE_ALREADY_BOOKED"
+                                    );
+                                }
+                            } else {
+                                /*
+                                 * สร้างตัวล็อกวันเฉพาะครั้งแรก
+                                 */
+                                transaction.set(
+                                    dateLockRef,
+                                    {
+                                        date:
+                                            eventDate,
+
+                                        bookingId:
+                                            bookingId,
+
+                                        status:
+                                            "reserved",
+
+                                        createdAt:
+                                            serverTimestamp(),
+
+                                        updatedAt:
+                                            serverTimestamp(),
+                                    }
+                                );
+                            }
+
+                            /* ------------------------------------
+                               สร้าง Booking
+                            ------------------------------------ */
+                            transaction.set(
+                                bookingRef,
+                                bookingData
+                            );
+
+                            return {
+                                created: true,
+                                bookingId,
+                            };
+                        }
+                    );
 
                 console.log(
-                    "KOKO Booking saved:",
-                    bookingId
+                    transactionResult.created
+                        ? "KOKO Booking Created:"
+                        : "KOKO Existing Booking:",
+                    transactionResult.bookingId
                 );
 
 
@@ -872,6 +1092,17 @@ function ReviewBookingContent() {
 
                         date:
                             eventDate,
+
+                        startTime:
+                            startTime,
+
+                        endTime:
+                            endTime,
+
+                        durationHours:
+                            String(
+                                packageHours
+                            ),
 
                         name:
                             customerName,
@@ -1003,9 +1234,23 @@ function ReviewBookingContent() {
                         "หากยังเกิดอีก ให้ตรวจไฟล์ src/lib/firebase และส่วน API/Proxy ที่เพิ่ม Header เอง";
                 }
 
-                setSubmitError(
-                    `ไม่สามารถสร้างรายการจองได้ (${errorCode})\\n${errorMessage}`
-                );
+                if (
+                    errorMessage === "DATE_ALREADY_BOOKED"
+                ) {
+                    setSubmitError(
+                        "ขออภัย วันที่นี้มีลูกค้าท่านอื่นจองไปแล้ว กรุณากลับไปเลือกวันใหม่"
+                    );
+                } else if (
+                    errorMessage === "BOOKING_CANCELLED_RETRY"
+                ) {
+                    setSubmitError(
+                        "รายการจองเดิมถูกยกเลิกแล้ว กรุณากลับไปเลือกวันใหม่"
+                    );
+                } else {
+                    setSubmitError(
+                        `ไม่สามารถสร้างรายการจองได้ (${errorCode})\\n${errorMessage}`
+                    );
+                }
 
                 setIsSubmitting(false);
                 submitLockRef.current = false;
@@ -1024,111 +1269,114 @@ function ReviewBookingContent() {
         <main className="min-h-screen bg-slate-50">
 
             {/* =================================================
-                STEP HEADER
+                BOOKING HEADER + STEP INDICATOR
             ================================================= */}
 
-            <section className="border-b bg-white">
+            <section className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl">
 
-                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-3 sm:text-sm">
+                    {/* Top row */}
 
-                        {/* Step 1 */}
+                    <div className="flex min-h-[72px] items-center justify-between gap-4">
 
-                        <Link
-                            href="/booking/package"
-                            className="
-                                rounded-full
-                                bg-green-100
-                                px-3
-                                py-2
-                                font-semibold
-                                text-green-700
-                                transition
-                                hover:bg-green-200
-                                sm:px-4
-                            "
-                        >
-                            ✓ Step 1
-                        </Link>
+                        <div className="min-w-0 text-center">
+                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
+                                KOKO Memory
+                            </p>
 
+                            <p className="truncate text-sm font-bold text-slate-900 sm:text-base">
+                                ขั้นตอนการจอง
+                            </p>
+                        </div>
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                        <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
+                            <p className="text-[11px] font-medium text-slate-400">
+                                STEP
+                            </p>
 
+                            <p className="text-sm font-black text-slate-900">
+                                04 <span className="font-normal text-slate-300">/</span> 06
+                            </p>
+                        </div>
 
-                        {/* Step 2 */}
+                    </div>
 
-                        <Link
-                            href={`/booking/schedule?package=${encodeURIComponent(
-                                packageId
-                            )}`}
-                            className="
-                                rounded-full
-                                bg-green-100
-                                px-3
-                                py-2
-                                font-semibold
-                                text-green-700
-                                transition
-                                hover:bg-green-200
-                                sm:px-4
-                            "
-                        >
-                            ✓ Step 2
-                        </Link>
+                    {/* Step progress */}
 
+                    <div className="overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                        <div className="mx-auto flex min-w-max items-center justify-center gap-2 sm:gap-3">
 
+                            {[
+                                {
+                                    number: 1,
+                                    label: "แพ็กเกจ",
+                                    done: true,
+                                },
+                                {
+                                    number: 2,
+                                    label: "วันจัดงาน",
+                                    done: true,
+                                },
+                                {
+                                    number: 3,
+                                    label: "ข้อมูล",
+                                    done: true,
+                                },
+                                {
+                                    number: 4,
+                                    label: "ตรวจสอบ",
+                                    active: true,
+                                },
+                                {
+                                    number: 5,
+                                    label: "ชำระเงิน",
+                                },
+                                {
+                                    number: 6,
+                                    label: "สำเร็จ",
+                                },
+                            ].map((step, index) => (
+                                <div
+                                    key={step.number}
+                                    className="flex items-center gap-2 sm:gap-3"
+                                >
+                                    <div
+                                        className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${
+                                            step.active
+                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200"
+                                                : step.done
+                                                    ? "bg-green-50 text-green-700"
+                                                    : "bg-slate-100 text-slate-400"
+                                        }`}
+                                    >
+                                        <span
+                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${
+                                                step.active
+                                                    ? "bg-white/20 text-white"
+                                                    : step.done
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-white text-slate-400"
+                                            }`}
+                                        >
+                                            {step.done ? "✓" : step.number}
+                                        </span>
 
-                        {/* Step 3 */}
+                                        <span>
+                                            {step.label}
+                                        </span>
+                                    </div>
 
-                        <Link
-                            href={`/booking/customer?package=${encodeURIComponent(
-                                packageId
-                            )}&date=${encodeURIComponent(
-                                eventDate
-                            )}`}
-                            className="
-                                rounded-full
-                                bg-green-100
-                                px-3
-                                py-2
-                                font-semibold
-                                text-green-700
-                                transition
-                                hover:bg-green-200
-                                sm:px-4
-                            "
-                        >
-                            ✓ Step 3
-                        </Link>
+                                    {index < 5 && (
+                                        <span className="text-slate-300">
+                                            →
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
 
-
-                        <span className="text-slate-300">
-                            →
-                        </span>
-
-
-                        {/* Step 4 */}
-
-                        <span
-                            className="
-                                rounded-full
-                                bg-pink-500
-                                px-3
-                                py-2
-                                font-semibold
-                                text-white
-                                sm:px-4
-                            "
-                        >
-                            Step 4
-                        </span>
+                        </div>
 
                     </div>
 
@@ -1197,15 +1445,57 @@ function ReviewBookingContent() {
                                         {packageName}
                                     </h2>
 
-                                    {packageHours > 0 && (
-                                        <p className="mt-1 text-sm text-slate-500">
-                                            ระยะเวลา {packageHours} ชั่วโมง
-                                        </p>
-                                    )}
+                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                                        {packageHours > 0 && (
+                                            <span className="rounded-full bg-slate-100 px-3 py-1">
+                                                {packageHours} ชั่วโมง
+                                            </span>
+                                        )}
+
+                                        {packagePaperSize && (
+                                            <span className="rounded-full bg-slate-100 px-3 py-1">
+                                                ขนาด {packagePaperSize}
+                                            </span>
+                                        )}
+
+                                        {packageCategory && (
+                                            <span className="rounded-full bg-slate-100 px-3 py-1">
+                                                {packageCategory === "360"
+                                                    ? "360 Photobooth"
+                                                    : "Photobooth"
+                                                }
+                                            </span>
+                                        )}
+                                    </div>
 
                                 </div>
 
                             </div>
+
+                            {packageFeatures.length > 0 && (
+                                <div className="mt-6 border-t border-slate-100 pt-5">
+                                    <p className="text-xs font-semibold text-slate-400">
+                                        สิ่งที่รวมอยู่ในแพ็กเกจ
+                                    </p>
+
+                                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                        {packageFeatures.map((feature, index) => (
+                                            <div
+                                                key={`${feature}-${index}`}
+                                                className="flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-700"
+                                            >
+                                                <CheckCircle2
+                                                    size={16}
+                                                    className="mt-0.5 shrink-0 text-green-500"
+                                                />
+                                                <span className="break-words">
+                                                    {feature}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                         </section>
 
@@ -1359,6 +1649,56 @@ function ReviewBookingContent() {
                                         {formatThaiDate(
                                             eventDate
                                         )}
+                                    </p>
+
+                                </div>
+
+
+                                <div className="rounded-2xl bg-slate-50 p-4">
+
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <Clock3 size={14} />
+                                        เวลาเริ่มงาน
+                                    </div>
+
+                                    <p className="mt-2 font-semibold text-slate-900">
+                                        {startTime
+                                            ? `${startTime} น.`
+                                            : "-"
+                                        }
+                                    </p>
+
+                                </div>
+
+
+                                <div className="rounded-2xl bg-slate-50 p-4">
+
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <Clock3 size={14} />
+                                        เวลาสิ้นสุด
+                                    </div>
+
+                                    <p className="mt-2 font-semibold text-slate-900">
+                                        {endTime
+                                            ? `${endTime} น.`
+                                            : "-"
+                                        }
+                                    </p>
+
+                                </div>
+
+
+                                <div className="rounded-2xl bg-slate-50 p-4">
+
+                                    <p className="text-xs text-slate-400">
+                                        ระยะเวลา
+                                    </p>
+
+                                    <p className="mt-2 font-semibold text-slate-900">
+                                        {packageHours > 0
+                                            ? `${packageHours} ชั่วโมง`
+                                            : "-"
+                                        }
                                     </p>
 
                                 </div>
@@ -1595,12 +1935,47 @@ function ReviewBookingContent() {
                                     {packageName}
                                 </h2>
 
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-white/90">
+                                    {eventDate && (
+                                        <span className="rounded-full bg-white/15 px-3 py-1.5">
+                                            {formatThaiDate(eventDate)}
+                                        </span>
+                                    )}
+
+                                    {startTime && endTime && (
+                                        <span className="rounded-full bg-white/15 px-3 py-1.5">
+                                            {startTime} - {endTime} น.
+                                        </span>
+                                    )}
+                                </div>
+
                             </div>
 
 
                             {/* Price */}
 
                             <div className="p-5 sm:p-7">
+
+                                <div className="mb-6 rounded-2xl bg-slate-50 p-4">
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                                        <CalendarDays size={15} />
+                                        วันและเวลาจัดงาน
+                                    </div>
+
+                                    <p className="mt-2 text-sm font-bold text-slate-900">
+                                        {eventDate
+                                            ? formatThaiDate(eventDate)
+                                            : "-"
+                                        }
+                                    </p>
+
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        {startTime && endTime
+                                            ? `${startTime} - ${endTime} น.`
+                                            : "ยังไม่ได้ระบุเวลา"
+                                        }
+                                    </p>
+                                </div>
 
                                 <div className="space-y-4">
 
@@ -1730,6 +2105,45 @@ function ReviewBookingContent() {
 
                                     )}
 
+                                </div>
+
+
+                                {/* Booking summary */}
+
+                                <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-4 ring-1 ring-slate-100">
+                                    <p className="text-xs font-bold text-slate-400">
+                                        สรุปข้อมูลการจอง
+                                    </p>
+
+                                    <div className="mt-3 space-y-2.5 text-sm">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">ลูกค้า</span>
+                                            <span className="text-right font-semibold text-slate-900">
+                                                {customerName || "-"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">สถานที่</span>
+                                            <span className="max-w-[65%] text-right font-semibold text-slate-900">
+                                                {venue || "-"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">ประเภทงาน</span>
+                                            <span className="text-right font-semibold text-slate-900">
+                                                {eventType || "-"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">จำนวนแขก</span>
+                                            <span className="text-right font-semibold text-slate-900">
+                                                {guests ? `${guests} คน` : "-"}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
 
 

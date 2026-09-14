@@ -75,6 +75,7 @@ import {
     ArrowLeft,
     ArrowRight,
     CalendarDays,
+    Clock3,
     CheckCircle2,
     ExternalLink,
     Mail,
@@ -88,8 +89,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/ิbutton";
+import { Button } from "@/components/ui/button";
 import { provinces } from "@/data/thailand/provinces";
+import {
+    getPackageById,
+    resolvePackageId,
+} from "@/data/booking-packages";
 
 import {
     Select,
@@ -220,110 +225,7 @@ const travelFees: Record<string, number> = {
  * photobooth-m1
  * photobooth-l1
  * 360-2h
- * 360-3h
- * 360-4h
- *
- * ============================================================
- */
-
-const packages = {
-
-    /* --------------------------------------------------------
-       STARTER
-    -------------------------------------------------------- */
-
-    "photobooth-s": {
-        name: "แพ็กเกจ S",
-        category: "แพ็กเกจเริ่มต้น",
-        price: 7900,
-        hours: 2,
-    },
-
-    "photobooth-m": {
-        name: "แพ็กเกจ M",
-        category: "แพ็กเกจเริ่มต้น",
-        price: 8900,
-        hours: 3,
-    },
-
-    "photobooth-l": {
-        name: "แพ็กเกจ L",
-        category: "แพ็กเกจเริ่มต้น",
-        price: 9900,
-        hours: 4,
-    },
-
-    /* --------------------------------------------------------
-       STANDARD
-    -------------------------------------------------------- */
-
-    "photobooth-ss": {
-        name: "แพ็กเกจ SS",
-        category: "แพ็กเกจมาตรฐาน",
-        price: 11900,
-        hours: 2,
-    },
-
-    "photobooth-mm": {
-        name: "แพ็กเกจ MM",
-        category: "แพ็กเกจมาตรฐาน",
-        price: 13900,
-        hours: 3,
-    },
-
-    "photobooth-ll": {
-        name: "แพ็กเกจ LL",
-        category: "แพ็กเกจมาตรฐาน",
-        price: 15900,
-        hours: 4,
-    },
-
-    /* --------------------------------------------------------
-       PREMIUM
-    -------------------------------------------------------- */
-
-    "photobooth-s1": {
-        name: "แพ็กเกจ S1",
-        category: "แพ็กเกจพรีเมียม",
-        price: 12400,
-        hours: 2,
-    },
-
-    "photobooth-m1": {
-        name: "แพ็กเกจ M1",
-        category: "แพ็กเกจพรีเมียม",
-        price: 14400,
-        hours: 3,
-    },
-
-    "photobooth-l1": {
-        name: "แพ็กเกจ L1",
-        category: "แพ็กเกจพรีเมียม",
-        price: 16400,
-        hours: 4,
-    },
-
-    /* --------------------------------------------------------
-       360 PHOTOBOOTH
-    -------------------------------------------------------- */
-
-    "360-2h": {
-        name: "360 Photo Booth 2 ชั่วโมง",
-        category: "360 Photo Booth",
-        price: 5900,
-        hours: 2,
-    },
-
-    "360-3h": {
-        name: "360 Photo Booth 3 ชั่วโมง",
-        category: "360 Photo Booth",
-        price: 6590,
-        hours: 3,
-    },
-
-    "360-4h": {
-        name: "360 Photo Booth 4 ชั่วโมง",
-        category: "360 Photo Booth",
+ * 360-tegory: "360 Photo Booth",
         price: 7590,
         hours: 4,
     },
@@ -1286,6 +1188,98 @@ function formatMoney(value: number) {
 }
 
 /* ============================================================
+   TIME HELPERS
+   ------------------------------------------------------------
+   ระยะเวลางานดึงจากแพ็กเกจโดยตรง
+   ลูกค้าเลือกเวลาเริ่มงาน และระบบคำนวณเวลาสิ้นสุดอัตโนมัติ
+============================================================ */
+
+function formatTimeFromMinutes(totalMinutes: number) {
+    const normalized =
+        ((totalMinutes % 1440) + 1440) % 1440;
+
+    const hours = Math.floor(normalized / 60);
+    const minutes = normalized % 60;
+
+    return `${String(hours).padStart(2, "0")}:${String(
+        minutes
+    ).padStart(2, "0")}`;
+}
+
+function timeToMinutes(value: string) {
+    const [hours, minutes] =
+        value.split(":").map(Number);
+
+    if (
+        !Number.isFinite(hours) ||
+        !Number.isFinite(minutes)
+    ) {
+        return null;
+    }
+
+    return hours * 60 + minutes;
+}
+
+function calculateEndTime(
+    startTime: string,
+    durationHours: number
+) {
+    const startMinutes =
+        timeToMinutes(startTime);
+
+    if (
+        startMinutes === null ||
+        !Number.isFinite(durationHours)
+    ) {
+        return "";
+    }
+
+    const endMinutes =
+        startMinutes + durationHours * 60;
+
+    if (endMinutes > 1440) {
+        return "";
+    }
+
+    return formatTimeFromMinutes(endMinutes);
+}
+
+function createStartTimeOptions(
+    durationHours: number
+) {
+    const durationMinutes =
+        durationHours * 60;
+
+    const latestStart =
+        1440 - durationMinutes;
+
+    const options: string[] = [];
+
+    for (
+        let minutes = 0;
+        minutes <= latestStart;
+        minutes += 30
+    ) {
+        options.push(
+            formatTimeFromMinutes(minutes)
+        );
+    }
+
+    return options;
+}
+
+function formatTimeRange(
+    startTime: string,
+    endTime: string
+) {
+    if (!startTime || !endTime) {
+        return "ยังไม่ได้เลือกเวลา";
+    }
+
+    return `${startTime} - ${endTime} น.`;
+}
+
+/* ============================================================
    MAIN COMPONENT
 ============================================================ */
 
@@ -1319,15 +1313,12 @@ function CustomerContent() {
 
     const selectedPackage = useMemo(() => {
 
-        if (!packageId) {
+        const resolvedPackageId =
+            resolvePackageId(packageId);
 
-            return null;
-
-        }
-
-        return packages[
-            packageId as keyof typeof packages
-        ] ?? null;
+        return getPackageById(
+            resolvedPackageId
+        );
 
     }, [packageId]);
 
@@ -1352,6 +1343,10 @@ function CustomerContent() {
         eventType: "",
 
         guestCount: "",
+
+        startTime: "",
+
+        endTime: "",
 
         /* สถานที่ */
 
@@ -1432,6 +1427,17 @@ function CustomerContent() {
     const packagePrice =
         selectedPackage?.price ?? 0;
 
+    const serviceDuration =
+        selectedPackage?.hours ?? 0;
+
+    const startTimeOptions = useMemo(
+        () =>
+            createStartTimeOptions(
+                serviceDuration
+            ),
+        [serviceDuration]
+    );
+
     /* ========================================================
        TOTAL
        --------------------------------------------------------
@@ -1457,6 +1463,49 @@ function CustomerContent() {
        --------------------------------------------------------
        ตรวจสอบก่อนส่งไป Step 4
     ======================================================== */
+
+    /* ========================================================
+       AUTO END TIME
+       --------------------------------------------------------
+       เวลาสิ้นสุดคำนวณจาก:
+       เวลาเริ่มงาน + ระยะเวลาของแพ็กเกจ
+    ======================================================== */
+
+    useEffect(() => {
+        if (
+            !form.startTime ||
+            !serviceDuration
+        ) {
+            if (form.endTime) {
+                setForm((previous) => ({
+                    ...previous,
+                    endTime: "",
+                }));
+            }
+            return;
+        }
+
+        const calculatedEndTime =
+            calculateEndTime(
+                form.startTime,
+                serviceDuration
+            );
+
+        if (
+            calculatedEndTime !==
+            form.endTime
+        ) {
+            setForm((previous) => ({
+                ...previous,
+                endTime:
+                    calculatedEndTime,
+            }));
+        }
+    }, [
+        form.startTime,
+        form.endTime,
+        serviceDuration,
+    ]);
 
     /* ========================================================
        AUTO POSTAL CODE
@@ -1564,6 +1613,31 @@ function CustomerContent() {
             newErrors.eventType =
                 "กรุณาเลือกประเภทงาน";
 
+        }
+
+        /* ----------------------------------------------------
+           เวลาเริ่มงาน
+        ---------------------------------------------------- */
+
+        if (!form.startTime) {
+            newErrors.startTime =
+                "กรุณาเลือกเวลาเริ่มงาน";
+        }
+
+        /* ----------------------------------------------------
+           เวลาสิ้นสุด
+        ---------------------------------------------------- */
+
+        if (
+            !form.endTime ||
+            form.endTime !==
+                calculateEndTime(
+                    form.startTime,
+                    serviceDuration
+                )
+        ) {
+            newErrors.endTime =
+                "กรุณาตรวจสอบช่วงเวลาจัดงาน";
         }
 
         /* ----------------------------------------------------
@@ -1717,6 +1791,17 @@ function CustomerContent() {
                 guests:
                     form.guestCount,
 
+                /* Time */
+
+                startTime:
+                    form.startTime,
+
+                endTime:
+                    form.endTime,
+
+                durationHours:
+                    String(serviceDuration),
+
                 /* Location */
 
                 venue:
@@ -1776,39 +1861,114 @@ function CustomerContent() {
                 STEP INDICATOR
             ================================================= */}
 
-            <section className="border-b bg-white">
+            {/* =================================================
+                BOOKING HEADER + STEP INDICATOR
+            ================================================= */}
 
-                <div className="mx-auto max-w-7xl px-6 py-8">
+            <section className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl">
 
-                    <div className="flex items-center gap-3 text-sm">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
-                        <span className="rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 1
-                        </span>
+                    {/* Top row */}
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                    <div className="flex min-h-[72px] items-center justify-between gap-4">
 
-                        <span className="rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 2
-                        </span>
+                        <div className="min-w-0 text-center">
+                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
+                                KOKO Memory
+                            </p>
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                            <p className="truncate text-sm font-bold text-slate-900 sm:text-base">
+                                ขั้นตอนการจอง
+                            </p>
+                        </div>
 
-                        <span className="rounded-full bg-pink-500 px-4 py-2 font-semibold text-white">
-                            Step 3
-                        </span>
+                        <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
+                            <p className="text-[11px] font-medium text-slate-400">
+                                STEP
+                            </p>
 
-                        <span className="hidden text-slate-300 sm:inline">
-                            →
-                        </span>
+                            <p className="text-sm font-black text-slate-900">
+                                03 <span className="font-normal text-slate-300">/</span> 06
+                            </p>
+                        </div>
 
-                        <span className="hidden rounded-full bg-slate-100 px-4 py-2 text-slate-500 sm:inline">
-                            Step 4
-                        </span>
+                    </div>
+
+                    {/* Step progress */}
+
+                    <div className="overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
+                        <div className="mx-auto flex min-w-max items-center justify-center gap-2 sm:gap-3">
+
+                            {[
+                                {
+                                    number: 1,
+                                    label: "แพ็กเกจ",
+                                    done: true,
+                                },
+                                {
+                                    number: 2,
+                                    label: "วันจัดงาน",
+                                    done: true,
+                                },
+                                {
+                                    number: 3,
+                                    label: "ข้อมูล",
+                                    active: true,
+                                },
+                                {
+                                    number: 4,
+                                    label: "ตรวจสอบ",
+                                },
+                                {
+                                    number: 5,
+                                    label: "ชำระเงิน",
+                                },
+                                {
+                                    number: 6,
+                                    label: "สำเร็จ",
+                                },
+                            ].map((step, index) => (
+                                <div
+                                    key={step.number}
+                                    className="flex items-center gap-2 sm:gap-3"
+                                >
+                                    <div
+                                        className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${
+                                            step.active
+                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200"
+                                                : step.done
+                                                    ? "bg-green-50 text-green-700"
+                                                    : "bg-slate-100 text-slate-400"
+                                        }`}
+                                    >
+                                        <span
+                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${
+                                                step.active
+                                                    ? "bg-white/20 text-white"
+                                                    : step.done
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-white text-slate-400"
+                                            }`}
+                                        >
+                                            {step.done ? "✓" : step.number}
+                                        </span>
+
+                                        <span>
+                                            {step.label}
+                                        </span>
+                                    </div>
+
+                                    {index < 5 && (
+                                        <span className="text-slate-300">
+                                            →
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+
+                        </div>
 
                     </div>
 
@@ -2143,7 +2303,162 @@ function CustomerContent() {
                                 </div>
 
                                 {/* =================================================
-                                    3. LOCATION
+                                    3. EVENT TIME
+                                ================================================= */}
+
+                                <div>
+
+                                    <div className="flex items-start gap-3">
+
+                                        <div className="rounded-xl bg-pink-100 p-3 text-pink-500">
+                                            <Clock3 size={22} />
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-xl font-bold text-slate-900">
+                                                3. เวลาให้บริการ
+                                            </h2>
+
+                                            <p className="mt-1 text-sm leading-6 text-slate-500">
+                                                แพ็กเกจนี้กำหนดระยะเวลาไว้{" "}
+                                                <span className="font-bold text-pink-500">
+                                                    {serviceDuration} ชั่วโมง
+                                                </span>{" "}
+                                                กรุณาเลือกเวลาเริ่มงาน ระบบจะคำนวณเวลาสิ้นสุดให้อัตโนมัติ
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                    <div className="mt-6 grid gap-6 md:grid-cols-2">
+
+                                        <div>
+                                            <Label>
+                                                เวลาเริ่มงาน
+                                                <span className="ml-1 text-pink-500">
+                                                    *
+                                                </span>
+                                            </Label>
+
+                                            <Select
+                                                value={form.startTime}
+                                                onValueChange={(value) =>
+                                                    handleChange(
+                                                        "startTime",
+                                                        value ?? ""
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className={`mt-2 h-12 rounded-xl ${
+                                                        errors.startTime
+                                                            ? "border-red-300"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    <SelectValue placeholder="เลือกเวลาเริ่มงาน" />
+                                                </SelectTrigger>
+
+                                                <SelectContent>
+                                                    {startTimeOptions.map(
+                                                        (time) => (
+                                                            <SelectItem
+                                                                key={time}
+                                                                value={time}
+                                                            >
+                                                                {time} น.
+                                                            </SelectItem>
+                                                        )
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+
+                                            {errors.startTime && (
+                                                <p className="mt-2 text-sm text-red-500">
+                                                    {errors.startTime}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <Label>
+                                                เวลาสิ้นสุด
+                                            </Label>
+
+                                            <div
+                                                className={`mt-2 flex h-12 items-center justify-between rounded-xl border px-4 ${
+                                                    form.endTime
+                                                        ? "border-green-200 bg-green-50"
+                                                        : "border-slate-200 bg-slate-50"
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <Clock3
+                                                        size={17}
+                                                        className={
+                                                            form.endTime
+                                                                ? "text-green-500"
+                                                                : "text-slate-400"
+                                                        }
+                                                    />
+
+                                                    <span
+                                                        className={`text-sm font-bold ${
+                                                            form.endTime
+                                                                ? "text-green-700"
+                                                                : "text-slate-400"
+                                                        }`}
+                                                    >
+                                                        {form.endTime
+                                                            ? `${form.endTime} น.`
+                                                            : "เลือกเวลาเริ่มงานก่อน"}
+                                                    </span>
+                                                </div>
+
+                                                {form.endTime && (
+                                                    <CheckCircle2
+                                                        size={18}
+                                                        className="text-green-500"
+                                                    />
+                                                )}
+                                            </div>
+
+                                            {errors.endTime && (
+                                                <p className="mt-2 text-sm text-red-500">
+                                                    {errors.endTime}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                    </div>
+
+                                    {form.startTime && form.endTime && (
+                                        <div className="mt-4 rounded-2xl border border-pink-100 bg-pink-50 p-4">
+                                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                                <div>
+                                                    <p className="text-xs font-semibold text-pink-500">
+                                                        ช่วงเวลาที่เลือก
+                                                    </p>
+
+                                                    <p className="mt-1 text-base font-black text-slate-900">
+                                                        {formatTimeRange(
+                                                            form.startTime,
+                                                            form.endTime
+                                                        )}
+                                                    </p>
+                                                </div>
+
+                                                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-pink-600">
+                                                    {serviceDuration} ชั่วโมง
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </div>
+
+                                {/* =================================================
+                                    4. LOCATION
                                 ================================================= */}
 
                                 <div>
@@ -2159,7 +2474,7 @@ function CustomerContent() {
                                         <div>
 
                                             <h2 className="text-xl font-bold text-slate-900">
-                                                3. สถานที่จัดงาน
+                                                4. สถานที่จัดงาน
                                             </h2>
 
                                             <p className="mt-1 text-sm text-slate-500">
@@ -2485,7 +2800,7 @@ function CustomerContent() {
                                 </div>
 
                                 {/* =================================================
-                                    4. NOTE
+                                    5. NOTE
                                 ================================================= */}
 
                                 <div>
@@ -2522,7 +2837,7 @@ function CustomerContent() {
 
                                 <Button
                                     type="button"
-                                    variant="ghost"
+                                    variant="outline"
                                     onClick={() =>
                                         router.push(
                                             `/booking/schedule?package=${encodeURIComponent(
@@ -2530,7 +2845,7 @@ function CustomerContent() {
                                             )}`
                                         )
                                     }
-                                    className="h-14 rounded-full sm:flex-1"
+                                    className="h-14 rounded-full border-slate-200 bg-white font-semibold text-slate-700 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600 sm:flex-1"
                                 >
 
                                     <ArrowLeft
@@ -2549,7 +2864,9 @@ function CustomerContent() {
                                         handleNext
                                     }
                                     disabled={
-                                        !selectedPackage
+                                        !selectedPackage ||
+                                        !form.startTime ||
+                                        !form.endTime
                                     }
                                     className="h-14 rounded-full bg-pink-500 font-bold text-white hover:bg-pink-400 sm:flex-1"
                                 >
@@ -2699,6 +3016,36 @@ function CustomerContent() {
                                                 bookingDate
                                             )
                                         }
+                                    </p>
+
+                                </div>
+
+                                {/* =================================================
+                                    Time
+                                ================================================= */}
+
+                                <div className="mt-4 rounded-2xl bg-slate-50 p-5">
+
+                                    <div className="flex items-center gap-2">
+                                        <Clock3
+                                            size={18}
+                                            className="text-pink-500"
+                                        />
+
+                                        <p className="text-sm text-slate-500">
+                                            เวลาให้บริการ
+                                        </p>
+                                    </div>
+
+                                    <p className="mt-2 font-bold text-slate-900">
+                                        {formatTimeRange(
+                                            form.startTime,
+                                            form.endTime
+                                        )}
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-slate-400">
+                                        ระยะเวลาแพ็กเกจ {serviceDuration} ชั่วโมง
                                     </p>
 
                                 </div>
