@@ -1,3 +1,4 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 
@@ -65,6 +66,8 @@ export async function POST(request: Request) {
             },
         }, { status: 201 });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         if (key) {
             try {
                 await r2.send(new DeleteObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key }));
@@ -84,6 +87,8 @@ export async function DELETE(request: Request) {
         await r2.send(new DeleteObjectCommand({ Bucket: R2_BUCKET_NAME, Key: body.key }));
         return NextResponse.json({ success: true });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }

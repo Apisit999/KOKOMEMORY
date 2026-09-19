@@ -1,3 +1,4 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 
 import {
@@ -9,6 +10,7 @@ import {
 
 import { adminDb } from "@/lib/firebase-admin";
 import { requireAdminApi } from "@/lib/require-admin-api";
+import { isAllowedBookingTransition, normalizeBookingStatus } from "@/lib/booking-lifecycle";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,6 +51,166 @@ const PAYMENT_COLLECTION =
 
 const AUDIT_COLLECTION =
     "auditLogs";
+
+export async function GET(
+    request: Request,
+    context: RouteContext,
+) {
+    try {
+        await requireAdminApi(request);
+        const params = await context.params;
+        const bookingId = typeof params?.id === "string" ? params.id.trim() : "";
+
+        if (!bookingId) {
+            return jsonError("ไม่พบ Booking ID", 400, "MISSING_BOOKING_ID");
+        }
+
+        const bookingSnapshot = await adminDb
+            .collection(BOOKING_COLLECTION)
+            .doc(bookingId)
+            .get();
+
+        if (!bookingSnapshot.exists) {
+            return jsonError("ไม่พบ Booking รายการนี้", 404, "BOOKING_NOT_FOUND");
+        }
+
+        const booking = bookingSnapshot.data() || {};
+        const paymentId = typeof booking.paymentId === "string"
+            ? booking.paymentId.trim()
+            : "";
+
+        let payment: Record<string, unknown> | null = null;
+        if (paymentId) {
+            const paymentSnapshot = await adminDb
+                .collection(PAYMENT_COLLECTION)
+                .doc(paymentId)
+                .get();
+            if (paymentSnapshot.exists) {
+                payment = { id: paymentSnapshot.id, ...paymentSnapshot.data() };
+            }
+        }
+
+        if (!payment) {
+            const paymentSnapshot = await adminDb
+                .collection(PAYMENT_COLLECTION)
+                .where("bookingId", "==", bookingId)
+                .limit(1)
+                .get();
+            if (!paymentSnapshot.empty) {
+                const document = paymentSnapshot.docs[0];
+                payment = { id: document.id, ...document.data() };
+            }
+        }
+
+        return NextResponse.json({
+            success: true,
+            booking: { id: bookingSnapshot.id, ...booking },
+            payment,
+        });
+    } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
+        console.error("Admin booking detail error:", error);
+        const code = error instanceof Error ? error.message : "DATABASE_ERROR";
+        if (["INVALID_BOOKING_STATUS", "BOOKING_STATUS_PROTECTED", "PAYMENT_STATUS_MISMATCH", "PAYMENT_UPLOAD_IN_PROGRESS", "BOOKING_PAYMENT_PROTECTED", "DATE_LOCK_OWNED_BY_OTHER"].includes(code)) return jsonError(code, 409, code);
+        const status = ["MISSING_TOKEN", "INVALID_TOKEN", "UNAUTHORIZED"].includes(code)
+            ? 401
+            : code === "NOT_ADMIN" || code === "ADMIN_DISABLED"
+                ? 403
+                : 500;
+        return NextResponse.json(
+            { success: false, error: "ไม่สามารถโหลด Booking Detail ได้", code },
+            { status },
+        );
+    }
+}
+
+export async function PATCH(
+    request: Request,
+    context: RouteContext,
+) {
+    try {
+        const adminUser = await requireAdminApi(request);
+        const params = await context.params;
+        const bookingId = typeof params?.id === "string" ? params.id.trim() : "";
+        const body = (await request.json()) as { bookingStatus?: unknown };
+        const bookingStatus = typeof body.bookingStatus === "string"
+            ? body.bookingStatus.trim()
+            : "";
+
+        if (!bookingId) {
+            return jsonError("ไม่พบ Booking ID", 400, "MISSING_BOOKING_ID");
+        }
+        if (!bookingStatus) {
+            return jsonError("ไม่พบ Booking Status", 400, "MISSING_BOOKING_STATUS");
+        }
+
+        const bookingRef = adminDb.collection(BOOKING_COLLECTION).doc(bookingId);
+        let updatedStatus = bookingStatus;
+        await adminDb.runTransaction(async transaction => {
+            const snapshot = await transaction.get(bookingRef);
+            if (!snapshot.exists) throw new Error("BOOKING_NOT_FOUND");
+            const booking = snapshot.data() || {};
+            const current = booking.bookingStatus;
+            const paymentStatus = getNestedPayment(booking).status ?? booking.paymentStatus;
+            const target = normalizeBookingStatus(bookingStatus);
+            const source = normalizeBookingStatus(current);
+            if (!target || !source) throw new Error("INVALID_BOOKING_STATUS");
+            updatedStatus = target;
+            if (source === target) return;
+            if (!isAllowedBookingTransition(source, target)) throw new Error("INVALID_BOOKING_TRANSITION");
+            if (booking.paymentUploadLock) throw new Error("PAYMENT_UPLOAD_IN_PROGRESS");
+            const expectedPayment: Record<string, string> = {
+                pending_payment: "unpaid", payment_submitted: "submitted",
+                payment_verified: "verified", confirmed: "verified", payment_rejected: "rejected",
+            };
+            if (target !== "cancelled" && target !== "expired" && target !== "completed" && paymentStatus !== expectedPayment[target]) throw new Error("PAYMENT_STATUS_MISMATCH");
+            if ((target === "cancelled" || target === "expired") && isPaymentProtected(booking)) throw new Error("BOOKING_PAYMENT_PROTECTED");
+            const eventDate = getEventDate(booking);
+            const dateRef = eventDate ? adminDb.collection(BOOKING_DATE_COLLECTION).doc(eventDate) : null;
+            const dateSnapshot = dateRef ? await transaction.get(dateRef) : null;
+            if (dateSnapshot?.exists && dateSnapshot.data()?.bookingId !== bookingId) throw new Error("DATE_LOCK_OWNED_BY_OTHER");
+            if ((target === "cancelled" || target === "expired") && dateRef && dateSnapshot?.exists) {
+                transaction.update(dateRef, { status: "released", updatedAt: FieldValue.serverTimestamp() });
+            }
+            const lifecycleFields: Record<string, unknown> = { bookingStatus: target, updatedAt: FieldValue.serverTimestamp() };
+            if (target === "cancelled") {
+                lifecycleFields.cancelledAt = FieldValue.serverTimestamp();
+                lifecycleFields.cancelledBy = adminUser.uid;
+            }
+            if (target === "expired") {
+                lifecycleFields.expiredAt = FieldValue.serverTimestamp();
+                lifecycleFields.expiredBy = adminUser.uid;
+            }
+            transaction.update(bookingRef, lifecycleFields);
+            transaction.set(adminDb.collection(AUDIT_COLLECTION).doc(), {
+                action: "UPDATE_BOOKING_STATUS", resource: "booking", bookingId,
+                previousStatus: current ?? null, bookingStatus: target, adminUid: adminUser.uid,
+                createdAt: FieldValue.serverTimestamp(),
+            });
+        });
+
+        return jsonSuccess({
+            bookingId,
+            bookingStatus: updatedStatus,
+            updatedBy: adminUser.uid,
+        });
+    } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
+        console.error("Admin booking status update error:", error);
+        const code = error instanceof Error ? error.message : "DATABASE_ERROR";
+        const status = ["MISSING_TOKEN", "INVALID_TOKEN", "UNAUTHORIZED"].includes(code)
+            ? 401
+            : code === "NOT_ADMIN" || code === "ADMIN_DISABLED"
+                ? 403
+                : 500;
+        return NextResponse.json(
+            { success: false, error: "ไม่สามารถเปลี่ยนสถานะ Booking ได้", code },
+            { status },
+        );
+    }
+}
 
 
 /* ============================================================
@@ -551,6 +713,7 @@ export async function DELETE(
                        LATEST PAYMENT CHECK
                     ========================================== */
 
+                    if (booking.paymentUploadLock) throw new Error("BOOKING_PAYMENT_PROTECTED");
                     if (
                         isPaymentProtected(
                             booking,
@@ -826,6 +989,8 @@ export async function DELETE(
     } catch (
         error: unknown
     ) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
 
         console.error(
             "Admin delete booking error:",

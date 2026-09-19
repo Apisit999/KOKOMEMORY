@@ -3,20 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    limit,
-    query,
-    updateDoc,
-    where,
-    writeBatch,
-    serverTimestamp,
     type Timestamp,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { db } from "@/lib/firebase";
+import { adminApiFetch } from "@/lib/admin-api-client";
+import { auth } from "@/lib/firebase";
 
 import {
     AlertCircle,
@@ -40,6 +31,7 @@ type PaymentRecord = {
     status?: string;
     slipUrl?: string | null;
     proofUrl?: string | null;
+    secureSlipUrl?: string | null;
     submittedAt?: Timestamp | string | Date | null;
     verifiedAt?: Timestamp | string | Date | null;
     verifiedBy?: string | null;
@@ -93,6 +85,7 @@ type Booking = {
         method?: string | null;
         proofUrl?: string | null;
         proofKey?: string | null;
+        secureSlipUrl?: string | null;
         paidAmount?: number;
         slipFileName?: string;
         slipSize?: number;
@@ -592,6 +585,31 @@ export default function AdminBookingDetailPage() {
     const [paymentRecord, setPaymentRecord] =
         useState<PaymentRecord | null>(null);
 
+    const [secureSlipObjectUrl, setSecureSlipObjectUrl] =
+        useState("");
+
+    useEffect(() => {
+        let active = true;
+        const paymentId = paymentRecord?.id || booking?.paymentId;
+        if (!paymentId) {
+            setSecureSlipObjectUrl("");
+            return;
+        }
+        (async () => {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                const response = await fetch(`/api/payment-slip/${encodeURIComponent(paymentId)}`, { headers: { Authorization: `Bearer ${await user.getIdToken()}` }, cache: "no-store" });
+                if (!response.ok) return;
+                const objectUrl = URL.createObjectURL(await response.blob());
+                if (active) setSecureSlipObjectUrl(objectUrl); else URL.revokeObjectURL(objectUrl);
+            } catch {
+                if (active) setSecureSlipObjectUrl("");
+            }
+        })();
+        return () => { active = false; };
+    }, [paymentRecord?.id, booking?.paymentId]);
+
     useEffect(() => {
         if (!id) return;
 
@@ -602,27 +620,12 @@ export default function AdminBookingDetailPage() {
                 setLoading(true);
                 setError("");
 
-                const bookingRef = doc(
-                    db,
-                    "bookings",
-                    id
-                );
+                const result = await adminApiFetch<{
+                    booking: Booking;
+                    payment: PaymentRecord | null;
+                }>(`/api/admin/booking/${encodeURIComponent(id)}`);
 
-                const snapshot =
-                    await getDoc(
-                        bookingRef
-                    );
-
-                if (!snapshot.exists()) {
-                    throw new Error(
-                        "ไม่พบรายการจองนี้ในระบบ"
-                    );
-                }
-
-                const data = {
-                    id: snapshot.id,
-                    ...snapshot.data(),
-                } as Booking;
+                const data = result.booking;
 
                 if (!active) return;
 
@@ -639,53 +642,8 @@ export default function AdminBookingDetailPage() {
                  * Admin Payments เช่น pending / submitted /
                  * verified / rejected
                  */
-                let loadedPayment: PaymentRecord | null = null;
-
-                if (data.paymentId) {
-                    const paymentSnapshot =
-                        await getDoc(
-                            doc(
-                                db,
-                                "payments",
-                                data.paymentId
-                            )
-                        );
-
-                    if (paymentSnapshot.exists()) {
-                        loadedPayment = {
-                            id: paymentSnapshot.id,
-                            ...paymentSnapshot.data(),
-                        } as PaymentRecord;
-                    }
-                }
-
-                /*
-                 * ถ้า Booking ยังไม่มี paymentId
-                 * ให้ค้น Payment จาก bookingId
-                 */
-                if (!loadedPayment) {
-                    const paymentQuery = query(
-                        collection(db, "payments"),
-                        where("bookingId", "==", id),
-                        limit(1)
-                    );
-
-                    const paymentSnapshot =
-                        await getDocs(paymentQuery);
-
-                    if (!paymentSnapshot.empty) {
-                        const paymentDoc =
-                            paymentSnapshot.docs[0];
-
-                        loadedPayment = {
-                            id: paymentDoc.id,
-                            ...paymentDoc.data(),
-                        } as PaymentRecord;
-                    }
-                }
-
                 if (active) {
-                    setPaymentRecord(loadedPayment);
+                    setPaymentRecord(result.payment);
                 }
             } catch (err: unknown) {
                 console.error(
@@ -1174,20 +1132,12 @@ export default function AdminBookingDetailPage() {
             setError("");
             setSuccess("");
 
-            const bookingRef = doc(
-                db,
-                "bookings",
-                id
-            );
-
-            await updateDoc(
-                bookingRef,
+            await adminApiFetch(
+                `/api/admin/booking/${encodeURIComponent(id)}`,
                 {
-                    bookingStatus:
-                        status,
-                    updatedAt:
-                        serverTimestamp(),
-                }
+                    method: "PATCH",
+                    body: JSON.stringify({ bookingStatus: status }),
+                },
             );
 
             setBooking(
@@ -1543,12 +1493,11 @@ export default function AdminBookingDetailPage() {
             paymentDisplayStatus
         );
 
-    const hasPaymentProof =
-        Boolean(
-            paymentRecord?.proofUrl ||
-            paymentRecord?.slipUrl ||
-            booking.payment?.proofUrl
-        );
+    const paymentProofUrl =
+        secureSlipObjectUrl ||
+        "";
+
+    const hasPaymentProof = Boolean(paymentProofUrl);
 
     const canVerifyPayment =
         hasPaymentProof &&
@@ -1802,11 +1751,7 @@ export default function AdminBookingDetailPage() {
                             </div>
 
                             <div className="p-5 sm:p-6">
-                                {(
-                                    paymentRecord?.proofUrl ||
-                                    paymentRecord?.slipUrl ||
-                                    booking.payment?.proofUrl
-                                ) ? (
+                                {paymentProofUrl ? (
                                     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
 
                                         {/* SLIP PREVIEW */}
@@ -1843,9 +1788,9 @@ export default function AdminBookingDetailPage() {
 
                                             <div className="flex min-h-[360px] items-center justify-center p-4 sm:min-h-[460px]">
                                                 {isPdfUrl(
-                                                    paymentRecord?.proofUrl ||
-                                                    paymentRecord?.slipUrl ||
-                                                    booking.payment?.proofUrl
+                                                    paymentRecord?.secureSlipUrl ||
+                                                    booking.payment?.secureSlipUrl ||
+                                                    ""
                                                 ) ? (
                                                     <div className="flex flex-col items-center justify-center text-center">
                                                         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-500">
@@ -1861,15 +1806,7 @@ export default function AdminBookingDetailPage() {
                                                         </p>
 
                                                         <a
-                                                            href={
-                                                                paymentRecord?.proofUrl ||
-                                                                paymentRecord?.slipUrl ||
-                                                                paymentRecord?.proofUrl ||
-                                                                paymentRecord?.slipUrl ||
-                                                                booking
-                                                                    .payment
-                                                                    .proofUrl
-                                                            }
+                                                            href={paymentProofUrl}
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="group mt-5 inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-pink-600"
@@ -1893,15 +1830,7 @@ export default function AdminBookingDetailPage() {
                                                         className="group relative block max-h-[520px] w-full overflow-hidden rounded-xl bg-white"
                                                     >
                                                         <img
-                                                            src={
-                                                                paymentRecord?.proofUrl ||
-                                                                paymentRecord?.slipUrl ||
-                                                                paymentRecord?.proofUrl ||
-                                                                paymentRecord?.slipUrl ||
-                                                                booking
-                                                                    .payment
-                                                                    .proofUrl
-                                                            }
+                                                            src={paymentProofUrl}
                                                             alt="หลักฐานการชำระเงิน"
                                                             className="mx-auto max-h-[520px] w-auto max-w-full object-contain transition duration-500 group-hover:scale-[1.025]"
                                                         />
@@ -2561,9 +2490,7 @@ export default function AdminBookingDetailPage() {
             {/* PAYMENT SLIP VIEWER */}
             {slipViewerOpen &&
                 (
-                    paymentRecord?.proofUrl ||
-                    paymentRecord?.slipUrl ||
-                    booking.payment?.proofUrl
+                    paymentProofUrl
                 ) && (
                     <div
                         className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-2 backdrop-blur-md sm:p-5"
@@ -2596,10 +2523,7 @@ export default function AdminBookingDetailPage() {
                                 <div className="flex shrink-0 items-center gap-2">
                                     <a
                                         href={
-                                            paymentRecord?.proofUrl ||
-                                            paymentRecord?.slipUrl ||
-                                            booking.payment?.proofUrl ||
-                                            ""
+                                            paymentProofUrl
                                         }
                                         target="_blank"
                                         rel="noreferrer"
@@ -2626,16 +2550,11 @@ export default function AdminBookingDetailPage() {
 
                             <div className="min-h-0 flex-1 overflow-auto bg-slate-100 p-3 sm:p-6">
                                 {isPdfUrl(
-                                    paymentRecord?.proofUrl ||
-                                    paymentRecord?.slipUrl ||
-                                    booking.payment?.proofUrl
+                                    paymentProofUrl
                                 ) ? (
                                     <iframe
                                         src={
-                                            paymentRecord?.proofUrl ||
-                                            paymentRecord?.slipUrl ||
-                                            booking.payment?.proofUrl ||
-                                            ""
+                                            paymentProofUrl
                                         }
                                         title="หลักฐานการชำระเงิน"
                                         className="h-[75vh] w-full rounded-2xl bg-white"
@@ -2644,10 +2563,7 @@ export default function AdminBookingDetailPage() {
                                     <div className="flex min-h-full items-center justify-center">
                                         <img
                                             src={
-                                                paymentRecord?.proofUrl ||
-                                                paymentRecord?.slipUrl ||
-                                                booking.payment?.proofUrl ||
-                                                ""
+                                                paymentProofUrl
                                             }
                                             alt="หลักฐานการชำระเงิน"
                                             className="max-h-[78vh] max-w-full rounded-2xl object-contain shadow-lg"

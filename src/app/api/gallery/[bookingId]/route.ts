@@ -1,369 +1,43 @@
 import { NextResponse } from "next/server";
-
-import { adminDb } from "@/lib/firebase-admin";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { authorizeGalleryToken } from "@/lib/gallery-share";
 
 export const runtime = "nodejs";
-
 export const dynamic = "force-dynamic";
 
-/* ============================================================
-   TYPES
-============================================================ */
+async function authorizeBooking(request: Request, bookingId: string) {
+    const query = new URL(request.url).searchParams;
+    const guestToken = query.get("guestToken") || query.get("token");
+    if (guestToken && await authorizeGalleryToken(bookingId, guestToken)) return;
+    const token = request.headers.get("authorization")?.match(/^Bearer\s+(\S+)$/i)?.[1];
+    if (!token) throw new Error("UNAUTHORIZED");
+    const decoded = await adminAuth.verifyIdToken(token, true);
+    const user = await adminAuth.getUser(decoded.uid);
+    if (user.disabled) throw new Error("UNAUTHORIZED");
+    const isAdmin = decoded.admin === true || decoded.isAdmin === true || decoded.role === "admin";
+    if (isAdmin) return;
+    const booking = await adminDb.collection("bookings").doc(bookingId).get();
+    if (!booking.exists || booking.data()?.userId !== decoded.uid) throw new Error("FORBIDDEN");
+}
 
-type PortfolioImage = {
-    id?: string;
-    url: string;
-    key?: string;
-    name?: string;
-    alt?: string;
-    order?: number;
-};
-
-type PortfolioDocument = {
-    title?: string;
-    description?: string;
-    category?: string;
-    eventDate?: string;
-    coverImage?: string;
-    images?: unknown[];
-    featured?: boolean;
-    status?: string;
-};
-
-/* ============================================================
-   GET PORTFOLIO
-============================================================ */
-
-export async function GET() {
+export async function GET(request: Request, context: { params: Promise<{ bookingId: string }> }) {
     try {
-        console.log("=================================");
-        console.log("PORTFOLIO GALLERY API");
-        console.log("=================================");
-
-        /* -------------------------------------------------------
-           FIRESTORE
-           portfolio collection
-        ------------------------------------------------------- */
-
-        const snapshot = await adminDb
-            .collection("portfolio")
-            .get();
-
-        console.log(
-            "Portfolio found:",
-            snapshot.size
-        );
-
-        /* -------------------------------------------------------
-           MAP PORTFOLIO
-        ------------------------------------------------------- */
-
-        const portfolios = snapshot.docs
-            .map((doc) => {
-                const data =
-                    doc.data() as PortfolioDocument;
-
-                /*
-                 * Public Portfolio
-                 * แสดงเฉพาะ active
-                 */
-
-                if (
-                    data.status &&
-                    data.status !== "active"
-                ) {
-                    return null;
-                }
-
-                const rawImages =
-                    Array.isArray(data.images)
-                        ? data.images
-                        : [];
-
-                const images: PortfolioImage[] =
-                    rawImages
-                        .filter(
-                            (
-                                image
-                            ): image is Record<
-                                string,
-                                unknown
-                            > =>
-                                Boolean(
-                                    image &&
-                                        typeof image ===
-                                            "object"
-                                )
-                        )
-                        .map(
-                            (
-                                image,
-                                index
-                            ) => ({
-                                id:
-                                    typeof image.id ===
-                                        "string"
-                                        ? image.id
-                                        : `${doc.id}-${index}`,
-
-                                url:
-                                    typeof image.url ===
-                                        "string"
-                                        ? image.url
-                                        : "",
-
-                                key:
-                                    typeof image.key ===
-                                        "string"
-                                        ? image.key
-                                        : undefined,
-
-                                name:
-                                    typeof image.name ===
-                                        "string"
-                                        ? image.name
-                                        : undefined,
-
-                                alt:
-                                    typeof image.alt ===
-                                        "string"
-                                        ? image.alt
-                                        : undefined,
-
-                                order:
-                                    typeof image.order ===
-                                        "number"
-                                        ? image.order
-                                        : index,
-                            })
-                        )
-                        .filter(
-                            (
-                                image
-                            ) =>
-                                Boolean(
-                                    image.url
-                                )
-                        )
-                        .sort(
-                            (
-                                a,
-                                b
-                            ) =>
-                                (a.order ?? 0) -
-                                (b.order ?? 0)
-                        );
-
-                /*
-                 * ถ้าไม่มีรูป ไม่ต้องส่ง Portfolio นี้
-                 */
-
-                if (
-                    images.length === 0
-                ) {
-                    return null;
-                }
-
-                const category =
-                    typeof data.category ===
-                    "string"
-                        ? data.category
-                        : "";
-
-                return {
-                    id: doc.id,
-
-                    title:
-                        typeof data.title ===
-                        "string"
-                            ? data.title
-                            : "",
-
-                    description:
-                        typeof data.description ===
-                        "string"
-                            ? data.description
-                            : "",
-
-                    category,
-
-                    categoryLabel:
-                        category,
-
-                    eventDate:
-                        typeof data.eventDate ===
-                        "string"
-                            ? data.eventDate
-                            : "",
-
-                    coverImage:
-                        typeof data.coverImage ===
-                        "string"
-                            ? data.coverImage
-                            : images[0]?.url ||
-                              "",
-
-                    featured:
-                        data.featured === true,
-
-                    images,
-                };
-            })
-            .filter(
-                (
-                    portfolio
-                ): portfolio is NonNullable<
-                    typeof portfolio
-                > =>
-                    portfolio !== null
-            );
-
-        /* -------------------------------------------------------
-           SORT
-           Featured ก่อน
-           แล้วค่อย eventDate ใหม่ → เก่า
-        ------------------------------------------------------- */
-
-        portfolios.sort(
-            (
-                a,
-                b
-            ) => {
-                if (
-                    a.featured !==
-                    b.featured
-                ) {
-                    return a.featured
-                        ? -1
-                        : 1;
-                }
-
-                return (
-                    b.eventDate.localeCompare(
-                        a.eventDate
-                    )
-                );
-            }
-        );
-
-        /* -------------------------------------------------------
-           CONVERT TO GALLERY IMAGES
-           
-           GalleryGrid ปัจจุบันของเรา
-           ต้องการ images[]
-           ในรูปแบบ:
-           
-           key
-           url
-           category
-           categoryLabel
-        ------------------------------------------------------- */
-
-        const images = portfolios.flatMap(
-            (
-                portfolio
-            ) =>
-                portfolio.images.map(
-                    (
-                        image,
-                        index
-                    ) => ({
-                        key:
-                            image.key ||
-                            image.id ||
-                            `${portfolio.id}-${index}`,
-
-                        url:
-                            image.url,
-
-                        category:
-                            portfolio.category,
-
-                        categoryLabel:
-                            portfolio.categoryLabel,
-
-                        portfolioId:
-                            portfolio.id,
-
-                        portfolioTitle:
-                            portfolio.title,
-
-                        portfolioDescription:
-                            portfolio.description,
-
-                        featured:
-                            portfolio.featured,
-
-                        coverImage:
-                            portfolio.coverImage,
-                    })
-                )
-        );
-
-        console.log(
-            "Active portfolios:",
-            portfolios.length
-        );
-
-        console.log(
-            "Portfolio images:",
-            images.length
-        );
-
-        /* -------------------------------------------------------
-           RESPONSE
-        ------------------------------------------------------- */
-
-        return NextResponse.json(
-            {
-                success: true,
-
-                count:
-                    images.length,
-
-                portfolioCount:
-                    portfolios.length,
-
-                portfolios,
-
-                images,
-            },
-            {
-                status: 200,
-
-                headers: {
-                    "Cache-Control":
-                        "no-store, no-cache, must-revalidate",
-                },
-            }
-        );
+        const { bookingId } = await context.params;
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId)) return NextResponse.json({ success: false, error: "INVALID_BOOKING_ID" }, { status: 400 });
+        await authorizeBooking(request, bookingId);
+        const booking = await adminDb.collection("bookings").doc(bookingId).get();
+        if (!booking.exists) return NextResponse.json({ success: false, error: "ไม่พบรายการจองนี้" }, { status: 404 });
+        const snapshot = await adminDb.collection("bookings").doc(bookingId).collection("photos").get();
+        const photos = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            const status = typeof data.status === "string" ? data.status.toLowerCase() : "published";
+            const deleted = data.deleted === true || Boolean(data.deletedAt);
+            return { id: doc.id, bookingId, fileName: typeof data.fileName === "string" ? data.fileName : "koko-memory-photo.jpg", contentType: typeof data.contentType === "string" ? data.contentType : "image/jpeg", size: typeof data.size === "number" ? data.size : 0, status, url: `/api/gallery/${encodeURIComponent(bookingId)}/download/${encodeURIComponent(doc.id)}`, deleted };
+        }).filter((photo) => !photo.deleted && ["published", "active", "ready"].includes(photo.status));
+        return NextResponse.json({ success: true, bookingId, photos }, { status: 200, headers: { "Cache-Control": "private, no-store" } });
     } catch (error) {
-        console.error(
-            "================================="
-        );
-
-        console.error(
-            "PORTFOLIO GALLERY API ERROR:"
-        );
-
-        console.error(error);
-
-        console.error(
-            "================================="
-        );
-
-        return NextResponse.json(
-            {
-                success: false,
-
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : "โหลด Portfolio ไม่สำเร็จ",
-            },
-            {
-                status: 500,
-            }
-        );
+        const code = error instanceof Error ? error.message : "";
+        const status = code === "FORBIDDEN" ? 403 : code === "UNAUTHORIZED" ? 401 : 500;
+        return NextResponse.json({ success: false, error: status === 500 ? "โหลด Gallery ไม่สำเร็จ" : "ไม่มีสิทธิ์เข้าถึง Gallery", code: code || "GALLERY_FAILED" }, { status });
     }
 }

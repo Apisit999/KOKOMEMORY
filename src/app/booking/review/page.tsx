@@ -61,13 +61,8 @@ import {
     User,
 } from "lucide-react";
 
-import {
-    doc,
-    runTransaction,
-    serverTimestamp,
-} from "firebase/firestore";
-
-import { db } from "@/lib/firebase";
+import { getTravelFee, getBookingDeposit } from "@/data/booking-pricing";
+import { auth } from "@/lib/firebase";
 import { getPackageById, resolvePackageId } from "@/data/booking-packages";
 
 
@@ -385,27 +380,6 @@ function ReviewBookingContent() {
        ใช้ค่าที่ Step 3 ส่งมา
        ======================================================== */
 
-    const packagePriceFromStep3 =
-        Number(
-            safeParam(searchParams.get("packagePrice"))
-        );
-
-    const travelFeeFromStep3 =
-        Number(
-            safeParam(searchParams.get("travelFee"))
-        );
-
-    const estimatedTotalFromStep3 =
-        Number(
-            safeParam(searchParams.get("estimatedTotal"))
-        );
-
-    const depositFromStep3 =
-        Number(
-            safeParam(searchParams.get("deposit"))
-        );
-
-
     /* ========================================================
        PACKAGE
     ======================================================== */
@@ -461,62 +435,13 @@ function ReviewBookingContent() {
        ให้ค่าจาก Step 3 เป็นตัวหลัก
     ======================================================== */
 
-    const packagePrice =
-        Number.isFinite(
-            packagePriceFromStep3
-        )
-            ? packagePriceFromStep3
-            : (
-                sharedPackage?.price ||
-                fallbackPackage?.price ||
-                0
-            );
+    const packagePrice = sharedPackage?.price ?? fallbackPackage?.price ?? 0;
+    const travelFee = getTravelFee(province);
+    const discount = 0;
+    const total = packagePrice + travelFee;
+    const deposit = getBookingDeposit(packageId);
 
 
-    const travelFee =
-        Number.isFinite(
-            travelFeeFromStep3
-        )
-            ? travelFeeFromStep3
-            : 0;
-
-
-    const discount =
-        0;
-
-
-    const total =
-        Number.isFinite(
-            estimatedTotalFromStep3
-        )
-            ? estimatedTotalFromStep3
-            : Math.max(
-                packagePrice +
-                travelFee -
-                discount,
-                0
-            );
-
-
-    /*
-     * เงินมัดจำ
-     *
-     * ถ้า Package เป็นข้อมูลเดิม
-     * จะใช้ deposit จาก package
-     *
-     * ถ้าเป็น Package ใหม่
-     * และยังไม่ได้ส่ง deposit มา
-     * ให้เป็น 0 ก่อน
-     *
-     * เราจะเชื่อมระบบ Deposit จริง
-     * ใน Step Payment
-     */
-
-    const deposit =
-        Number.isFinite(depositFromStep3) &&
-            depositFromStep3 > 0
-            ? depositFromStep3
-            : (fallbackPackage?.deposit || 0);
 
 
     const remaining =
@@ -554,711 +479,216 @@ function ReviewBookingContent() {
        CREATE BOOKING
     ======================================================== */
 
-    const handleConfirmBooking =
-        async () => {
+    const handleConfirmBooking = async () => {
 
-            /*
-             * ป้องกันการกดปุ่มซ้ำ
-             */
+        if (isSubmitting || submitLockRef.current) {
+            return;
+        }
 
-            if (
-                isSubmitting ||
-                submitLockRef.current
-            ) {
-                return;
+        submitLockRef.current = true;
+
+        if (!packageId || !eventDate || !customerName || !phone || !startTime || !endTime) {
+            setSubmitError("ข้อมูลการจองไม่ครบ กรุณากลับไปตรวจสอบข้อมูลอีกครั้ง");
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitError("");
+
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            setSubmitError("กรุณาเข้าสู่ระบบก่อนทำรายการจอง");
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            router.push(`/account/login?redirect=${encodeURIComponent(`/booking/review?${searchParams.toString()}`)}`);
+            return;
+        }
+
+        try {
+            await currentUser.reload();
+        } catch (error) {
+            console.error("KOKO AUTH RELOAD ERROR:", error);
+        }
+
+        const refreshedUser = auth.currentUser;
+
+        if (!refreshedUser) {
+            setSubmitError("ไม่พบเซสชันผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        if (!refreshedUser.emailVerified) {
+            setSubmitError("กรุณายืนยัน Email ก่อนทำรายการจอง");
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        const authenticatedEmail = refreshedUser.email?.trim().toLowerCase();
+
+        if (!authenticatedEmail) {
+            setSubmitError("ไม่พบ Email ของบัญชี กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        try {
+            const bookingFingerprint =
+                [
+                    packageId,
+                    eventDate,
+                    startTime,
+                    endTime,
+                    customerName,
+                    phone,
+                    authenticatedEmail,
+                    eventType,
+                    guests,
+                    venue,
+                    province,
+                    district,
+                    subdistrict,
+                    postalCode,
+                    address,
+                ].join("|").trim();
+
+            const bookingRequestId =
+                getBookingId(bookingFingerprint);
+
+            const payload = {
+                packageId,
+                clientRequestId: bookingRequestId,
+                eventDate,
+                startTime,
+                endTime,
+                durationHours: packageHours,
+                customer: {
+                    name: customerName,
+                    phone,
+                    line,
+                },
+                event: {
+                    type: eventType,
+                    guests,
+                },
+                venue: {
+                    name: venue,
+                    province,
+                    district,
+                    subdistrict,
+                    postalCode,
+                    address,
+                    googleMaps,
+                },
+                note,
+                pricing: {
+                    packagePrice,
+                    travelFee,
+                    discount,
+                    total,
+                    deposit,
+                    remaining,
+                },
+            };
+
+            const token = await refreshedUser.getIdToken();
+
+            const response = await fetch("/api/booking/create", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+                cache: "no-store",
+            });
+
+            const contentType = response.headers.get("content-type") || "";
+            let result: {
+                success?: boolean;
+                bookingId?: string;
+                created?: boolean;
+                error?: string;
+                code?: string;
+            } = {};
+
+            if (contentType.includes("application/json")) {
+                result = await response.json();
+            } else {
+                const text = await response.text();
+                console.error("Booking Create API returned non-JSON:", text.slice(0, 1000));
+                throw new Error("เซิร์ฟเวอร์ตอบกลับข้อมูลไม่ถูกต้อง");
             }
 
-            /*
-             * ล็อกทันที ก่อน await ใด ๆ
-             * จึงกัน double-click ได้จริง
-             */
-            submitLockRef.current = true;
-
-
-            /*
-             * ตรวจสอบข้อมูลสำคัญ
-             */
-
-            if (
-                !packageId
-            ) {
-
-                setSubmitError(
-                    "ไม่พบข้อมูลแพ็กเกจ กรุณากลับไปเลือกแพ็กเกจอีกครั้ง"
-                );
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
-                return;
+            if (!response.ok || !result.success || !result.bookingId) {
+                const error = new Error(result.error || "ไม่สามารถสร้างรายการจองได้") as Error & { code?: string };
+                error.code = result.code || `HTTP_${response.status}`;
+                throw error;
             }
 
+            const bookingId = result.bookingId;
 
-            if (
-                !eventDate
-            ) {
-
-                setSubmitError(
-                    "ไม่พบวันที่จัดงาน กรุณากลับไปเลือกวันอีกครั้ง"
-                );
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
-                return;
-            }
-
-
-            if (
-                !customerName ||
-                !phone
-            ) {
-
-                setSubmitError(
-                    "ข้อมูลลูกค้าไม่ครบ กรุณากลับไปตรวจสอบข้อมูลอีกครั้ง"
-                );
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
-                return;
-            }
-
-
-            if (
-                !startTime ||
-                !endTime
-            ) {
-
-                setSubmitError(
-                    "ไม่พบข้อมูลเวลาเริ่มงาน กรุณากลับไปเลือกเวลาอีกครั้ง"
-                );
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
-                return;
-            }
-
-
-            setIsSubmitting(
-                true
+            console.log(
+                result.created ? "KOKO Booking Created:" : "KOKO Existing Booking:",
+                bookingId,
             );
 
-            setSubmitError("");
-
-
-            try {
-
-                /* ==================================================
-                   BOOKING DATA
-                ================================================== */
-
-                const bookingData = {
-
-                    /* ------------------------------------------
-                       SYSTEM
-                    ------------------------------------------ */
-
-                    bookingVersion:
-                        1,
-
-                    createdAt:
-                        serverTimestamp(),
-
-                    updatedAt:
-                        serverTimestamp(),
-
-
-                    /* ------------------------------------------
-                       PACKAGE
-                    ------------------------------------------ */
-
-                    package: {
-
-                        id:
-                            packageId,
-
-                        name:
-                            packageName,
-
-                        hours:
-                            packageHours,
-
-                        category:
-                            packageCategory,
-
-                        group:
-                            packageGroup,
-
-                        paperSize:
-                            packagePaperSize,
-
-                        price:
-                            packagePrice,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       EVENT
-                    ------------------------------------------ */
-
-                    event: {
-
-                        date:
-                            eventDate,
-
-                        startTime:
-                            startTime,
-
-                        endTime:
-                            endTime,
-
-                        durationHours:
-                            packageHours,
-
-                        type:
-                            eventType,
-
-                        guests:
-                            guests,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       CUSTOMER
-                    ------------------------------------------ */
-
-                    customer: {
-
-                        name:
-                            customerName,
-
-                        phone:
-                            phone,
-
-                        line:
-                            line,
-
-                        email:
-                            email,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       VENUE
-                    ------------------------------------------ */
-
-                    venue: {
-
-                        name:
-                            venue,
-
-                        province:
-                            province,
-
-                        district:
-                            district,
-
-                        subdistrict:
-                            subdistrict,
-
-                        postalCode:
-                            postalCode,
-
-                        address:
-                            address,
-
-                        googleMaps:
-                            googleMaps,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       PRICE
-                    ------------------------------------------ */
-
-                    pricing: {
-
-                        packagePrice:
-                            packagePrice,
-
-                        travelFee:
-                            travelFee,
-
-                        discount:
-                            discount,
-
-                        total:
-                            total,
-
-                        deposit:
-                            deposit,
-
-                        remaining:
-                            remaining,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       PAYMENT
-                    ------------------------------------------ */
-
-                    payment: {
-
-                        status:
-                            "unpaid",
-
-                        method:
-                            null,
-
-                        proofUrl:
-                            null,
-
-                        paidAmount:
-                            0,
-
-                        paidAt:
-                            null,
-
-                        verifiedAt:
-                            null,
-
-                        verifiedBy:
-                            null,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       BOOKING STATUS
-                    ------------------------------------------ */
-
-                    bookingStatus:
-                        "pending_payment",
-
-
-                    /* ------------------------------------------
-                       NOTE
-                    ------------------------------------------ */
-
-                    note:
-                        note,
-
-                };
-
-
-                /* ==================================================
-                   CREATE UNIQUE BOOKING ID
-                   --------------------------------------------------
-                   ใช้ข้อมูลสำคัญของการจองสร้าง fingerprint
-                   เพื่อให้การกดซ้ำของการจองเดิมใช้ ID เดิม
-                ================================================== */
-
-                const bookingFingerprint =
-                    [
-                        packageId,
-                        eventDate,
-                        startTime,
-                        endTime,
-                        customerName,
-                        phone,
-                        email,
-                        eventType,
-                        guests,
-                        venue,
-                        province,
-                        district,
-                        subdistrict,
-                        postalCode,
-                        address,
-                    ]
-                        .join("|")
-                        .trim();
-
-                const bookingId =
-                    getBookingId(
-                        bookingFingerprint
-                    );
-
-                const bookingRef =
-                    doc(
-                        db,
-                        "bookings",
-                        bookingId
-                    );
-
-
-                /* ==================================================
-                   ATOMIC DATE + BOOKING RESERVATION
-                   --------------------------------------------------
-                   กฎสำคัญ:
-                   1 วัน = 1 คิว
-
-                   ใช้ Firestore transaction กับ:
-                   - bookingDates/{eventDate} = ตัวล็อกวัน
-                   - bookings/{bookingId} = รายละเอียด Booking
-
-                   submitLockRef กัน double-click ใน Browser
-                   ส่วน transaction กันคนละ Browser / คนละลูกค้า
-                   จองวันเดียวกันพร้อมกัน
-                ================================================== */
-
-                const dateLockRef =
-                    doc(
-                        db,
-                        "bookingDates",
-                        eventDate
-                    );
-
-                const transactionResult =
-                    await runTransaction(
-                        db,
-                        async (transaction) => {
-
-                            /*
-                             * อ่านก่อนเขียนทุกครั้ง
-                             */
-                            const dateLockSnapshot =
-                                await transaction.get(
-                                    dateLockRef
-                                );
-
-                            const existingBookingSnapshot =
-                                await transaction.get(
-                                    bookingRef
-                                );
-
-                            /* ------------------------------------
-                               Booking เดิมของลูกค้าคนนี้
-                            ------------------------------------ */
-                            if (
-                                existingBookingSnapshot.exists()
-                            ) {
-                                const existingData =
-                                    existingBookingSnapshot.data();
-
-                                const existingStatus =
-                                    typeof existingData?.bookingStatus ===
-                                        "string"
-                                        ? existingData.bookingStatus.toLowerCase()
-                                        : "";
-
-                                if (
-                                    existingStatus === "cancelled" ||
-                                    existingStatus === "canceled"
-                                ) {
-                                    throw new Error(
-                                        "BOOKING_CANCELLED_RETRY"
-                                    );
-                                }
-
-                                if (
-                                    dateLockSnapshot.exists()
-                                ) {
-                                    const lockData =
-                                        dateLockSnapshot.data();
-
-                                    const lockedBookingId =
-                                        typeof lockData?.bookingId ===
-                                            "string"
-                                            ? lockData.bookingId
-                                            : "";
-
-                                    if (
-                                        lockedBookingId &&
-                                        lockedBookingId !== bookingId
-                                    ) {
-                                        throw new Error(
-                                            "DATE_ALREADY_BOOKED"
-                                        );
-                                    }
-                                } else {
-                                    /*
-                                     * ซ่อม Booking เก่าที่ไม่มี date lock
-                                     */
-                                    transaction.set(
-                                        dateLockRef,
-                                        {
-                                            date:
-                                                eventDate,
-
-                                            bookingId:
-                                                bookingId,
-
-                                            status:
-                                                "reserved",
-
-                                            createdAt:
-                                                serverTimestamp(),
-
-                                            updatedAt:
-                                                serverTimestamp(),
-                                        }
-                                    );
-                                }
-
-                                return {
-                                    created: false,
-                                    bookingId,
-                                };
-                            }
-
-                            /* ------------------------------------
-                               วันถูกจองโดยลูกค้าคนอื่นแล้ว
-                            ------------------------------------ */
-                            if (
-                                dateLockSnapshot.exists()
-                            ) {
-                                const lockData =
-                                    dateLockSnapshot.data();
-
-                                const lockedBookingId =
-                                    typeof lockData?.bookingId ===
-                                        "string"
-                                        ? lockData.bookingId
-                                        : "";
-
-                                if (
-                                    lockedBookingId !== bookingId
-                                ) {
-                                    throw new Error(
-                                        "DATE_ALREADY_BOOKED"
-                                    );
-                                }
-                            } else {
-                                /*
-                                 * สร้างตัวล็อกวันเฉพาะครั้งแรก
-                                 */
-                                transaction.set(
-                                    dateLockRef,
-                                    {
-                                        date:
-                                            eventDate,
-
-                                        bookingId:
-                                            bookingId,
-
-                                        status:
-                                            "reserved",
-
-                                        createdAt:
-                                            serverTimestamp(),
-
-                                        updatedAt:
-                                            serverTimestamp(),
-                                    }
-                                );
-                            }
-
-                            /* ------------------------------------
-                               สร้าง Booking
-                            ------------------------------------ */
-                            transaction.set(
-                                bookingRef,
-                                bookingData
-                            );
-
-                            return {
-                                created: true,
-                                bookingId,
-                            };
-                        }
-                    );
-
-                console.log(
-                    transactionResult.created
-                        ? "KOKO Booking Created:"
-                        : "KOKO Existing Booking:",
-                    transactionResult.bookingId
-                );
-
-
-                /* ==================================================
-                   PAYMENT PARAMETERS
-                   --------------------------------------------------
-                   ส่ง Booking ID ไป Payment
-                ================================================== */
-
-                const paymentParams =
-                    buildSafePaymentParams({
-
-                        bookingId:
-                            bookingId,
-
-                        package:
-                            packageId,
-
-                        date:
-                            eventDate,
-
-                        startTime:
-                            startTime,
-
-                        endTime:
-                            endTime,
-
-                        durationHours:
-                            String(
-                                packageHours
-                            ),
-
-                        name:
-                            customerName,
-
-                        phone:
-                            phone,
-
-                        line:
-                            line,
-
-                        email:
-                            email,
-
-                        event:
-                            eventType,
-
-                        guests:
-                            guests,
-
-                        venue:
-                            venue,
-
-                        province:
-                            province,
-
-                        district:
-                            district,
-
-                        subdistrict:
-                            subdistrict,
-
-                        postalCode:
-                            postalCode,
-
-                        address:
-                            address,
-
-                        googleMaps:
-                            googleMaps,
-
-                        note:
-                            note,
-
-                        packagePrice:
-                            String(
-                                packagePrice
-                            ),
-
-                        travelFee:
-                            String(
-                                travelFee
-                            ),
-
-                        estimatedTotal:
-                            String(
-                                total
-                            ),
-
-                        deposit:
-                            String(
-                                deposit
-                            ),
-
-                        remaining:
-                            String(
-                                remaining
-                            ),
-
-                    });
-
-
-                /* ==================================================
-                   GO PAYMENT
-                ================================================== */
-
-                router.push(
-                    `/booking/payment?${paymentParams.toString()}`
-                );
-
-
-            } catch (
-            error
-            ) {
-
-                console.error(
-                    "KOKO CREATE BOOKING ERROR:",
-                    error
-                );
-
-
-                const firebaseError =
-                    error as {
-                        code?: string;
-                        message?: string;
-                    };
-
-                console.error(
-                    "KOKO FIREBASE ERROR CODE:",
-                    firebaseError?.code
-                );
-
-                console.error(
-                    "KOKO FIREBASE ERROR MESSAGE:",
-                    firebaseError?.message
-                );
-
-                const errorCode =
-                    firebaseError?.code ||
-                    (error instanceof Error ? error.name : "") ||
-                    "UNKNOWN_ERROR";
-
-                let errorMessage =
-                    firebaseError?.message ||
-                    (error instanceof Error ? error.message : String(error)) ||
-                    "ไม่ทราบสาเหตุ";
-
-                if (
-                    errorMessage.includes(
-                        "setRequestHeader"
-                    ) ||
-                    errorMessage.includes(
-                        "ISO-8859-1"
-                    )
-                ) {
-                    errorMessage =
-                        "พบข้อมูล Unicode ที่ browser พยายามส่งเป็น HTTP Header " +
-                        "ซึ่งไม่รองรับภาษาไทย/Unicode โดยตรง ระบบจึงหยุดคำขอไว้ " +
-                        "โค้ดหน้านี้ได้ทำ normalization และส่งข้อมูลผ่าน UTF-8 URL/Firestore แล้ว " +
-                        "หากยังเกิดอีก ให้ตรวจไฟล์ src/lib/firebase และส่วน API/Proxy ที่เพิ่ม Header เอง";
-                }
-
-                if (
-                    errorMessage === "DATE_ALREADY_BOOKED"
-                ) {
-                    setSubmitError(
-                        "ขออภัย วันที่นี้มีลูกค้าท่านอื่นจองไปแล้ว กรุณากลับไปเลือกวันใหม่"
-                    );
-                } else if (
-                    errorMessage === "BOOKING_CANCELLED_RETRY"
-                ) {
-                    setSubmitError(
-                        "รายการจองเดิมถูกยกเลิกแล้ว กรุณากลับไปเลือกวันใหม่"
-                    );
-                } else {
-                    setSubmitError(
-                        `ไม่สามารถสร้างรายการจองได้ (${errorCode})\\n${errorMessage}`
-                    );
-                }
-
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
+            const paymentParams = buildSafePaymentParams({
+                bookingId,
+                package: packageId,
+                date: eventDate,
+                startTime,
+                endTime,
+                durationHours: String(packageHours),
+                name: customerName,
+                phone,
+                line,
+                email: authenticatedEmail,
+                event: eventType,
+                guests,
+                venue,
+                province,
+                district,
+                subdistrict,
+                postalCode,
+                address,
+                googleMaps,
+                note,
+                packagePrice: String(packagePrice),
+                travelFee: String(travelFee),
+                estimatedTotal: String(total),
+                deposit: String(deposit),
+                remaining: String(remaining),
+            });
+
+            router.push(`/booking/payment?${paymentParams.toString()}`);
+        } catch (error) {
+            console.error("KOKO CREATE BOOKING ERROR:", error);
+
+            const typedError = error as { code?: string; message?: string };
+            const errorCode = typedError?.code || (error instanceof Error ? error.name : "") || "UNKNOWN_ERROR";
+            const errorMessage = typedError?.message || (error instanceof Error ? error.message : String(error)) || "ไม่ทราบสาเหตุ";
+
+            if (errorCode === "DATE_ALREADY_BOOKED" || errorMessage === "DATE_ALREADY_BOOKED") {
+                setSubmitError("ขออภัย วันที่นี้มีลูกค้าท่านอื่นจองไปแล้ว กรุณากลับไปเลือกวันใหม่");
+            } else if (errorCode === "EMAIL_NOT_VERIFIED") {
+                setSubmitError("กรุณายืนยัน Email ก่อนทำรายการจอง");
+            } else if (errorCode === "UNAUTHORIZED" || errorCode === "INVALID_TOKEN") {
+                setSubmitError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง");
+            } else {
+                setSubmitError(`ไม่สามารถสร้างรายการจองได้ (${errorCode})\n${errorMessage}`);
             }
 
-        };
-
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+        }
+    };
 
     /* ========================================================
        UI

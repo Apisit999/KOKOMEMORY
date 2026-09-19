@@ -1,5 +1,6 @@
 "use client";
 
+import { auth } from "@/lib/firebase";
 import { useState } from "react";
 
 export default function R2UploadTestPage() {
@@ -59,10 +60,14 @@ export default function R2UploadTestPage() {
             // CALL API
             // -----------------------------
 
+            await auth.authStateReady();
+            const user = auth.currentUser;
+            if (!user) throw new Error("UNAUTHORIZED");
             const response = await fetch(
-                "/api/r2-test",
+                "/api/admin/gallery/upload",
                 {
                     method: "POST",
+                    headers: { Authorization: `Bearer ${await user.getIdToken()}` },
                     body: formData,
                 }
             );

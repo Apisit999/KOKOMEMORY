@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Existing account UI owns only its display profile. Auth and roles live in Firebase Auth.
+    function validProfile(uid) {
+      let data = request.resource.data;
+      return data.uid == uid
+        && data.name is string && data.name.size() <= 200
+        && data.email == request.auth.token.email
+        && data.provider in ['password', 'google']
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && validProfile(uid)
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'email', 'provider', 'createdAt', 'updatedAt']);
+      allow update: if isOwner(uid) && validProfile(uid)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['name', 'email', 'provider', 'createdAt', 'updatedAt']);
+      allow delete: if false;
+    }
+    match /bookings/{bookingId} {
+      allow read: if signedIn() && resource.data.userId == request.auth.uid;
+      allow write: if false;
+    }
+    // Public availability index used by the live schedule, never the bookings collection.
+    match /bookingDates/{dateId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    // Admin SDK bypasses Rules after the API verifies custom claims.
+    // Includes payments, admins, auditLogs, portfolio, portfolioCategories,
+    // threeDProducts/threeDOrders/threeDPayments and legacy 3dProducts.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

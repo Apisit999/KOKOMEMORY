@@ -1,3 +1,4 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -8,6 +9,7 @@ import {
 import {
     requireAdminApi,
 } from "@/lib/require-admin-api";
+import { isBookingHoldExpired } from "@/lib/booking-lifecycle";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +27,48 @@ type RouteContext = {
 type AdminAction =
     | "verify"
     | "reject";
+
+export async function GET(
+    request: Request,
+    context: RouteContext,
+) {
+    try {
+        await requireAdminApi(request);
+        const params = await context.params;
+        const paymentId = typeof params?.id === "string" ? params.id.trim() : "";
+
+        if (!paymentId) {
+            return jsonError("ไม่พบ Payment ID", 400, "MISSING_PAYMENT_ID");
+        }
+
+        const snapshot = await adminDb
+            .collection("payments")
+            .doc(paymentId)
+            .get();
+
+        if (!snapshot.exists) {
+            return jsonError("ไม่พบ Payment รายการนี้", 404, "PAYMENT_NOT_FOUND");
+        }
+
+        return jsonSuccess({
+            payment: { id: snapshot.id, ...snapshot.data() },
+        });
+    } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
+        console.error("Admin payment detail error:", error);
+        const code = error instanceof Error ? error.message : "DATABASE_ERROR";
+        const status = ["MISSING_TOKEN", "INVALID_TOKEN", "UNAUTHORIZED"].includes(code)
+            ? 401
+            : code === "NOT_ADMIN" || code === "ADMIN_DISABLED"
+                ? 403
+                : 500;
+        return NextResponse.json(
+            { success: false, error: "ไม่สามารถโหลด Payment Detail ได้", code },
+            { status },
+        );
+    }
+}
 
 function jsonError(
     error: string,
@@ -106,11 +150,9 @@ function getPaymentAmount(
     payment: Record<string, unknown>,
     booking: Record<string, unknown>,
 ): number {
-    const nestedBookingPayment =
-        getNestedObject(
-            booking.payment,
-        );
+    
 
+    const nestedBookingPayment = getNestedObject(booking.payment);
     const candidates = [
         payment.amount,
         payment.paidAmount,
@@ -230,6 +272,7 @@ export async function PATCH(
             adminDb
                 .collection("bookings")
                 .doc(requestedBookingId);
+        let expiredDuringRequest = false;
 
         const result =
             await adminDb.runTransaction(
@@ -293,7 +336,6 @@ export async function PATCH(
                             : "";
 
                     if (
-                        paymentBookingId &&
                         paymentBookingId !==
                             requestedBookingId
                     ) {
@@ -303,7 +345,6 @@ export async function PATCH(
                     }
 
                     if (
-                        bookingPaymentId &&
                         bookingPaymentId !==
                             paymentId
                     ) {
@@ -316,6 +357,18 @@ export async function PATCH(
                         normalizeStatus(
                             payment.status,
                         );
+
+                    if (booking.bookingStatus === "pending_payment" && isBookingHoldExpired(booking.holdExpiresAt?.toDate?.() ?? booking.holdExpiresAt)) {
+                        const eventDate = typeof booking.event?.date === "string" ? booking.event.date : "";
+                        if (eventDate) {
+                            const dateRef = adminDb.collection("bookingDates").doc(eventDate);
+                            const dateSnap = await transaction.get(dateRef);
+                            if (dateSnap.exists && dateSnap.data()?.bookingId === bookingRef.id) transaction.update(dateRef, { status: "released", updatedAt: FieldValue.serverTimestamp() });
+                        }
+                        transaction.update(bookingRef, { bookingStatus: "expired", expiredAt: FieldValue.serverTimestamp(), expiredBy: "system", updatedAt: FieldValue.serverTimestamp() });
+                        expiredDuringRequest = true;
+                        return { expired: true };
+                    }
 
                     /*
                      * Never allow a verified payment
@@ -330,6 +383,11 @@ export async function PATCH(
                         );
                     }
 
+                    if (!["submitted", "pending", "pending_verification"].includes(currentStatus) ||
+                        ["cancelled", "canceled", "expired"].includes(booking.bookingStatus) ||
+                        booking.payment?.status === "verified") {
+                        throw new Error("PAYMENT_STATE_NOT_ALLOWED");
+                    }
                     const proofUrl =
                         getProofUrl(
                             payment,
@@ -517,6 +575,7 @@ export async function PATCH(
                 },
             );
 
+        if (expiredDuringRequest) throw new Error("BOOKING_EXPIRED");
         return jsonSuccess({
             message:
                 action === "verify"
@@ -527,6 +586,8 @@ export async function PATCH(
     } catch (
         error: unknown
     ) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         console.error(
             "Admin payment action error:",
             error,
@@ -560,6 +621,7 @@ export async function PATCH(
                     code,
                 );
 
+            case "PAYMENT_STATE_NOT_ALLOWED":
             case "PAYMENT_ALREADY_VERIFIED":
                 return jsonError(
                     "Payment รายการนี้ถูกยืนยันแล้ว ไม่สามารถแก้ไขซ้ำได้",

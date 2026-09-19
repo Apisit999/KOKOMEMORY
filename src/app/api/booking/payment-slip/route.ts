@@ -5,9 +5,11 @@ import {
     DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { FieldValue } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 import { randomUUID } from "crypto";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { isBookingHoldExpired } from "@/lib/booking-lifecycle";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +19,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
     "image/jpeg",
     "image/png",
+    "image/webp",
     "application/pdf",
 ]);
 
@@ -258,6 +261,39 @@ export async function POST(
 
         bookingId =
             bookingIdValue.trim();
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId)) throw new Error("INVALID_BOOKING_ID");
+
+        const authorization = request.headers.get("authorization") || "";
+        if (!authorization.startsWith("Bearer ")) {
+            throw new Error("UNAUTHORIZED");
+        }
+
+        const idToken = authorization.slice("Bearer ".length).trim();
+        if (!idToken) throw new Error("UNAUTHORIZED");
+
+        let decodedToken;
+        try {
+            decodedToken = await getAuth().verifyIdToken(idToken, true);
+        } catch {
+            throw new Error("INVALID_TOKEN");
+        }
+
+        const userRecord = await getAuth().getUser(decodedToken.uid);
+        if (userRecord.disabled) throw new Error("USER_DISABLED");
+        if (!userRecord.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+
+        const ownershipSnapshot = await adminDb
+            .collection(BOOKING_COLLECTION)
+            .doc(bookingId)
+            .get();
+
+        if (!ownershipSnapshot.exists) {
+            throw new Error("BOOKING_NOT_FOUND");
+        }
+
+        if (ownershipSnapshot.data()?.userId !== decodedToken.uid) {
+            throw new Error("FORBIDDEN");
+        }
 
         if (!ALLOWED_TYPES.has(file.type)) {
             return NextResponse.json(
@@ -329,6 +365,7 @@ export async function POST(
 
         lockToken =
             randomUUID();
+        let expiredDuringRequest = false;
 
         await adminDb.runTransaction(
             async (transaction) => {
@@ -345,6 +382,21 @@ export async function POST(
 
                 const booking =
                     snapshot.data() || {};
+                if (booking.userId !== decodedToken.uid) throw new Error("FORBIDDEN");
+                if (booking.bookingStatus === "pending_payment" && isBookingHoldExpired(booking.holdExpiresAt?.toDate?.() ?? booking.holdExpiresAt)) {
+                    const eventDate = typeof booking.event?.date === "string" ? booking.event.date : "";
+                    if (eventDate) {
+                        const dateRef = adminDb.collection("bookingDates").doc(eventDate);
+                        const dateSnap = await transaction.get(dateRef);
+                        if (dateSnap.exists && dateSnap.data()?.bookingId === bookingRef.id) transaction.update(dateRef, { status: "released", updatedAt: FieldValue.serverTimestamp() });
+                    }
+                    transaction.update(bookingRef, { bookingStatus: "expired", expiredAt: FieldValue.serverTimestamp(), expiredBy: "system", updatedAt: FieldValue.serverTimestamp() });
+                    expiredDuringRequest = true;
+                    return;
+                }
+                if (!["pending_payment", "payment_rejected"].includes(booking.bookingStatus)) {
+                    throw new Error("PAYMENT_STATE_NOT_ALLOWED");
+                }
 
                 if (
                     isAlreadySubmitted(
@@ -357,7 +409,8 @@ export async function POST(
                 }
 
                 if (
-                    booking.paymentUploadLock
+                    booking.paymentUploadLock &&
+                    Date.now() - (booking.paymentUploadLock.startedAt?.toMillis?.() ?? Date.now()) < 10 * 60 * 1000
                 ) {
                     throw new Error(
                         "PAYMENT_UPLOAD_IN_PROGRESS"
@@ -378,6 +431,8 @@ export async function POST(
                 );
             }
         );
+
+        if (expiredDuringRequest) throw new Error("BOOKING_EXPIRED");
 
         lockAcquired = true;
 
@@ -434,8 +489,10 @@ export async function POST(
                 ContentType: file.type,
                 ContentLength: buffer.length,
 
+                // Payment slips are private customer/admin data. Do not make
+                // browser/CDN caches retain them as public immutable assets.
                 CacheControl:
-                    "public, max-age=31536000, immutable",
+                    "private, no-store, max-age=0",
 
                 Metadata: {
                     bookingId,
@@ -491,6 +548,10 @@ export async function POST(
 
                 const booking =
                     snapshot.data() || {};
+                if (booking.userId !== decodedToken.uid) throw new Error("FORBIDDEN");
+                if (!["pending_payment", "payment_rejected"].includes(booking.bookingStatus)) {
+                    throw new Error("PAYMENT_STATE_NOT_ALLOWED");
+                }
 
                 if (
                     isAlreadySubmitted(
@@ -520,6 +581,10 @@ export async function POST(
                         booking
                     );
 
+                transaction.set(adminDb.collection("auditLogs").doc(), {
+                    action: "SUBMIT_PAYMENT", resource: "payment", bookingId,
+                    paymentId: paymentRef.id, userId: decodedToken.uid, amount: finalAmount, createdAt: now,
+                });
                 transaction.set(
                     paymentRef,
                     {
@@ -553,6 +618,9 @@ export async function POST(
 
                         slipKey:
                             key,
+
+                        secureSlipUrl:
+                            `/api/payment-slip/${paymentRef.id}`,
 
                         slipFileName:
                             file.name,
@@ -616,11 +684,14 @@ export async function POST(
                         "payment.proofKey":
                             key,
 
+                        "payment.secureSlipUrl":
+                            `/api/payment-slip/${paymentRef.id}`,
+
                         "payment.paidAmount":
-                            finalAmount,
+                            0,
 
                         "payment.paidAt":
-                            now,
+                            null,
 
                         paymentSubmittedAt:
                             now,
@@ -765,6 +836,22 @@ export async function POST(
                 ? error.message
                 : "UNKNOWN_ERROR";
 
+        if (["UNAUTHORIZED", "INVALID_TOKEN", "EMAIL_NOT_VERIFIED", "USER_DISABLED"].includes(message)) {
+            return NextResponse.json(
+                { success: false, error: "กรุณาเข้าสู่ระบบและยืนยันอีเมลก่อนส่งหลักฐาน", code: message },
+                { status: 401 },
+            );
+        }
+
+        if (message === "INVALID_BOOKING_ID") return NextResponse.json({ error: message }, { status: 400 });
+
+        if (message === "FORBIDDEN") {
+            return NextResponse.json(
+                { success: false, error: "ไม่มีสิทธิ์ใช้งาน Booking นี้", code: message },
+                { status: 403 },
+            );
+        }
+
         if (
             message ===
             "BOOKING_NOT_FOUND"
@@ -772,6 +859,7 @@ export async function POST(
             return NextResponse.json(
                 {
                     success: false,
+                    code: message,
                     error:
                         "ไม่พบรายการจองนี้ในระบบ",
                 },
@@ -779,10 +867,7 @@ export async function POST(
             );
         }
 
-        if (
-            message ===
-            "PAYMENT_ALREADY_SUBMITTED"
-        ) {
+        if (["PAYMENT_ALREADY_SUBMITTED", "PAYMENT_STATE_NOT_ALLOWED"].includes(message)) {
             return NextResponse.json(
                 {
                     success: false,

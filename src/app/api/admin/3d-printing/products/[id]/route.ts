@@ -1,3 +1,4 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
@@ -37,6 +38,8 @@ export async function GET(request: Request, context: RouteContext) {
         if (!snapshot.exists) throw new Error("NOT_FOUND");
         return NextResponse.json({ success: true, product: normalizeProduct(id, snapshot.data() as Record<string, unknown>) });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }
@@ -64,6 +67,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }
@@ -82,6 +87,8 @@ export async function DELETE(request: Request, context: RouteContext) {
         if (keys.length) await deleteKeys(keys);
         return NextResponse.json({ success: true });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }

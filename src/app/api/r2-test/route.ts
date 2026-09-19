@@ -1,3 +1,6 @@
+import { requireAdminApi } from "@/lib/require-admin-api";
+import { authErrorResponse } from "@/lib/api-error";
+import { adminDb } from "@/lib/firebase-admin";
 import { NextResponse } from "next/server";
 
 import {
@@ -6,14 +9,9 @@ import {
     DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 
-import {
-    cert,
-    getApps,
-    initializeApp,
-} from "firebase-admin/app";
+
 
 import {
-    getFirestore,
     Timestamp,
 } from "firebase-admin/firestore";
 
@@ -35,6 +33,7 @@ export async function POST(request: Request) {
     let bucketName: string | null = null;
 
     try {
+        await requireAdminApi(request);
         // =====================================================
         // 1. R2 ENV
         // =====================================================
@@ -78,68 +77,7 @@ export async function POST(request: Request) {
         // 2. FIREBASE ENV
         // =====================================================
 
-        const firebaseProjectId =
-            process.env.FIREBASE_PROJECT_ID ||
-            process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-
-        const firebaseClientEmail =
-            process.env.FIREBASE_CLIENT_EMAIL ||
-            process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-
-        const firebasePrivateKey = (
-            process.env.FIREBASE_PRIVATE_KEY ||
-            process.env.FIREBASE_ADMIN_PRIVATE_KEY ||
-            ""
-        ).replace(/\\n/g, "\n");
-
-        console.log("FIREBASE ENV CHECK:", {
-            projectId: !!firebaseProjectId,
-            clientEmail: !!firebaseClientEmail,
-            privateKey: !!firebasePrivateKey,
-        });
-
-        if (
-            !firebaseProjectId ||
-            !firebaseClientEmail ||
-            !firebasePrivateKey
-        ) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error:
-                        "Firebase Admin Environment Variables ไม่ครบ",
-                    detail: {
-                        projectId: !!firebaseProjectId,
-                        clientEmail: !!firebaseClientEmail,
-                        privateKey: !!firebasePrivateKey,
-                    },
-                },
-                { status: 500 }
-            );
-        }
-
-        // =====================================================
-        // 3. Firebase Admin
-        // =====================================================
-
-        const firebaseApp =
-            getApps().length > 0
-                ? getApps()[0]
-                : initializeApp({
-                    credential: cert({
-                        projectId:
-                            firebaseProjectId,
-
-                        clientEmail:
-                            firebaseClientEmail,
-
-                        privateKey:
-                            firebasePrivateKey,
-                    }),
-                });
-
-        const db =
-            getFirestore(firebaseApp);
+        const db = adminDb;
 
         console.log(
             "FIREBASE ADMIN READY"
@@ -213,6 +151,8 @@ export async function POST(request: Request) {
 
         const bookingId =
             bookingIdValue.trim();
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId)) return NextResponse.json({ error: "INVALID_BOOKING_ID" }, { status: 400 });
+        if (!(await db.collection("bookings").doc(bookingId).get()).exists) return NextResponse.json({ error: "BOOKING_NOT_FOUND" }, { status: 404 });
 
         console.log(
             "BOOKING ID:",
@@ -224,7 +164,7 @@ export async function POST(request: Request) {
         // =====================================================
 
         if (
-            !file.type.startsWith("image/")
+            !["image/jpeg", "image/png", "image/webp"].includes(file.type)
         ) {
             return NextResponse.json(
                 {
@@ -385,6 +325,8 @@ export async function POST(request: Request) {
         });
 
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
 
         console.error(
             "================================="

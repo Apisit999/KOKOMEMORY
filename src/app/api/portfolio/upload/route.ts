@@ -6,20 +6,7 @@ import {
     PutObjectCommand,
 } from "@aws-sdk/client-s3";
 
-import {
-    cert,
-    getApps,
-    getApp,
-    initializeApp,
-} from "firebase-admin/app";
-
-import {
-    getAuth,
-} from "firebase-admin/auth";
-
-import {
-    getFirestore,
-} from "firebase-admin/firestore";
+import { requireAdminApi } from "@/lib/require-admin-api";
 
 import {
     r2,
@@ -37,8 +24,6 @@ export const runtime = "nodejs";
    Constants
 ========================================================= */
 
-const FIREBASE_ADMIN_APP_NAME =
-    "koko-portfolio-admin";
 
 const MAX_FILE_SIZE =
     20 * 1024 * 1024;
@@ -99,247 +84,7 @@ function jsonError(
    จากไฟล์อื่นในโปรเจกต์
 ========================================================= */
 
-function getFirebaseAdmin() {
-    const existingApps =
-        getApps();
-
-    const existingApp =
-        existingApps.find(
-            (app) =>
-                app.name ===
-                FIREBASE_ADMIN_APP_NAME
-        );
-
-    const app =
-        existingApp ??
-        initializeApp(
-            {
-                credential:
-                    cert({
-                        projectId:
-                            process.env
-                                .FIREBASE_PROJECT_ID,
-
-                        clientEmail:
-                            process.env
-                                .FIREBASE_CLIENT_EMAIL,
-
-                        privateKey:
-                            process.env
-                                .FIREBASE_PRIVATE_KEY
-                                ?.replace(
-                                    /\\n/g,
-                                    "\n"
-                                ),
-                    }),
-            },
-            FIREBASE_ADMIN_APP_NAME
-        );
-
-    return {
-        app,
-        auth: getAuth(app),
-        db: getFirestore(app),
-    };
-}
-
-/* =========================================================
-   Verify Admin
-========================================================= */
-
-async function verifyAdmin(
-    request: NextRequest
-) {
-    const authorization =
-        request.headers.get(
-            "authorization"
-        );
-
-    if (!authorization) {
-        throw new Error(
-            "UNAUTHORIZED"
-        );
-    }
-
-    if (
-        !authorization.startsWith(
-            "Bearer "
-        )
-    ) {
-        throw new Error(
-            "INVALID_AUTH_HEADER"
-        );
-    }
-
-    const token =
-        authorization
-            .slice(7)
-            .trim();
-
-    if (!token) {
-        throw new Error(
-            "MISSING_TOKEN"
-        );
-    }
-
-    const {
-        app,
-        auth,
-        db,
-    } = getFirebaseAdmin();
-
-    /* -----------------------------------------------------
-       Verify Firebase ID Token
-    ----------------------------------------------------- */
-
-    let decodedToken;
-
-    try {
-        decodedToken =
-            await auth.verifyIdToken(
-                token
-            );
-    } catch (error) {
-        console.error(
-            "[Portfolio API] Firebase token verification failed:",
-            error
-        );
-
-        throw new Error(
-            "INVALID_TOKEN"
-        );
-    }
-
-    /* -----------------------------------------------------
-       Check project
-    ----------------------------------------------------- */
-
-    const configuredProjectId =
-        process.env
-            .FIREBASE_PROJECT_ID;
-
-    if (
-        configuredProjectId &&
-        decodedToken.aud !==
-            configuredProjectId
-    ) {
-        console.error(
-            "[Portfolio API] Firebase project mismatch:",
-            {
-                tokenProject:
-                    decodedToken.aud,
-                configuredProject:
-                    configuredProjectId,
-            }
-        );
-
-        throw new Error(
-            "PROJECT_MISMATCH"
-        );
-    }
-
-    /* -----------------------------------------------------
-       Admin Document
-       
-       IMPORTANT:
-       admins/{Firebase Auth UID}
-    ----------------------------------------------------- */
-
-    const uid =
-        decodedToken.uid;
-
-    const adminRef =
-        db
-            .collection("admins")
-            .doc(uid);
-
-    const adminSnapshot =
-        await adminRef.get();
-
-    /* -----------------------------------------------------
-       Debug information
-       ไม่แสดง token / secret
-    ----------------------------------------------------- */
-
-    console.log(
-        "[Portfolio API] Admin check:",
-        {
-            firebaseApp:
-                app.name,
-
-            projectId:
-                configuredProjectId,
-
-            uid,
-
-            adminPath:
-                adminRef.path,
-
-            exists:
-                adminSnapshot.exists,
-        }
-    );
-
-    /* -----------------------------------------------------
-       Admin document missing
-    ----------------------------------------------------- */
-
-    if (
-        !adminSnapshot.exists
-    ) {
-        throw new Error(
-            "NOT_ADMIN"
-        );
-    }
-
-    const adminData =
-        adminSnapshot.data();
-
-    console.log(
-        "[Portfolio API] Admin data:",
-        {
-            uid,
-
-            role:
-                adminData?.role,
-
-            active:
-                adminData?.active,
-        }
-    );
-
-    /* -----------------------------------------------------
-       Role check
-    ----------------------------------------------------- */
-
-    if (
-        adminData?.role !==
-        "admin"
-    ) {
-        throw new Error(
-            "NOT_ADMIN"
-        );
-    }
-
-    /* -----------------------------------------------------
-       Active check
-    ----------------------------------------------------- */
-
-    if (
-        adminData?.active !==
-        true
-    ) {
-        throw new Error(
-            "ADMIN_DISABLED"
-        );
-    }
-
-    return decodedToken;
-}
-
-/* =========================================================
-   Sanitize Portfolio ID
-========================================================= */
+const verifyAdmin = requireAdminApi;
 
 function sanitizeId(
     value: string
@@ -716,6 +461,7 @@ export async function POST(
                         "PROJECT_MISMATCH"
                     );
 
+                case "FORBIDDEN":
                 case "NOT_ADMIN":
                     return jsonError(
                         "บัญชีนี้ไม่มีสิทธิ์ Admin",
@@ -906,6 +652,7 @@ export async function DELETE(
                         "PROJECT_MISMATCH"
                     );
 
+                case "FORBIDDEN":
                 case "NOT_ADMIN":
                     return jsonError(
                         "บัญชีนี้ไม่มีสิทธิ์ Admin",

@@ -1,60 +1,14 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
-import { getAuth } from "firebase-admin/auth";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { requireAdminApi } from "@/lib/require-admin-api";
 
 const COLLECTION = "threeDPayments";
 
 async function requireAdmin(request: Request) {
-    const authorization =
-        request.headers.get("authorization");
-
-    if (
-        !authorization?.startsWith(
-            "Bearer "
-        )
-    ) {
-        throw new Error(
-            "ไม่ได้รับสิทธิ์การเข้าสู่ระบบ"
-        );
-    }
-
-    const token =
-        authorization.slice(
-            "Bearer ".length
-        );
-
-    const decoded =
-        await getAuth().verifyIdToken(
-            token
-        );
-
-    const adminSnapshot =
-        await adminDb
-            .collection("admins")
-            .doc(decoded.uid)
-            .get();
-
-    if (!adminSnapshot.exists) {
-        throw new Error(
-            "บัญชีนี้ไม่มีสิทธิ์ Admin"
-        );
-    }
-
-    const adminData =
-        adminSnapshot.data();
-
-    if (
-        adminData?.role !== "admin" ||
-        adminData?.active !== true
-    ) {
-        throw new Error(
-            "บัญชีนี้ไม่มีสิทธิ์ Admin"
-        );
-    }
-
-    return decoded;
+    return requireAdminApi(request);
 }
 
 function normalizePayment(
@@ -79,23 +33,19 @@ function normalizePayment(
 
         status: data.status,
 
-        ...(typeof data.reference ===
-        "string"
+        ...(typeof data.reference === "string"
             ? {
-                  reference:
-                      data.reference,
+                  reference: data.reference,
               }
             : {}),
 
-        ...(typeof data.note ===
-        "string"
+        ...(typeof data.note === "string"
             ? {
                   note: data.note,
               }
             : {}),
 
-        ...(typeof data.paidAt ===
-        "string"
+        ...(typeof data.paidAt === "string"
             ? {
                   paidAt: data.paidAt,
               }
@@ -106,9 +56,7 @@ function normalizePayment(
     };
 }
 
-function getTimestampMillis(
-    value: unknown
-) {
+function getTimestampMillis(value: unknown) {
     if (!value) {
         return 0;
     }
@@ -117,8 +65,7 @@ function getTimestampMillis(
         typeof value === "object" &&
         value !== null &&
         "toMillis" in value &&
-        typeof value.toMillis ===
-            "function"
+        typeof value.toMillis === "function"
     ) {
         return value.toMillis();
     }
@@ -127,13 +74,11 @@ function getTimestampMillis(
         typeof value === "object" &&
         value !== null &&
         "_seconds" in value &&
-        typeof value._seconds ===
-            "number"
+        typeof value._seconds === "number"
     ) {
         const nanoseconds =
             "_nanoseconds" in value &&
-            typeof value._nanoseconds ===
-                "number"
+            typeof value._nanoseconds === "number"
                 ? value._nanoseconds
                 : 0;
 
@@ -147,9 +92,7 @@ function getTimestampMillis(
         typeof value === "string" ||
         typeof value === "number"
     ) {
-        const time = new Date(
-            value
-        ).getTime();
+        const time = new Date(value).getTime();
 
         return Number.isNaN(time)
             ? 0
@@ -172,25 +115,17 @@ function getTimestampMillis(
    ที่ Server แทน เพื่อไม่ต้องสร้าง Index เพิ่ม
 ========================================================= */
 
-export async function GET(
-    request: Request
-) {
+export async function GET(request: Request) {
     try {
         await requireAdmin(request);
 
-        const url =
-            new URL(request.url);
+        const url = new URL(request.url);
 
         const orderId =
-            url.searchParams.get(
-                "orderId"
-            );
+            url.searchParams.get("orderId");
 
-        let query:
-            FirebaseFirestore.Query =
-            adminDb.collection(
-                COLLECTION
-            );
+        let query: FirebaseFirestore.Query =
+            adminDb.collection(COLLECTION);
 
         if (orderId) {
             query = query.where(
@@ -200,32 +135,29 @@ export async function GET(
             );
         }
 
-        const snapshot =
-            await query.get();
+        const snapshot = await query.get();
 
-        const payments =
-            snapshot.docs
-                .map(
-                    (doc) =>
-                        normalizePayment(
-                            doc.id,
-                            doc.data()
-                        )
+        const payments = snapshot.docs
+            .map((doc) =>
+                normalizePayment(
+                    doc.id,
+                    doc.data()
                 )
-                .sort(
-                    (a, b) =>
-                        getTimestampMillis(
-                            b.createdAt
-                        ) -
-                        getTimestampMillis(
-                            a.createdAt
-                        )
-                );
+            )
+            .sort(
+                (a, b) =>
+                    getTimestampMillis(b.createdAt) -
+                    getTimestampMillis(a.createdAt)
+            );
 
         return NextResponse.json({
             payments,
         });
     } catch (error) {
+        const denied = authErrorResponse(error);
+
+        if (denied) return denied;
+
         console.error(
             "GET 3D payments error:",
             error
@@ -250,11 +182,10 @@ export async function GET(
    POST /api/admin/3d-printing/payments
 ========================================================= */
 
-export async function POST(
-    request: Request
-) {
+export async function POST(request: Request) {
     try {
-        await requireAdmin(request);
+        // รับข้อมูล Admin เพื่อใช้บันทึก auditLogs
+        const admin = await requireAdmin(request);
 
         const body =
             (await request.json()) as {
@@ -447,8 +378,54 @@ export async function POST(
                 body.paidAt.trim();
         }
 
-        await paymentRef.set(
-            paymentData
+        await adminDb.runTransaction(
+            async (transaction) => {
+                const latestOrder =
+                    await transaction.get(
+                        orderRef
+                    );
+
+                if (!latestOrder.exists) {
+                    throw new Error(
+                        "ORDER_NOT_FOUND"
+                    );
+                }
+
+                const latestOrderNumber =
+                    latestOrder.data()
+                        ?.orderNumber ||
+                    orderNumber;
+
+                transaction.create(
+                    paymentRef,
+                    {
+                        ...paymentData,
+                        orderNumber:
+                            latestOrderNumber,
+                    }
+                );
+
+                transaction.set(
+                    adminDb
+                        .collection(
+                            "auditLogs"
+                        )
+                        .doc(),
+                    {
+                        action:
+                            "CREATE_3D_PAYMENT",
+                        paymentId:
+                            paymentRef.id,
+                        orderId,
+                        amount,
+                        status,
+                        adminUid:
+                            admin.uid,
+                        createdAt:
+                            FieldValue.serverTimestamp(),
+                    }
+                );
+            }
         );
 
         const createdSnapshot =
@@ -468,6 +445,11 @@ export async function POST(
             }
         );
     } catch (error) {
+        const denied =
+            authErrorResponse(error);
+
+        if (denied) return denied;
+
         console.error(
             "POST 3D payment error:",
             error

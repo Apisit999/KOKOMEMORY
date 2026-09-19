@@ -53,20 +53,8 @@ function SuccessContent() {
 
     const packageId = searchParams.get("package") ?? "premium";
     const date = searchParams.get("date") ?? "";
-
-    /*
-     * ตอนนี้ใช้ Booking ID จำลอง
-     *
-     * ภายหลังจะสร้างจาก Firebase / Server
-     */
-    const bookingId = "KM-2026-000125";
-
-    /*
-     * Payment Reference จำลอง
-     *
-     * ภายหลังจะมาจาก Payment Gateway
-     */
-    const paymentReference = "PAY-20260810-8F32A";
+    const bookingId = searchParams.get("bookingId") ?? "";
+    const paymentReference = searchParams.get("paymentId") ?? "";
 
     const handleCopyBookingId = async () => {
         try {

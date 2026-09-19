@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
+import { onIdTokenChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 import {
@@ -20,6 +22,22 @@ export default function AdminLayout({
     const [sidebarOpen, setSidebarOpen] =
         useState(false);
     const pathname = usePathname();
+    const router = useRouter();
+    const [authorized, setAuthorized] = useState(false);
+    useEffect(() => {
+        if (pathname === "/admin/login") return;
+        return onIdTokenChanged(auth, async user => {
+            setAuthorized(false);
+            try {
+                const result = await user?.getIdTokenResult();
+                const claims = result?.claims;
+                if (!claims || !(claims.admin === true || claims.isAdmin === true || claims.role === "admin")) {
+                    router.replace("/admin/login"); return;
+                }
+                setAuthorized(true);
+            } catch { router.replace("/admin/login"); }
+        });
+    }, [pathname, router]);
 
     if (pathname === "/admin/login") {
         return (
@@ -30,6 +48,7 @@ export default function AdminLayout({
     }
 
 
+    if (!authorized) return null;
     return (
         <div className="min-h-screen bg-slate-50">
 

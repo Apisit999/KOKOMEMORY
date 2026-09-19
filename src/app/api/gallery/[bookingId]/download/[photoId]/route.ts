@@ -6,6 +6,8 @@ import {
 } from "@aws-sdk/client-s3";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { adminAuth } from "@/lib/firebase-admin";
+import { authorizeGalleryToken } from "@/lib/gallery-share";
 
 export const runtime = "nodejs";
 
@@ -36,11 +38,29 @@ export async function GET(
             );
         }
 
-        console.log(
-            "DOWNLOAD:",
-            bookingId,
-            photoId
-        );
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId) || !/^[A-Za-z0-9_-]{1,128}$/.test(photoId)) {
+            return NextResponse.json({ success: false, error: "ข้อมูลรูปไม่ถูกต้อง" }, { status: 400 });
+        }
+
+        const query = new URL(request.url).searchParams;
+        const guestToken = query.get("guestToken") || query.get("token");
+        const token = request.headers.get("authorization")?.match(/^Bearer\s+(\S+)$/i)?.[1];
+        if (guestToken && await authorizeGalleryToken(bookingId, guestToken)) {
+            // Guest access is scoped to this booking and checked again below.
+        } else if (!token) return NextResponse.json({ success: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+        if (guestToken && await authorizeGalleryToken(bookingId, guestToken)) {
+            // Skip customer/admin identity checks for a valid scoped share token.
+        } else {
+        if (!token) return NextResponse.json({ success: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+        const decoded = await adminAuth.verifyIdToken(token, true);
+        const authUser = await adminAuth.getUser(decoded.uid);
+        if (authUser.disabled) return NextResponse.json({ success: false, error: "บัญชีถูกระงับ" }, { status: 401 });
+        const isAdmin = decoded.admin === true || decoded.isAdmin === true || decoded.role === "admin";
+        const bookingSnapshot = await adminDb.collection("bookings").doc(bookingId).get();
+        if (!bookingSnapshot.exists) return NextResponse.json({ success: false, error: "ไม่พบรายการจองนี้" }, { status: 404 });
+        if (!isAdmin && bookingSnapshot.data()?.userId !== decoded.uid) return NextResponse.json({ success: false, error: "ไม่มีสิทธิ์เข้าถึงรูปนี้" }, { status: 403 });
+        }
+
 
         // =========================================
         // ENV
@@ -117,6 +137,11 @@ export async function GET(
             );
         }
 
+        const photoStatus = typeof photo.status === "string" ? photo.status.toLowerCase() : "published";
+        if (photo.deleted === true || photo.deletedAt || !["published", "active", "ready"].includes(photoStatus)) {
+            return NextResponse.json({ success: false, error: "รูปนี้ยังไม่พร้อมให้ดาวน์โหลด" }, { status: 404 });
+        }
+
         // =========================================
         // CHECK R2 KEY
         // =========================================
@@ -135,10 +160,6 @@ export async function GET(
             );
         }
 
-        console.log(
-            "R2 KEY:",
-            photo.key
-        );
 
         // =========================================
         // R2 CLIENT

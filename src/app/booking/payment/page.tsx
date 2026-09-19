@@ -15,7 +15,10 @@ import {
     doc,
     getDoc,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import {
+    auth,
+    db,
+} from "@/lib/firebase";
 import {
     ArrowLeft,
     ArrowRight,
@@ -567,11 +570,36 @@ function PaymentContent() {
                 String(paymentAmount)
             );
 
+            const currentUser = auth.currentUser;
+
+            if (!currentUser) {
+                throw new Error(
+                    "กรุณาเข้าสู่ระบบก่อนส่งหลักฐานการชำระเงิน"
+                );
+            }
+
+            if (!currentUser.emailVerified) {
+                throw new Error(
+                    "กรุณายืนยันอีเมลก่อนส่งหลักฐานการชำระเงิน"
+                );
+            }
+
+            /*
+             * ส่ง Firebase ID Token ไปกับ request
+             * เพื่อให้ Server ตรวจว่า Booking นี้เป็นของผู้ใช้จริง
+             */
+            const idToken =
+                await currentUser.getIdToken();
+
             const response =
                 await fetch(
-                    "/api/booking/payment",
+                    "/api/booking/payment-slip",
                     {
                         method: "POST",
+                        headers: {
+                            Authorization:
+                                `Bearer ${idToken}`,
+                        },
                         body: formData,
                     }
                 );
@@ -616,11 +644,25 @@ function PaymentContent() {
                 error
             );
 
-            setSubmitError(
+            const message =
                 error instanceof Error
                     ? error.message
-                    : "ไม่สามารถส่งหลักฐานการชำระเงินได้ กรุณาลองใหม่อีกครั้ง"
-            );
+                    : "ไม่สามารถส่งหลักฐานการชำระเงินได้ กรุณาลองใหม่อีกครั้ง";
+
+            const friendlyMessage =
+                message === "UNAUTHORIZED"
+                    ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง"
+                    : message === "INVALID_TOKEN"
+                        ? "การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง"
+                        : message === "EMAIL_NOT_VERIFIED"
+                            ? "กรุณายืนยันอีเมลก่อนส่งหลักฐานการชำระเงิน"
+                            : message === "BOOKING_NOT_FOUND"
+                                ? "ไม่พบรายการจองนี้ในระบบ"
+                                : message === "PAYMENT_ALREADY_SUBMITTED"
+                                    ? "รายการนี้ส่งหลักฐานไปแล้ว ไม่สามารถส่งซ้ำได้"
+                                    : message;
+
+            setSubmitError(friendlyMessage);
         } finally {
             setIsSubmitting(false);
             submitLockRef.current = false;

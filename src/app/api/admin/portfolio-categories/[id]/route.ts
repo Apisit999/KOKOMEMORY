@@ -1,7 +1,7 @@
-import { getAuth } from "firebase-admin/auth";
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 
-import { adminDb } from "@/lib/firebase-admin";
+import { requireAdminApi } from "@/lib/require-admin-api";
 import {
     deleteCategory,
     getCategory,
@@ -14,27 +14,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 async function requireAdmin(request: Request) {
-    const authorization = request.headers.get("authorization") || "";
-    const token = authorization.startsWith("Bearer ")
-        ? authorization.slice("Bearer ".length)
-        : "";
-
-    if (!token) throw new Error("UNAUTHORIZED");
-
-    const decodedToken = await getAuth().verifyIdToken(token);
-    const adminSnapshot = await adminDb
-        .collection("admins")
-        .doc(decodedToken.uid)
-        .get();
-    const adminData = adminSnapshot.data();
-
-    if (
-        !adminSnapshot.exists ||
-        adminData?.role !== "admin" ||
-        adminData?.active !== true
-    ) {
-        throw new Error("FORBIDDEN");
-    }
+    await requireAdminApi(request);
 }
 
 function errorResponse(error: unknown) {
@@ -93,6 +73,8 @@ export async function GET(
 
         return NextResponse.json({ success: true, category });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }
@@ -112,6 +94,8 @@ export async function PATCH(
             category,
         });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }
@@ -127,6 +111,8 @@ export async function DELETE(
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }

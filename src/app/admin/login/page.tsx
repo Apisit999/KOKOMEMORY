@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
+function isAdminClaims(claims: Record<string, unknown>) {
+    return (
+        claims.admin === true ||
+        claims.isAdmin === true ||
+        claims.role === "admin"
+    );
+}
+
 export default function AdminLoginPage() {
     const router = useRouter();
 
@@ -13,8 +21,10 @@ export default function AdminLoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    async function handleLogin(e: React.FormEvent) {
+    async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+
+        if (loading) return;
 
         setLoading(true);
         setError("");
@@ -26,15 +36,24 @@ export default function AdminLoginPage() {
                 password
             );
 
-            console.log("LOGIN SUCCESS");
-            console.log("UID:", userCredential.user.uid);
-            console.log("EMAIL:", userCredential.user.email);
+            const user = userCredential.user;
 
-            // Login สำเร็จ
+            // Force refresh เพื่อดึง Custom Claims ล่าสุดจาก Firebase
+            const tokenResult = await user.getIdTokenResult(true);
+
+            if (!isAdminClaims(tokenResult.claims)) {
+                await auth.signOut();
+
+                setError(
+                    "บัญชีนี้ไม่มีสิทธิ์ Admin กรุณาใช้บัญชีผู้ดูแลระบบ"
+                );
+
+                return;
+            }
+
             router.replace("/admin/dashboard");
-
         } catch (error: unknown) {
-            console.error("LOGIN ERROR:", error);
+            console.error("ADMIN LOGIN ERROR:", error);
 
             const errorCode =
                 typeof error === "object" &&
@@ -44,20 +63,19 @@ export default function AdminLoginPage() {
                     ? error.code
                     : "";
 
-            const errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : "เข้าสู่ระบบไม่สำเร็จ";
-
-            setError(
-                errorCode === "auth/invalid-credential"
-                    ? "อีเมลหรือรหัสผ่านไม่ถูกต้อง"
-                    : errorCode === "auth/user-not-found"
-                        ? "ไม่พบบัญชีนี้"
-                        : errorCode === "auth/wrong-password"
-                            ? "รหัสผ่านไม่ถูกต้อง"
-                            : errorMessage
-            );
+            if (errorCode === "auth/invalid-credential") {
+                setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+            } else if (errorCode === "auth/user-not-found") {
+                setError("ไม่พบบัญชีนี้");
+            } else if (errorCode === "auth/wrong-password") {
+                setError("รหัสผ่านไม่ถูกต้อง");
+            } else if (errorCode === "auth/too-many-requests") {
+                setError(
+                    "มีการพยายามเข้าสู่ระบบหลายครั้ง กรุณารอสักครู่แล้วลองใหม่"
+                );
+            } else {
+                setError("เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+            }
         } finally {
             setLoading(false);
         }
@@ -79,8 +97,10 @@ export default function AdminLoginPage() {
                     </p>
                 </div>
 
-                <form onSubmit={handleLogin} className="space-y-5">
-
+                <form
+                    onSubmit={handleLogin}
+                    className="space-y-5"
+                >
                     <div>
                         <label className="block mb-2 font-medium">
                             อีเมล
@@ -92,6 +112,7 @@ export default function AdminLoginPage() {
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-pink-400"
                             autoComplete="username"
+                            required
                         />
                     </div>
 
@@ -106,6 +127,7 @@ export default function AdminLoginPage() {
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-pink-400"
                             autoComplete="current-password"
+                            required
                         />
                     </div>
 
@@ -118,11 +140,12 @@ export default function AdminLoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-60 text-white rounded-xl py-3 font-semibold"
+                        className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-60 text-white rounded-xl py-3 font-semibold transition"
                     >
-                        {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+                        {loading
+                            ? "กำลังเข้าสู่ระบบ..."
+                            : "เข้าสู่ระบบ"}
                     </button>
-
                 </form>
 
                 <div className="mt-6 text-center text-xs text-gray-400">

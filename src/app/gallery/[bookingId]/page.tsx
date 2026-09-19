@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { auth } from "@/lib/firebase";
 
 type Photo = {
     id: string;
     bookingId: string;
     fileName: string;
-    key: string;
     contentType: string;
     size: number;
     url: string;
@@ -19,6 +20,8 @@ export default function GalleryPage() {
     const bookingId = String(
         params.bookingId || ""
     );
+    const searchParams = useSearchParams();
+    const guestToken = searchParams.get("guestToken") || searchParams.get("token");
 
     const [photos, setPhotos] =
         useState<Photo[]>([]);
@@ -45,15 +48,18 @@ export default function GalleryPage() {
 
         async function loadGallery() {
             try {
+                const user = auth.currentUser;
+                const idToken = user ? await user.getIdToken() : "";
                 setLoading(true);
                 setError("");
 
+                const galleryQuery = guestToken ? `?guestToken=${encodeURIComponent(guestToken)}` : "";
                 const response = await fetch(
-                    `/api/gallery/${encodeURIComponent(
-                        bookingId
-                    )}`,
+                    `/api/gallery/${encodeURIComponent(bookingId)}${galleryQuery}`,
                     {
                         method: "GET",
+                        headers: idToken ? { Authorization: `Bearer ${idToken}` } : undefined,
+                        ...(guestToken ? { } : {}),
                         cache: "no-store",
                     }
                 );
@@ -123,7 +129,7 @@ export default function GalleryPage() {
         }
 
         loadGallery();
-    }, [bookingId]);
+    }, [bookingId, guestToken]);
 
     // =========================================
     // DOWNLOAD
@@ -141,18 +147,16 @@ export default function GalleryPage() {
 
         try {
             setDownloadingId(photo.id);
+            const user = auth.currentUser;
+            const idToken = user ? await user.getIdToken() : "";
+            if (!idToken && !guestToken) throw new Error("กรุณาเข้าสู่ระบบเพื่อดาวน์โหลดรูป");
 
             console.log(
                 "Downloading photo:",
                 photo.id
             );
 
-            const downloadUrl =
-                `/api/gallery/${encodeURIComponent(
-                    bookingId
-                )}/download/${encodeURIComponent(
-                    photo.id
-                )}`;
+            const downloadUrl = `/api/gallery/${encodeURIComponent(bookingId)}/download/${encodeURIComponent(photo.id)}${guestToken ? `?guestToken=${encodeURIComponent(guestToken)}` : ""}`;
 
             console.log(
                 "Download URL:",
@@ -160,7 +164,7 @@ export default function GalleryPage() {
             );
 
             const response =
-                await fetch(downloadUrl);
+                await fetch(downloadUrl, { headers: idToken ? { Authorization: `Bearer ${idToken}` } : undefined });
 
             if (!response.ok) {
                 let errorMessage =

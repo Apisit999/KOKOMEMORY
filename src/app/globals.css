@@ -502,3 +502,9 @@ body {
     @apply font-sans;
   }
 }
+
+@media (max-width: 1023px) {
+  [data-account-shell] > div > main > main > header {
+    display: none;
+  }
+}

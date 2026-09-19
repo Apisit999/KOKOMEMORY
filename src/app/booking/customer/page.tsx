@@ -69,6 +69,9 @@ import {
     useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { travelFees } from "@/data/booking-pricing";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 
 import {
@@ -159,54 +162,7 @@ const eventTypes = [
  * เพื่อให้ Admin แก้ราคาเองได้
 ============================================================ */
 
-const travelFees: Record<string, number> = {
 
-    "กรุงเทพมหานคร": 0,
-
-    "สมุทรปราการ": 500,
-
-    "นนทบุรี": 500,
-
-    "ปทุมธานี": 500,
-
-    "นครปฐม": 800,
-
-    "พระนครศรีอยุธยา": 1000,
-
-    "ชลบุรี": 1500,
-
-    "ฉะเชิงเทรา": 1500,
-
-    "นครนายก": 1500,
-
-    "สระบุรี": 1500,
-
-    "ราชบุรี": 1500,
-
-    "กาญจนบุรี": 2000,
-
-    "ระยอง": 2000,
-
-    "เพชรบุรี": 2500,
-
-    "ประจวบคีรีขันธ์": 3500,
-
-    "นครราชสีมา": 3000,
-
-    "ขอนแก่น": 4500,
-
-    "เชียงใหม่": 5000,
-
-    "เชียงราย": 6000,
-
-    "ภูเก็ต": 6000,
-
-    "สุราษฎร์ธานี": 6000,
-
-    "สงขลา": 7000,
-
-    "อื่น ๆ": 0,
-};
 
 /* ============================================================
    PACKAGE DATA
@@ -1306,6 +1262,66 @@ function CustomerContent() {
         searchParams.get("date");
 
     /* ========================================================
+       BOOKING AUTH GUARD
+       --------------------------------------------------------
+       Guest       → Login
+       Unverified  → Security / Email Verification
+       Verified    → เข้า Step 3 ได้
+    ======================================================== */
+
+    const [authChecking, setAuthChecking] =
+        useState(true);
+
+    const [isAuthenticated, setIsAuthenticated] =
+        useState(false);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(
+            auth,
+            (user) => {
+                if (!user) {
+                    setIsAuthenticated(false);
+                    setAuthChecking(false);
+
+                    const currentPath =
+                        `/booking/customer?${searchParams.toString()}`;
+
+                    const redirect =
+                        encodeURIComponent(currentPath);
+
+                    window.location.replace(
+                        `/account/login?redirect=${redirect}`
+                    );
+
+                    return;
+                }
+
+                if (!user.emailVerified) {
+                    setIsAuthenticated(false);
+                    setAuthChecking(false);
+
+                    const currentPath =
+                        `/booking/customer?${searchParams.toString()}`;
+
+                    const redirect =
+                        encodeURIComponent(currentPath);
+
+                    window.location.replace(
+                        `/account/security?redirect=${redirect}`
+                    );
+
+                    return;
+                }
+
+                setIsAuthenticated(true);
+                setAuthChecking(false);
+            }
+        );
+
+        return () => unsubscribe();
+    }, [searchParams]);
+
+    /* ========================================================
        หา Package
        --------------------------------------------------------
        ใช้ Package ID จาก URL
@@ -1852,6 +1868,19 @@ function CustomerContent() {
         );
 
     };
+
+    if (authChecking || !isAuthenticated) {
+        return (
+            <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
+                <div className="text-center">
+                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-pink-100 border-t-pink-500" />
+                    <p className="mt-4 text-sm font-medium text-slate-500">
+                        กำลังตรวจสอบบัญชี...
+                    </p>
+                </div>
+            </main>
+        );
+    }
 
     return (
 

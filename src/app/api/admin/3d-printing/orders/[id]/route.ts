@@ -1,3 +1,4 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -615,6 +616,8 @@ export async function GET(
             ),
         });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }
@@ -1194,6 +1197,8 @@ export async function PATCH(
             },
         });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }
@@ -1228,6 +1233,8 @@ export async function DELETE(
             success: true,
         });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }

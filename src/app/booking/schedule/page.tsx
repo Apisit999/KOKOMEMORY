@@ -16,13 +16,17 @@
  * ระบบ Availability:
  * ------------------------------------------------------------
  * 🔥 อ่านข้อมูลจาก Firebase Firestore จริง
- * 🔴 ถ้า bookings มี Booking ในวันนั้น → ปิดวัน
  * 🔴 ถ้า bookingDates ล็อกวันนั้น → ปิดวัน
- * 🟢 ถ้าไม่มี Booking → ว่าง
+ * 🟢 ถ้าไม่มี lock และไม่ใช่วันปิดรับ → ว่าง
+ *
+ * หมายเหตุ:
+ * ------------------------------------------------------------
+ * ฝั่งลูกค้าไม่อ่าน collection "bookings" ทั้งหมด
+ * เพื่อป้องกันข้อมูลการจองของลูกค้าคนอื่นรั่วไหล
  *
  * Real-time:
  * ------------------------------------------------------------
- * ใช้ onSnapshot() เพื่ออัปเดตสถานะวันแบบ Real-time
+ * ใช้ onSnapshot() กับ bookingDates เพื่ออัปเดตสถานะวันแบบ Real-time
  *
  * Flow:
  * ------------------------------------------------------------
@@ -54,7 +58,15 @@ import {
     type Timestamp,
 } from "firebase/firestore";
 
+import {
+    auth,
+} from "@/lib/firebase";
+
 import { db } from "@/lib/firebase";
+
+import {
+    onAuthStateChanged,
+} from "firebase/auth";
 
 import {
     CalendarDays,
@@ -459,6 +471,75 @@ function ScheduleContent() {
     const packageId =
         searchParams.get("package");
 
+    /* ========================================================
+       BOOKING AUTH GUARD
+       --------------------------------------------------------
+       Guest       → Login
+       Unverified  → Security / Email Verification
+       Verified    → เข้า Step 2 ได้
+    ======================================================== */
+
+    const [
+        authChecking,
+        setAuthChecking,
+    ] = useState(true);
+
+    const [
+        isAuthenticated,
+        setIsAuthenticated,
+    ] = useState(false);
+
+    useEffect(() => {
+        const unsubscribe =
+            onAuthStateChanged(
+                auth,
+                (user) => {
+                    if (!user) {
+                        setIsAuthenticated(false);
+                        setAuthChecking(false);
+
+                        const currentPath =
+                            `/booking/schedule?${searchParams.toString()}`;
+
+                        const redirect =
+                            encodeURIComponent(
+                                currentPath
+                            );
+
+                        window.location.replace(
+                            `/account/login?redirect=${redirect}`
+                        );
+
+                        return;
+                    }
+
+                    if (!user.emailVerified) {
+                        setIsAuthenticated(false);
+                        setAuthChecking(false);
+
+                        const currentPath =
+                            `/booking/schedule?${searchParams.toString()}`;
+
+                        const redirect =
+                            encodeURIComponent(
+                                currentPath
+                            );
+
+                        window.location.replace(
+                            `/account/security?redirect=${redirect}`
+                        );
+
+                        return;
+                    }
+
+                    setIsAuthenticated(true);
+                    setAuthChecking(false);
+                }
+            );
+
+        return () => unsubscribe();
+    }, [searchParams]);
+
 
     /* ========================================================
        Selected Date
@@ -473,19 +554,13 @@ function ScheduleContent() {
     /* ========================================================
        Firebase Availability
        --------------------------------------------------------
-       วันที่ถูกจองจาก bookings
-    ======================================================== */
+       ใช้ bookingDates เป็นแหล่งข้อมูล Availability สำหรับลูกค้า
 
-    const [
-        bookedDates,
-        setBookedDates,
-    ] = useState<string[]>([]);
-
-
-    /* ========================================================
-       Firebase bookingDates
+       สำคัญ:
        --------------------------------------------------------
-       ใช้เป็นระบบ lock สำรอง
+       ไม่อ่าน collection "bookings" จากฝั่งลูกค้า
+       เพราะ Firestore Rules อนุญาตให้ลูกค้าอ่านได้เฉพาะ
+       Booking ของตัวเองเท่านั้น เพื่อป้องกันข้อมูลลูกค้าคนอื่นรั่วไหล
     ======================================================== */
 
     const [
@@ -517,8 +592,10 @@ function ScheduleContent() {
     /* ========================================================
        Real-time Firestore
        --------------------------------------------------------
-       1. bookings
-       2. bookingDates
+       อ่านเฉพาะ bookingDates
+       --------------------------------------------------------
+       bookingDates เป็น public availability index
+       ที่เก็บเพียงข้อมูลการล็อกวัน ไม่ใช่ข้อมูลส่วนตัวลูกค้า
     ======================================================== */
 
     useEffect(() => {
@@ -526,181 +603,6 @@ function ScheduleContent() {
         setAvailabilityLoading(true);
         setAvailabilityError("");
 
-
-        let bookingsLoaded = false;
-        let bookingDatesLoaded = false;
-
-
-        const checkLoadingComplete = () => {
-
-            if (
-                bookingsLoaded &&
-                bookingDatesLoaded
-            ) {
-                setAvailabilityLoading(false);
-            }
-
-        };
-
-
-        /* ====================================================
-           Listen: bookings
-        ==================================================== */
-
-        const unsubscribeBookings =
-            onSnapshot(
-                collection(
-                    db,
-                    "bookings"
-                ),
-
-                (snapshot) => {
-
-                    const dates =
-                        new Set<string>();
-
-
-                    snapshot.forEach(
-                        (document) => {
-
-                            const data =
-                                document.data();
-
-
-                            /* ------------------------------------
-                               Booking Status
-                            ------------------------------------ */
-
-                            const rawStatus =
-                                data.bookingStatus ??
-                                data.status ??
-                                "";
-
-                            const status =
-                                typeof rawStatus ===
-                                "string"
-                                    ? rawStatus
-                                        .trim()
-                                        .toLowerCase()
-                                    : "";
-
-
-                            /*
-                             * ถ้า Booking ถูกยกเลิก
-                             * ให้คืนวัน
-                             */
-
-                            if (
-                                RELEASED_BOOKING_STATUSES.has(
-                                    status
-                                )
-                            ) {
-                                return;
-                            }
-
-
-                            /* ------------------------------------
-                               รองรับโครงสร้างวันที่หลายแบบ
-                            ------------------------------------ */
-
-                            const possibleDates = [
-
-                                /* โครงสร้างปัจจุบัน */
-                                data?.event?.date,
-
-                                /* เผื่อระบบเดิม */
-                                data?.eventDate,
-
-                                data?.bookingDate,
-
-                                data?.date,
-
-                            ];
-
-
-                            let eventDate = "";
-
-
-                            for (
-                                const value
-                                of possibleDates
-                            ) {
-
-                                const normalized =
-                                    normalizeDateValue(
-                                        value
-                                    );
-
-                                if (
-                                    normalized
-                                ) {
-                                    eventDate =
-                                        normalized;
-                                    break;
-                                }
-
-                            }
-
-
-                            /* ------------------------------------
-                               เพิ่มวันที่ที่มี Booking
-                            ------------------------------------ */
-
-                            if (
-                                /^\d{4}-\d{2}-\d{2}$/.test(
-                                    eventDate
-                                )
-                            ) {
-
-                                dates.add(
-                                    eventDate
-                                );
-
-                            }
-
-                        }
-                    );
-
-
-                    setBookedDates(
-                        Array.from(dates)
-                    );
-
-
-                    bookingsLoaded = true;
-
-                    checkLoadingComplete();
-
-                },
-
-                (error) => {
-
-                    console.error(
-                        "Firestore bookings listener error:",
-                        error
-                    );
-
-
-                    setAvailabilityError(
-                        "ไม่สามารถตรวจสอบคิวจากระบบได้ กรุณารีเฟรชหน้าอีกครั้ง"
-                    );
-
-
-                    bookingsLoaded = true;
-
-                    setAvailabilityLoading(
-                        false
-                    );
-
-                }
-            );
-
-
-        /* ====================================================
-           Listen: bookingDates
-           ----------------------------------------------------
-           ใช้เป็น lock สำรอง
-        ==================================================== */
 
         const unsubscribeBookingDates =
             onSnapshot(
@@ -755,6 +657,8 @@ function ScheduleContent() {
 
                             /* ------------------------------------
                                วันที่
+                               รองรับทั้ง data.date / data.eventDate
+                               และ document.id
                             ------------------------------------ */
 
                             const possibleDates = [
@@ -812,10 +716,9 @@ function ScheduleContent() {
                         Array.from(dates)
                     );
 
-
-                    bookingDatesLoaded = true;
-
-                    checkLoadingComplete();
+                    setAvailabilityLoading(
+                        false
+                    );
 
                 },
 
@@ -828,18 +731,22 @@ function ScheduleContent() {
 
 
                     /*
-                     * bookingDates เป็นระบบเสริม
+                     * bookingDates เป็นแหล่งข้อมูลหลัก
+                     * สำหรับ Availability ฝั่งลูกค้า
                      *
-                     * ถ้าอ่านไม่ได้ เราไม่ทำให้ทั้งหน้า
-                     * ใช้งานไม่ได้ เพราะ bookings ยังเป็น
-                     * แหล่งข้อมูลหลัก
+                     * ถ้าอ่านไม่ได้ ต้องหยุดการจองไว้ก่อน
+                     * เพื่อป้องกันการรับคิวซ้ำ
                      */
 
                     setLockedDates([]);
 
-                    bookingDatesLoaded = true;
+                    setAvailabilityError(
+                        "ไม่สามารถตรวจสอบคิวว่างจากระบบได้ กรุณารีเฟรชหน้าอีกครั้ง"
+                    );
 
-                    checkLoadingComplete();
+                    setAvailabilityLoading(
+                        false
+                    );
 
                 }
             );
@@ -850,8 +757,6 @@ function ScheduleContent() {
         ==================================================== */
 
         return () => {
-
-            unsubscribeBookings();
 
             unsubscribeBookingDates();
 
@@ -881,8 +786,6 @@ function ScheduleContent() {
     /* ========================================================
        รวมวันที่ถูกปิดทั้งหมด
        --------------------------------------------------------
-       bookings
-       +
        bookingDates
        +
        closedDates
@@ -892,13 +795,11 @@ function ScheduleContent() {
         useMemo(() => {
 
             return new Set([
-                ...bookedDates,
                 ...lockedDates,
                 ...closedDates,
             ]);
 
         }, [
-            bookedDates,
             lockedDates,
         ]);
 
@@ -976,20 +877,10 @@ function ScheduleContent() {
 
 
             /* -----------------------------------------------
-               Booking จริง
-            ----------------------------------------------- */
-
-            if (
-                bookedDates.includes(
-                    key
-                )
-            ) {
-                return "booked";
-            }
-
-
-            /* -----------------------------------------------
                bookingDates lock
+               ------------------------------------------------
+               bookingDates คือ Availability index ที่ลูกค้า
+               สามารถอ่านได้โดยไม่ต้องเปิดเผยข้อมูล bookings
             ----------------------------------------------- */
 
             if (
@@ -1018,7 +909,6 @@ function ScheduleContent() {
 
         }, [
             selectedDate,
-            bookedDates,
             lockedDates,
             availabilityLoading,
             availabilityError,
@@ -1092,6 +982,19 @@ function ScheduleContent() {
     /* ========================================================
        Render
     ======================================================== */
+
+    if (authChecking || !isAuthenticated) {
+        return (
+            <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
+                <div className="text-center">
+                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-pink-100 border-t-pink-500" />
+                    <p className="mt-4 text-sm font-medium text-slate-500">
+                        กำลังตรวจสอบบัญชี...
+                    </p>
+                </div>
+            </main>
+        );
+    }
 
     return (
 

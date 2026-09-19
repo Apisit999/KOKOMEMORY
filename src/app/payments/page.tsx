@@ -7,22 +7,9 @@ import {
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import {
-    collection,
-    doc,
-    getDoc,
-    serverTimestamp,
-    setDoc,
-    updateDoc,
-} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
-import {
-    getDownloadURL,
-    ref,
-    uploadBytes,
-} from "firebase/storage";
-
-import { db, storage } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
 
 import {
     ArrowLeft,
@@ -43,10 +30,10 @@ function PaymentContent() {
     // ================================
 
     const bookingId = searchParams.get("bookingId") || "";
-    const packageName = searchParams.get("package") || "Photobooth";
-    const date = searchParams.get("date") || "";
-    const name = searchParams.get("name") || "";
-    const phone = searchParams.get("phone") || "";
+    const [packageName, setPackageName] = useState("Photobooth");
+    const [date, setDate] = useState("");
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
     const amountFromUrl = searchParams.get("amount") || "0";
 
     // ================================
@@ -81,6 +68,11 @@ function PaymentContent() {
         const loadBooking = async () => {
             try {
                 setLoadingBooking(true);
+                await auth.authStateReady();
+                const user = auth.currentUser;
+                if (!user) { router.replace(`/account/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`); return; }
+                await user.reload();
+                if (!user.emailVerified) { router.replace("/account/security"); return; }
 
                 const bookingRef = doc(
                     db,
@@ -96,14 +88,13 @@ function PaymentContent() {
                 }
 
                 const data = bookingSnap.data();
+                if (data.userId !== user.uid) throw new Error("FORBIDDEN");
+                setName(data.customer?.name || data.customerName || "");
+                setPhone(data.customer?.phone || data.phone || "");
+                setDate(data.event?.date || data.date || "");
+                setPackageName(typeof data.package === "string" ? data.package : data.package?.name || "Photobooth");
 
-                if (data.amount) {
-                    setAmount(Number(data.amount));
-                }
-
-                if (data.totalPrice) {
-                    setAmount(Number(data.totalPrice));
-                }
+                setAmount(data.pricing?.deposit || data.depositAmount || data.package?.deposit || 3000);
 
             } catch (err) {
                 console.error(err);
@@ -117,7 +108,7 @@ function PaymentContent() {
         };
 
         loadBooking();
-    }, [bookingId]);
+    }, [bookingId, router]);
 
     // ================================
     // Select File
@@ -207,111 +198,18 @@ function PaymentContent() {
             // 1. สร้างชื่อไฟล์
             // ====================================
 
-            const timestamp = Date.now();
-
-            const fileName =
-                `${timestamp}-${selectedFile.name}`;
-
-            // ====================================
-            // 2. Path ใน Firebase Storage
-            // ====================================
-
-            const storagePath =
-                `payments/${bookingId}/${fileName}`;
-
-            const storageRef =
-                ref(storage, storagePath);
-
-            // ====================================
-            // 3. Upload
-            // ====================================
-
-            await uploadBytes(
-                storageRef,
-                selectedFile,
-                {
-                    contentType: selectedFile.type,
-                }
-            );
-
-            // ====================================
-            // 4. Get URL
-            // ====================================
-
-            const downloadURL =
-                await getDownloadURL(storageRef);
-
-            // ====================================
-            // 5. Create Payment ID
-            // ====================================
-
-            const paymentRef = doc(
-                collection(db, "payments")
-            );
-
-            const paymentId =
-                paymentRef.id;
-
-            // ====================================
-            // 6. Save Payment
-            // ====================================
-
-            await setDoc(paymentRef, {
-                paymentId,
-
-                bookingId,
-
-                customerName: name,
-
-                phone,
-
-                packageName,
-
-                amount,
-
-                slipUrl: downloadURL,
-
-                slipPath: storagePath,
-
-                status: "submitted",
-
-                createdAt:
-                    serverTimestamp(),
-
-                updatedAt:
-                    serverTimestamp(),
+            await auth.authStateReady();
+            const user = auth.currentUser;
+            if (!user) throw new Error("UNAUTHORIZED");
+            const body = new FormData();
+            body.set("file", selectedFile);
+            body.set("bookingId", bookingId);
+            const response = await fetch("/api/booking/payment-slip", {
+                method: "POST", headers: { Authorization: `Bearer ${await user.getIdToken()}` }, body,
             });
-
-            // ====================================
-            // 7. Update Booking
-            // ====================================
-
-            const bookingRef =
-                doc(
-                    db,
-                    "bookings",
-                    bookingId
-                );
-
-            await updateDoc(
-                bookingRef,
-                {
-                    paymentStatus:
-                        "submitted",
-
-                    paymentId,
-
-                    slipUrl:
-                        downloadURL,
-
-                    updatedAt:
-                        serverTimestamp(),
-                }
-            );
-
-            // ====================================
-            // Success
-            // ====================================
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || "PAYMENT_UPLOAD_FAILED");
+            setAmount(result.amount);
 
             setSuccess(true);
 

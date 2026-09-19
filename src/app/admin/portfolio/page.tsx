@@ -29,18 +29,9 @@ import {
     XCircle,
 } from "lucide-react";
 
-import {
-    collection,
-    deleteDoc,
-    doc,
-    onSnapshot,
-    updateDoc,
-} from "firebase/firestore";
 
-import {
-    db,
-    auth,
-} from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { adminApiFetch } from "@/lib/admin-api-client";
 
 /* =========================================================
    TYPES
@@ -336,86 +327,36 @@ export default function AdminPortfolioPage() {
     ------------------------------------------------------- */
 
     useEffect(() => {
-        setLoading(true);
-        setError("");
+        let cancelled = false;
+        const loadPortfolios = () => adminApiFetch<{
+            portfolios?: Array<Record<string, unknown> & { id: string }>;
+        }>("/api/admin/portfolio")
+            .then((result) => {
+                if (cancelled) return;
+                const items = (result.portfolios || [])
+                    .map((item) => normalizePortfolio(item.id, item))
+                    .sort((a, b) => (b.eventDate || "").localeCompare(a.eventDate || ""));
+                setPortfolios(items);
+                setLoading(false);
+                setRefreshing(false);
+            })
+            .catch((error: unknown) => {
+                if (cancelled) return;
+                console.error("Load portfolio error:", error);
+                setError(error instanceof Error ? error.message : "ไม่สามารถโหลด Portfolio ได้");
+                setLoading(false);
+                setRefreshing(false);
+            });
 
-        const portfolioRef =
-            collection(
-                db,
-                "portfolio"
-            );
+        void loadPortfolios();
+        const refresh = () => { void loadPortfolios(); };
+        window.addEventListener("koko:refresh-portfolio", refresh);
+        return () => {
+            cancelled = true;
+            window.removeEventListener("koko:refresh-portfolio", refresh);
+        };
 
-        const unsubscribe =
-            onSnapshot(
-                portfolioRef,
-                (snapshot) => {
-                    const items =
-                        snapshot.docs
-                            .map(
-                                (
-                                    item
-                                ) =>
-                                    normalizePortfolio(
-                                        item.id,
-                                        item.data() as Record<
-                                            string,
-                                            unknown
-                                        >
-                                    )
-                            )
-                            .sort(
-                                (
-                                    a,
-                                    b
-                                ) => {
-                                    const aDate =
-                                        a.eventDate ||
-                                        "";
-
-                                    const bDate =
-                                        b.eventDate ||
-                                        "";
-
-                                    return bDate.localeCompare(
-                                        aDate
-                                    );
-                                }
-                            );
-
-                    setPortfolios(
-                        items
-                    );
-
-                    setLoading(
-                        false
-                    );
-
-                    setRefreshing(
-                        false
-                    );
-                },
-                (snapshotError) => {
-                    console.error(
-                        "Portfolio realtime error:",
-                        snapshotError
-                    );
-
-                    setError(
-                        "ไม่สามารถโหลดข้อมูล Portfolio ได้ กรุณาตรวจสอบสิทธิ์ Firestore"
-                    );
-
-                    setLoading(
-                        false
-                    );
-
-                    setRefreshing(
-                        false
-                    );
-                }
-            );
-
-        return () =>
-            unsubscribe();
+        
     }, []);
 
     /* -------------------------------------------------------
@@ -424,6 +365,7 @@ export default function AdminPortfolioPage() {
 
     const handleRefresh =
         useCallback(() => {
+            window.dispatchEvent(new Event("koko:refresh-portfolio"));
             setRefreshing(
                 true
             );
@@ -598,22 +540,12 @@ export default function AdminPortfolioPage() {
             );
 
             try {
-                await updateDoc(
-                    doc(
-                        db,
-                        "portfolio",
-                        item.id
-                    ),
-                    {
-                        status:
-                            item.status ===
-                            "active"
-                                ? "inactive"
-                                : "active",
-                        updatedAt:
-                            new Date(),
-                    }
-                );
+                await adminApiFetch(`/api/admin/portfolio/${encodeURIComponent(item.id)}`, {
+                    method: "PATCH",
+                    body: JSON.stringify({
+                        status: item.status === "active" ? "inactive" : "active",
+                    }),
+                });
             } catch (err) {
                 console.error(
                     "Toggle portfolio status error:",
@@ -788,13 +720,9 @@ export default function AdminPortfolioPage() {
                 /*
                  * ลบ Firestore Document
                  */
-                await deleteDoc(
-                    doc(
-                        db,
-                        "portfolio",
-                        item.id
-                    )
-                );
+                await adminApiFetch(`/api/admin/portfolio/${encodeURIComponent(item.id)}`, {
+                    method: "DELETE",
+                });
             } catch (err) {
                 console.error(
                     "Delete portfolio error:",

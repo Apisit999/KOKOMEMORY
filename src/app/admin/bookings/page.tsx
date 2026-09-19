@@ -2,16 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-    collection,
-    onSnapshot,
-    orderBy,
-    query,
-    type Timestamp,
-} from "firebase/firestore";
+import { type Timestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-import { db } from "@/lib/firebase";
+import { adminApiFetch } from "@/lib/admin-api-client";
 
 
 /* ============================================================
@@ -529,72 +523,24 @@ export default function AdminBookingsPage() {
         setLoading(true);
         setError("");
 
-        const bookingsRef =
-            collection(
-                db,
-                "bookings"
-            );
+        let cancelled = false;
 
-        const bookingsQuery =
-            query(
-                bookingsRef,
-                orderBy(
-                    "createdAt",
-                    "desc"
-                )
-            );
+        void adminApiFetch<{ bookings?: Booking[] }>("/api/admin/booking")
+            .then((result) => {
+                if (cancelled) return;
+                setBookings((result.bookings || []).filter((booking) => booking.archived !== true));
+                setLoading(false);
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                console.error("Load bookings error:", err);
+                setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูลการจองได้");
+                setLoading(false);
+            });
 
-        const unsubscribe =
-            onSnapshot(
-                bookingsQuery,
-                (snapshot) => {
-                    const data =
-                        snapshot.docs.map(
-                            (snapshotDoc) =>
-                                ({
-                                    id: snapshotDoc.id,
-                                    ...snapshotDoc.data(),
-                                }) as Booking
-                        );
-
-                    /*
-                     * ป้องกันรายการที่ถูก Archive
-                     * ถ้ามี archived=true ในอนาคต
-                     */
-                    const visibleData =
-                        data.filter(
-                            (booking) =>
-                                booking.archived !==
-                                true
-                        );
-
-                    setBookings(
-                        visibleData
-                    );
-
-                    setLoading(
-                        false
-                    );
-                },
-                (err) => {
-                    console.error(
-                        "Load bookings error:",
-                        err
-                    );
-
-                    setError(
-                        err?.message ||
-                            "ไม่สามารถโหลดข้อมูลการจองได้"
-                    );
-
-                    setLoading(
-                        false
-                    );
-                }
-            );
-
-        return () =>
-            unsubscribe();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
 

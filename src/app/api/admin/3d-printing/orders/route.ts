@@ -1,3 +1,4 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import {
     FieldValue,
@@ -998,6 +999,8 @@ export async function GET(
             orders,
         });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(
             error,
         );
@@ -1789,6 +1792,8 @@ export async function POST(
             },
         );
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(
             error,
         );

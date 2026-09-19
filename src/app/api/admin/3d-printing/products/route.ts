@@ -1,3 +1,4 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -151,6 +152,8 @@ export async function GET(request: Request) {
             .sort((a, b) => a.name.localeCompare(b.name, "th"));
         return NextResponse.json({ success: true, products });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }
@@ -181,6 +184,8 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ success: true, product: normalizeProduct(reference.id, input as unknown as Record<string, unknown>) }, { status: 201 });
     } catch (error) {
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         return errorResponse(error);
     }
 }

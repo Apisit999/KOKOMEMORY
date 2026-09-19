@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { collection, getDocs } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 
-import { db, auth } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { adminApiFetch } from "@/lib/admin-api-client";
 
 type Booking = {
     id: string;
@@ -63,76 +63,36 @@ export default function AdminGalleryPage() {
                 setLoadingBookings(true);
                 setError("");
 
-                const snapshot = await getDocs(
-                    collection(db, "bookings")
-                );
+                const result = await adminApiFetch<{
+                    bookings?: Array<Record<string, unknown> & { id: string }>;
+                }>("/api/admin/booking");
 
-                const result: Booking[] = [];
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-
-                    result.push({
-                        id: doc.id,
-
-                        name:
-                            typeof data.name === "string"
-                                ? data.name
-                                : undefined,
-
-                        customerName:
-                            typeof data.customerName === "string"
-                                ? data.customerName
-                                : undefined,
-
-                        phone:
-                            typeof data.phone === "string"
-                                ? data.phone
-                                : undefined,
-
-                        email:
-                            typeof data.email === "string"
-                                ? data.email
-                                : undefined,
-
-                        date:
-                            typeof data.date === "string"
-                                ? data.date
-                                : undefined,
-
-                        eventDate:
-                            typeof data.eventDate === "string"
-                                ? data.eventDate
-                                : undefined,
-
-                        package:
-                            typeof data.package === "string"
-                                ? data.package
-                                : undefined,
-
-                        packageName:
-                            typeof data.packageName === "string"
-                                ? data.packageName
-                                : undefined,
-
-                        status:
-                            typeof data.status === "string"
-                                ? data.status
-                                : undefined,
-
-                        total:
-                            typeof data.total === "number"
-                                ? data.total
-                                : undefined,
-
-                        price:
-                            typeof data.price === "number"
-                                ? data.price
-                                : undefined,
-                    });
+                const apiBookings: Booking[] = (result.bookings || []).map((data) => {
+                    const customer = (data.customer || {}) as Record<string, unknown>;
+                    const event = (data.event || {}) as Record<string, unknown>;
+                    const pricing = (data.pricing || {}) as Record<string, unknown>;
+                    const packageData = (data.package || {}) as Record<string, unknown>;
+                    return {
+                        ...data,
+                        id: data.id,
+                        name: typeof customer.name === "string" ? customer.name : undefined,
+                        customerName: typeof customer.name === "string" ? customer.name : undefined,
+                        phone: typeof customer.phone === "string" ? customer.phone : undefined,
+                        email: typeof customer.email === "string" ? customer.email : undefined,
+                        date: typeof event.date === "string" ? event.date : undefined,
+                        eventDate: typeof event.date === "string" ? event.date : undefined,
+                        package: typeof data.package === "string" ? data.package : undefined,
+                        packageName: typeof packageData.name === "string" ? packageData.name : typeof data.packageName === "string" ? data.packageName : undefined,
+                        total: typeof pricing.total === "number" ? pricing.total : undefined,
+                        status: typeof data.bookingStatus === "string" ? data.bookingStatus : undefined,
+                    };
                 });
 
-                setBookings(result);
+                setBookings(apiBookings);
+                setLoadingBookings(false);
+                return;
+
+                
             } catch (error) {
                 console.error("โหลด bookings ไม่สำเร็จ:", error);
 

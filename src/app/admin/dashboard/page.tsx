@@ -4,12 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import {
-    collection,
-    getDocs,
-    orderBy,
-    query,
-} from "firebase/firestore";
-import {
     useCallback,
     useEffect,
     useMemo,
@@ -32,7 +26,8 @@ import {
     XCircle,
 } from "lucide-react";
 
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
+import { adminApiFetch } from "@/lib/admin-api-client";
 
 import {
     getThreeDOrders,
@@ -67,6 +62,9 @@ type Booking = {
         name?: string;
         packageName?: string;
         price?: number;
+    };
+    pricing?: {
+        total?: number;
     };
 };
 
@@ -211,6 +209,7 @@ function getBookingStatus(booking: Booking) {
 function getBookingPrice(booking: Booking) {
     return Number(
         booking.totalPrice ??
+            booking.pricing?.total ??
             booking.package?.price ??
             booking.price ??
             booking.total ??
@@ -444,48 +443,16 @@ export default function AdminDashboardPage() {
                 setLoadingBookings(true);
                 setBookingError("");
 
-                const reference =
-                    collection(
-                        db,
-                        "bookings"
-                    );
-
-                let snapshot;
-
-                try {
-                    const bookingsQuery =
-                        query(
-                            reference,
-                            orderBy(
-                                "createdAt",
-                                "desc"
-                            )
-                        );
-
-                    snapshot =
-                        await getDocs(
-                            bookingsQuery
-                        );
-                } catch {
-                    snapshot =
-                        await getDocs(
-                            reference
-                        );
-                }
+                const result = await adminApiFetch<{
+                    bookings?: Booking[];
+                }>("/api/admin/booking");
 
                 if (cancelled) {
                     return;
                 }
 
                 const data =
-                    snapshot.docs
-                        .map(
-                            (item) =>
-                                ({
-                                    id: item.id,
-                                    ...item.data(),
-                                }) as Booking
-                        )
+                    (result.bookings || [])
                         .sort(
                             (a, b) =>
                                 timestampToNumber(
@@ -537,30 +504,16 @@ export default function AdminDashboardPage() {
 
         async function loadPayments() {
             try {
-                const reference =
-                    collection(
-                        db,
-                        "payments"
-                    );
-
-                const snapshot =
-                    await getDocs(
-                        reference
-                    );
+                const result = await adminApiFetch<{
+                    payments?: Payment[];
+                }>("/api/admin/payment");
 
                 if (cancelled) {
                     return;
                 }
 
                 const data =
-                    snapshot.docs
-                        .map(
-                            (item) =>
-                                ({
-                                    id: item.id,
-                                    ...item.data(),
-                                }) as Payment
-                        )
+                    (result.payments || [])
                         .sort(
                             (a, b) =>
                                 timestampToNumber(

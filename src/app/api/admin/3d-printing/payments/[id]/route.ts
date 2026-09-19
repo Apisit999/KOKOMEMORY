@@ -1,6 +1,8 @@
+import { authErrorResponse } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb } from "@/lib/firebase-admin";
+import { requireAdminApi } from "@/lib/require-admin-api";
 
 const COLLECTION = "threeDPayments";
 
@@ -13,63 +15,7 @@ type RouteContext = {
 async function requireAdmin(
     request: Request
 ) {
-    const authorization =
-        request.headers.get("authorization");
-
-    if (
-        !authorization?.startsWith(
-            "Bearer "
-        )
-    ) {
-        throw new Error(
-            "ไม่ได้รับสิทธิ์การเข้าสู่ระบบ"
-        );
-    }
-
-    const token =
-        authorization.slice(
-            "Bearer ".length
-        );
-
-    /*
-     * ใช้ Firebase Admin ที่มีอยู่แล้วในโปรเจกต์
-     * แต่การตรวจสอบ token ต้องใช้ Admin Auth
-     */
-    const { getAuth } =
-        await import("firebase-admin/auth");
-
-    const adminAuth = getAuth();
-
-    const decoded =
-        await adminAuth.verifyIdToken(
-            token
-        );
-
-    const adminSnapshot =
-        await adminDb
-            .collection("admins")
-            .doc(decoded.uid)
-            .get();
-
-    if (!adminSnapshot.exists) {
-        throw new Error(
-            "บัญชีนี้ไม่มีสิทธิ์ Admin"
-        );
-    }
-
-    const adminData =
-        adminSnapshot.data();
-
-    if (
-        adminData?.role !== "admin" ||
-        adminData?.active !== true
-    ) {
-        throw new Error(
-            "บัญชีนี้ไม่มีสิทธิ์ Admin"
-        );
-    }
-
-    return decoded;
+    return requireAdminApi(request);
 }
 
 function normalizePayment(
@@ -131,7 +77,7 @@ export async function PATCH(
     context: RouteContext
 ) {
     try {
-        await requireAdmin(
+        const admin = await requireAdmin(
             request
         );
 
@@ -199,10 +145,20 @@ export async function PATCH(
             );
         }
 
-        await paymentRef.update({
-            status: body.status,
-            updatedAt:
-                FieldValue.serverTimestamp(),
+        await adminDb.runTransaction(async transaction => {
+            const latest = await transaction.get(paymentRef);
+            if (!latest.exists) throw new Error("PAYMENT_NOT_FOUND");
+            const current = latest.data() || {};
+            if (current.status === body.status) return;
+            if (current.status === "refunded" || (current.status === "verified" && body.status !== "refunded")) {
+                throw new Error("PAYMENT_STATUS_PROTECTED");
+            }
+            transaction.update(paymentRef, { status: body.status, updatedAt: FieldValue.serverTimestamp() });
+            transaction.set(adminDb.collection("auditLogs").doc(), {
+                action: "UPDATE_3D_PAYMENT_STATUS", paymentId: id, orderId: current.orderId,
+                previousStatus: current.status, status: body.status, adminUid: admin.uid,
+                createdAt: FieldValue.serverTimestamp(),
+            });
         });
 
         const updated =
@@ -216,6 +172,9 @@ export async function PATCH(
                 ),
         });
     } catch (error) {
+        if (error instanceof Error && error.message === "PAYMENT_STATUS_PROTECTED") return NextResponse.json({ error: error.message }, { status: 409 });
+        const denied = authErrorResponse(error);
+        if (denied) return denied;
         console.error(
             "PATCH 3D payment error:",
             error

@@ -23,6 +23,7 @@ import Link from "next/link";
 import {
     Suspense,
     useEffect,
+    useState,
     type ReactNode,
 } from "react";
 import { useSearchParams } from "next/navigation";
@@ -33,9 +34,13 @@ import {
     CheckCircle,
     Clock,
     Images,
+    Loader2,
     Sparkles,
     Video,
 } from "lucide-react";
+
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 
 /* ============================================================
@@ -581,9 +586,73 @@ function PackageContent() {
 
     const packageFromUrl = searchParams.get("package");
 
+    const [authChecking, setAuthChecking] =
+        useState(true);
+
+    const [isAuthenticated, setIsAuthenticated] =
+        useState(false);
+
     const selectedPackageId = packageFromUrl
         ? packageAliases[packageFromUrl] || packageFromUrl
         : null;
+
+
+    /* ========================================================
+       BOOKING AUTH SECURITY
+       --------------------------------------------------------
+       Guest:
+       → /account/login?redirect=/booking/package
+
+       Logged in but Email not verified:
+       → /account/security?redirect=/booking/package
+
+       Verified:
+       → Continue booking normally
+    ======================================================== */
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(
+            auth,
+            (user) => {
+                if (!user) {
+                    setIsAuthenticated(false);
+                    setAuthChecking(false);
+
+                    const redirect =
+                        encodeURIComponent(
+                            "/booking/package",
+                        );
+
+                    window.location.replace(
+                        `/account/login?redirect=${redirect}`,
+                    );
+
+                    return;
+                }
+
+                if (!user.emailVerified) {
+                    setIsAuthenticated(false);
+                    setAuthChecking(false);
+
+                    const redirect =
+                        encodeURIComponent(
+                            "/booking/package",
+                        );
+
+                    window.location.replace(
+                        `/account/security?redirect=${redirect}`,
+                    );
+
+                    return;
+                }
+
+                setIsAuthenticated(true);
+                setAuthChecking(false);
+            },
+        );
+
+        return () => unsubscribe();
+    }, []);
 
 
     /* ========================================================
@@ -652,6 +721,29 @@ function PackageContent() {
     const packageGrid =
         "grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8";
 
+
+    if (authChecking || !isAuthenticated) {
+        return (
+            <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
+                <div className="flex flex-col items-center text-center">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-pink-100 text-pink-500">
+                        <Loader2
+                            size={24}
+                            className="animate-spin"
+                        />
+                    </div>
+
+                    <p className="mt-4 text-sm font-semibold text-slate-700">
+                        กำลังตรวจสอบบัญชี...
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-400">
+                        กรุณารอสักครู่
+                    </p>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen overflow-x-hidden bg-slate-50">
