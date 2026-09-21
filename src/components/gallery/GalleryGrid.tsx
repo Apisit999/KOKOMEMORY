@@ -38,6 +38,8 @@ import {
 } from "lucide-react";
 
 import GalleryCard from "./GalleryCard";
+import { useI18n } from "@/i18n";
+import type { MessageKey } from "@/i18n";
 
 import {
     normalizeCategorySlug,
@@ -94,6 +96,8 @@ interface Portfolio {
 ============================================================ */
 
 export default function GalleryGrid() {
+
+    const { t } = useI18n();
 
     const [
         portfolios,
@@ -832,6 +836,7 @@ export default function GalleryGrid() {
         return (
 
             <div
+                aria-label={t("gallery.error")}
                 className="
                     rounded-[2rem]
                     border
@@ -871,7 +876,7 @@ export default function GalleryGrid() {
                         text-slate-800
                     "
                 >
-                    ไม่สามารถโหลดผลงานได้
+                    {t("portfolio.errorTitle")}
                 </h3>
 
 
@@ -885,7 +890,7 @@ export default function GalleryGrid() {
                         text-slate-500
                     "
                 >
-                    {error}
+                    {t("portfolio.errorDescription")}
                 </p>
 
             </div>
@@ -935,7 +940,7 @@ export default function GalleryGrid() {
                             "
                         />
 
-                        EXPLORE
+                        {t("portfolio.explore")}
 
                         <span
                             className="
@@ -980,6 +985,14 @@ export default function GalleryGrid() {
                                                                                     item;
 
 
+                                const categoryKey = {
+                                    all: "portfolio.all",
+                                    corporate: "portfolio.corporate",
+                                    event: "portfolio.event",
+                                    party: "portfolio.party",
+                                    weddings: "portfolio.weddings",
+                                }[item as "all" | "corporate" | "event" | "party" | "weddings"];
+
                                 return (
 
                                     <button
@@ -1004,7 +1017,7 @@ export default function GalleryGrid() {
                                         `}
                                     >
 
-                                        {label}
+                                        {categoryKey ? t(categoryKey as MessageKey) : label}
 
                                     </button>
 
@@ -1054,7 +1067,7 @@ export default function GalleryGrid() {
 
                         {filteredPortfolios.length}
                         {" "}
-                        Portfolio
+                        {t("portfolio.portfolio")}
 
                     </div>
 
@@ -1125,8 +1138,8 @@ export default function GalleryGrid() {
                         "
                     >
                         {category === "all"
-                            ? "ยังไม่มีผลงาน"
-                            : `ยังไม่มีผลงานในหมวด ${
+                            ? t("portfolio.emptyAll")
+                            : `${t("portfolio.emptyCategory")} ${
                                   categoryLabels.get(category) ||
                                   category
                               }`}
@@ -1141,14 +1154,14 @@ export default function GalleryGrid() {
                         "
                     >
                         {category === "all" ? (
-                            "ผลงานใหม่จะถูกเพิ่มเข้ามาเร็ว ๆ นี้"
+                            t("portfolio.emptyDescription")
                         ) : (
                             <button
                                 type="button"
                                 onClick={() => selectCategory("all")}
                                 className="font-semibold text-pink-500 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
                             >
-                                ดูผลงานทั้งหมด
+                                {t("portfolio.viewAll")}
                             </button>
                         )}
                     </p>
@@ -1337,7 +1350,7 @@ export default function GalleryGrid() {
                                                 sm:inline-flex
                                             "
                                         >
-                                            FEATURED
+                                            {t("portfolio.featured")}
                                         </span>
 
                                     )}
@@ -1383,7 +1396,7 @@ export default function GalleryGrid() {
                                     hover:bg-slate-900
                                     hover:text-white
                                 "
-                                aria-label="ปิด"
+                                aria-label={t("portfolio.close")}
                             >
 
                                 <X size={18} />
@@ -1502,7 +1515,7 @@ export default function GalleryGrid() {
                                         hover:text-slate-900
                                         sm:left-6
                                     "
-                                    aria-label="รูปก่อนหน้า"
+                                    aria-label={t("portfolio.previous")}
                                 >
 
                                     <ChevronLeft size={22} />
@@ -1546,7 +1559,7 @@ export default function GalleryGrid() {
                                         hover:text-slate-900
                                         sm:right-6
                                     "
-                                    aria-label="รูปถัดไป"
+                                    aria-label={t("portfolio.next")}
                                 >
 
                                     <ChevronRight size={22} />
@@ -1716,7 +1729,7 @@ export default function GalleryGrid() {
                                                             : "border-transparent opacity-55 hover:opacity-100"
                                                     }
                                                 `}
-                                                aria-label={`ดูรูปที่ ${index + 1}`}
+                                                aria-label={`${t("portfolio.viewImage")} ${index + 1}`}
                                             >
 
                                                 <img

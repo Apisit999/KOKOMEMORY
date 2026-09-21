@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import I18nRoot from "@/components/layout/I18nRoot";
 
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default function RootLayout({
         `}
       >
 
-        {children}
+        <I18nRoot>{children}</I18nRoot>
 
       </body>
 

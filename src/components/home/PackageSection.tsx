@@ -145,7 +145,6 @@ const packages = [
 ============================================================ */
 
 export default function PackageSection() {
-
     return (
 
         <section

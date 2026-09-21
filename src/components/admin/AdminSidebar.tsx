@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useI18n } from "@/i18n";
 
 interface AdminSidebarProps {
     open?: boolean;
@@ -192,6 +193,7 @@ export default function AdminSidebar({
     onClose,
 }: AdminSidebarProps) {
     const pathname = usePathname();
+    const { translate } = useI18n();
 
     return (
         <>
@@ -277,7 +279,7 @@ export default function AdminSidebar({
 
                                         <div className="flex-1">
                                             <div className="text-sm font-medium text-slate-600">
-                                                {item.label}
+                                                {translate(item.label)}
                                             </div>
 
                                             <div className="mt-0.5 text-[10px] text-slate-400">
@@ -313,7 +315,7 @@ export default function AdminSidebar({
 
                                     <div className="flex-1">
                                         <div className="text-sm font-medium">
-                                            {item.label}
+                                            {translate(item.label)}
                                         </div>
                                     </div>
 

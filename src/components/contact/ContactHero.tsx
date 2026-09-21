@@ -1,7 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useI18n } from "@/i18n";
 
 export default function ContactHero() {
+    const { translate } = useI18n();
     return (
         <section className="relative flex min-h-[55vh] items-center overflow-hidden pt-24">
 
@@ -23,7 +27,7 @@ export default function ContactHero() {
                 <div className="max-w-3xl">
 
                     <span className="inline-block rounded-full bg-white/10 px-5 py-2 text-sm font-semibold tracking-wider text-white backdrop-blur-md">
-                        CONTACT US
+                        {translate("CONTACT US")}
                     </span>
 
                     <h1 className="mt-6 text-5xl font-black leading-tight text-white md:text-7xl">

@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Phone,
     Mail,
@@ -12,6 +14,7 @@ import {
 } from "react-icons/fa";
 
 import Link from "next/link";
+import { useI18n } from "@/i18n";
 
 const mainContacts = [
     {
@@ -63,6 +66,7 @@ const socialContacts = [
 ];
 
 export default function ContactInfo() {
+    const { translate } = useI18n();
     return (
         <section className="bg-white py-24">
 
@@ -124,7 +128,7 @@ export default function ContactInfo() {
                                 <div className="relative mt-7">
 
                                     <h3 className="text-2xl font-bold text-slate-900">
-                                        {item.title}
+                                        {translate(item.title)}
                                     </h3>
 
                                     <p className="mt-3 text-lg font-semibold text-slate-800">
@@ -132,7 +136,7 @@ export default function ContactInfo() {
                                     </p>
 
                                     <p className="mt-2 text-sm leading-6 text-slate-500">
-                                        {item.description}
+                                        {translate(item.description)}
                                     </p>
 
                                 </div>
@@ -142,7 +146,7 @@ export default function ContactInfo() {
                                 <div className="relative mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
 
                                     <span className="text-sm font-semibold text-pink-500">
-                                        {item.action}
+                                        {translate(item.action)}
                                     </span>
 
                                     <ArrowUpRight
@@ -215,7 +219,7 @@ export default function ContactInfo() {
                                         </p>
 
                                         <p className="mt-2 text-sm leading-6 text-slate-500">
-                                            {item.description}
+                                            {translate(item.description)}
                                         </p>
 
                                     </div>

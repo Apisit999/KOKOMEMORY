@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useI18n } from "@/i18n";
 
 type LightboxImage = {
     id?: string;
@@ -29,6 +30,7 @@ export default function PortfolioLightbox({
     onNext,
     onSelect,
 }: PortfolioLightboxProps) {
+    const { t } = useI18n();
     useEffect(() => {
             const scrollY = window.scrollY;
             const previousBodyStyle = {
@@ -75,13 +77,13 @@ export default function PortfolioLightbox({
             className="lightbox-backdrop fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/95 p-4 opacity-100 backdrop-blur-sm transition-opacity duration-200 motion-reduce:transition-none sm:p-8"
             role="dialog"
             aria-modal="true"
-            aria-label={`${title} image viewer`}
+            aria-label={`${title} — ${t("portfolio.viewDetails")}`}
             onClick={onClose}
         >
             <button
                 type="button"
                 onClick={onClose}
-                aria-label="ปิดรูปภาพ"
+                aria-label={t("portfolio.close")}
                 className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:right-7 sm:top-7"
             >
                 <X size={22} />
@@ -94,7 +96,7 @@ export default function PortfolioLightbox({
                         event.stopPropagation();
                         onPrevious();
                     }}
-                    aria-label="รูปก่อนหน้า"
+                    aria-label={t("portfolio.previous")}
                     className="absolute left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:left-7"
                 >
                     <ChevronLeft size={24} />
@@ -123,7 +125,7 @@ export default function PortfolioLightbox({
                         event.stopPropagation();
                         onNext();
                     }}
-                    aria-label="รูปถัดไป"
+                    aria-label={t("portfolio.next")}
                     className="absolute right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 sm:right-7"
                 >
                     <ChevronRight size={24} />
@@ -140,7 +142,7 @@ export default function PortfolioLightbox({
                                 event.stopPropagation();
                                 onSelect(index);
                             }}
-                            aria-label={`เปิดรูปที่ ${index + 1}`}
+                            aria-label={`${t("portfolio.viewImage")} ${index + 1}`}
                             className={`h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition ${
                                 index === activeIndex
                                     ? "border-pink-400"

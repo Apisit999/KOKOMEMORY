@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useI18n } from "@/i18n";
 import { Home, LayoutDashboard, CalendarDays, UserRound, ShieldCheck, Menu, X, LogOut } from "lucide-react";
 
 const links = [
@@ -20,12 +21,13 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
   const router = useRouter();
   const publicPage = ["/account/login", "/account/register", "/account/forgot-password"].includes(pathname);
   const [open, setOpen] = useState(false);
+  const { translate } = useI18n();
   useEffect(() => onAuthStateChanged(auth, (current) => { if (!current && !publicPage) router.replace(`/account/login?redirect=${encodeURIComponent(pathname)}`); }), [pathname, publicPage, router]);
   if (publicPage) return <>{children}</>;
   return <div data-account-shell className="min-h-screen bg-[#f8f7f9] text-slate-900">
     <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 border-r border-slate-200/80 bg-white/95 px-5 py-6 shadow-sm backdrop-blur-xl lg:flex lg:flex-col">
       <Link href="/" className="group mb-10 flex items-center gap-3 px-3"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={48} height={48} priority className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 group-hover:scale-[1.02]" /><div><p className="text-lg font-black tracking-tight">KOKO Memory</p><p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Customer Portal</p></div></Link>
-      <nav className="space-y-1">{links.map(({ href, label, icon: Icon }) => { const active = pathname === href || (href !== "/account" && pathname.startsWith(`${href}/`)); return <Link key={href} href={href} className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${active ? "bg-pink-50 text-[#e83d91]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}><Icon size={19} />{label}</Link>; })}</nav>
+      <nav className="space-y-1">{links.map(({ href, label, icon: Icon }) => { const active = pathname === href || (href !== "/account" && pathname.startsWith(`${href}/`)); return <Link key={href} href={href} className={`flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition ${active ? "bg-pink-50 text-[#e83d91]" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`}><Icon size={19} />{translate(label)}</Link>; })}</nav>
       <div className="mt-auto space-y-1 border-t border-slate-100 pt-5"><Link href="/" className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold text-slate-500 transition hover:bg-pink-50 hover:text-[#e83d91]"><Home size={19} />กลับเว็บไซต์</Link><button type="button" onClick={() => void signOut(auth)} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-left text-sm font-semibold text-slate-500 transition hover:bg-red-50 hover:text-red-600"><LogOut size={19} />ออกจากระบบ</button></div>
     </aside>
     <div className="lg:pl-72">

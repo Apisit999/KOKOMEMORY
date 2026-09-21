@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import Link from "next/link";
+import { useI18n } from "@/i18n";
 
 
 interface GalleryCardProps {
@@ -57,6 +58,7 @@ export default function GalleryCard({
     loading = index < 4 ? "eager" : "lazy",
 
 }: GalleryCardProps) {
+    const { t } = useI18n();
 
     return (
 
@@ -97,11 +99,7 @@ export default function GalleryCard({
                     focus-visible:ring-pink-400
                     focus-visible:ring-offset-4
                 "
-                aria-label={
-                    title
-                        ? `เปิด Portfolio ${title}`
-                        : `เปิด Portfolio ${index + 1}`
-                }
+                aria-label={title ? `${t("portfolio.viewDetails")}: ${title}` : `${t("portfolio.viewDetails")} ${index + 1}`}
             >
 
                 <div
@@ -255,7 +253,7 @@ export default function GalleryCard({
                                         className="text-pink-500"
                                     />
 
-                                    FEATURED
+                                    {t("portfolio.featured")}
 
                                 </span>
 
@@ -380,7 +378,7 @@ export default function GalleryCard({
                                 "
                             >
 
-                                ดูอัลบั้ม
+                                {t("portfolio.viewAlbum")}
 
                                 <ArrowUpRight
                                     size={12}

@@ -38,6 +38,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 import GalleryGrid from "@/components/gallery/GalleryGrid";
+import PortfolioText from "@/components/gallery/PortfolioText";
+import type { MessageKey } from "@/i18n";
 
 export const metadata: Metadata = {
     title: "ผลงาน | KOKO Memory",
@@ -114,6 +116,7 @@ const stars = [
    ============================================================ */
 
 export default function GalleryPage() {
+    const t = (key: MessageKey) => <PortfolioText k={key} />;
 
     return (
 
@@ -456,7 +459,7 @@ export default function GalleryPage() {
                                             sm:text-xs
                                         "
                                     >
-                                        OUR PORTFOLIO
+                                        {t("portfolio.heroBadge")}
                                     </span>
 
                                 </div>
@@ -480,7 +483,7 @@ export default function GalleryPage() {
                                     "
                                 >
 
-                                    ทุกช่วงเวลา
+                                    {t("portfolio.heroLine1")}
 
                                     <br />
 
@@ -495,7 +498,7 @@ export default function GalleryPage() {
                                             motion-safe:animate-[kokoGradient_8s_ease-in-out_infinite]
                                         "
                                     >
-                                        มีเรื่องราว
+                                        {t("portfolio.heroLine2")}
                                     </span>
 
                                 </h1>
@@ -515,10 +518,7 @@ export default function GalleryPage() {
                                     "
                                 >
 
-                                    รวมภาพบรรยากาศและผลงานจากงานจริง
-                                    ที่ KOKO Memory ได้ร่วมสร้างรอยยิ้ม
-                                    เสียงหัวเราะ และช่วงเวลาที่มีความหมาย
-                                    ให้กับลูกค้าของเรา
+                                    {t("portfolio.heroDescription")}
 
                                 </p>
 
@@ -558,7 +558,7 @@ export default function GalleryPage() {
                                         "
                                     >
 
-                                        เริ่มดูผลงาน
+                                    {t("portfolio.viewWork")}
 
                                         <span
                                             className="
@@ -598,7 +598,7 @@ export default function GalleryPage() {
                                         "
                                     >
 
-                                        เกี่ยวกับเรา
+                                        {t("portfolio.aboutUs")}
 
                                     </Link>
 
@@ -623,13 +623,13 @@ export default function GalleryPage() {
                                 >
 
                                     <span>
-                                        REAL MOMENTS
+                                        {t("portfolio.realMoments")}
                                     </span>
 
                                     <span className="h-1 w-1 rounded-full bg-pink-400/70" />
 
                                     <span>
-                                        MADE WITH CARE
+                                        {t("portfolio.madeWithCare")}
                                     </span>
 
                                     <span className="h-1 w-1 rounded-full bg-pink-400/70" />
@@ -990,7 +990,7 @@ export default function GalleryPage() {
                                             text-pink-500
                                         "
                                     >
-                                        MOMENTS WE CAPTURE
+                                        {t("portfolio.momentsBadge")}
                                     </span>
 
                                 </div>
@@ -1010,12 +1010,12 @@ export default function GalleryPage() {
                                     "
                                 >
 
-                                    ผลงานที่เรา
+                                {t("portfolio.introLine1")}
 
                                     <br />
 
                                     <span className="text-pink-500">
-                                        ภูมิใจ
+                                        {t("portfolio.introLine2")}
                                     </span>
 
                                 </h2>
@@ -1032,11 +1032,7 @@ export default function GalleryPage() {
                                 "
                             >
 
-                                ทุกอัลบั้มคือเรื่องราวหนึ่งเรื่อง
-                                เต็มไปด้วยรอยยิ้ม ผู้คน
-                                และช่วงเวลาที่เกิดขึ้นเพียงครั้งเดียว
-                                เราตั้งใจเก็บรายละเอียดเหล่านี้
-                                ให้กลับมาเป็นความทรงจำอีกครั้ง
+                                {t("portfolio.introDescription")}
 
                             </p>
 
@@ -1202,7 +1198,7 @@ export default function GalleryPage() {
                                     text-pink-300
                                 "
                             >
-                                MORE THAN A PHOTO
+                                {t("portfolio.storyBadge")}
                             </p>
 
 
@@ -1219,12 +1215,12 @@ export default function GalleryPage() {
                                 "
                             >
 
-                                เพราะภาพหนึ่งภาพ
+                                {t("portfolio.storyLine1")}
 
                                 <br />
 
                                 <span className="text-pink-400">
-                                    มีความทรงจำอยู่ข้างใน
+                                    {t("portfolio.storyLine2")}
                                 </span>
 
                             </h2>
@@ -1254,13 +1250,7 @@ export default function GalleryPage() {
                                 "
                             >
 
-                                เบื้องหลังทุกภาพ
-                                คือผู้คนและช่วงเวลาที่เกิดขึ้นจริง
-                                เราจึงตั้งใจดูแลทั้งประสบการณ์
-                                และรายละเอียดเล็ก ๆ
-                                เพื่อให้ภาพที่ได้กลับมา
-                                ยังสามารถพาคุณย้อนกลับไป
-                                ในช่วงเวลานั้นได้อีกครั้ง
+                                {t("portfolio.storyDescription")}
 
                             </p>
 
@@ -1412,7 +1402,7 @@ export default function GalleryPage() {
                                     text-pink-100
                                 "
                             >
-                                YOUR SPECIAL DAY
+                                {t("portfolio.specialDay")}
                             </p>
 
 
@@ -1428,11 +1418,11 @@ export default function GalleryPage() {
                                 "
                             >
 
-                                พร้อมสร้างความทรงจำ
+                                {t("portfolio.ctaLine1")}
 
                                 <br />
 
-                                ไปด้วยกันหรือยัง?
+                                {t("portfolio.ctaLine2")}
 
                             </h2>
 
@@ -1449,10 +1439,7 @@ export default function GalleryPage() {
                                 "
                             >
 
-                                ให้ KOKO Memory
-                                เป็นส่วนหนึ่งของวันสำคัญของคุณ
-                                และเปลี่ยนช่วงเวลาธรรมดา
-                                ให้กลายเป็นความทรงจำที่พิเศษ
+                                {t("portfolio.ctaDescription")}
 
                             </p>
 
@@ -1483,7 +1470,7 @@ export default function GalleryPage() {
                                 "
                             >
 
-                                เริ่มจองคิว
+                                {t("portfolio.bookNow")}
 
                                 <span
                                     className="
