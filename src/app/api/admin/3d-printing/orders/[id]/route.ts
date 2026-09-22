@@ -28,6 +28,8 @@ const PRODUCT_COLLECTION = "threeDProducts";
 const VALID_ORDER_STATUSES: ThreeDOrderStatus[] = [
     "quote",
     "pending_confirmation",
+    "pending_payment",
+    "paid",
     "waiting_payment",
     "queued",
     "printing",
@@ -267,6 +269,13 @@ function normalizeOrder(
             typeof data.orderNumber === "string"
                 ? data.orderNumber
                 : "",
+
+        ...(typeof data.userId === "string" ? { userId: data.userId } : {}),
+        ...(typeof data.quoteId === "string" ? { quoteId: data.quoteId } : {}),
+        ...(typeof data.source === "string" ? { source: data.source } : {}),
+        isArchived: data.isArchived === true,
+        ...(data.archivedAt ? { archivedAt: data.archivedAt } : {}),
+        ...(typeof data.archivedBy === "string" ? { archivedBy: data.archivedBy } : {}),
 
         customer:
             normalizeCustomer(data.customer),
@@ -1225,6 +1234,12 @@ export async function DELETE(
 
         if (!snapshot.exists) {
             throw new Error("NOT_FOUND");
+        }
+
+        const orderData = snapshot.data() || {};
+        const payments = await adminDb.collection("threeDPayments").where("orderId", "==", id).limit(1).get();
+        if (!payments.empty || orderData.isArchived === true || orderData.orderStatus === "completed" || orderData.orderStatus === "production" || orderData.orderStatus === "printing" || orderData.orderStatus === "quality_check" || orderData.orderStatus === "ready" || orderData.orderStatus === "shipping" || orderData.paymentStatus === "paid") {
+            return NextResponse.json({ success: false, error: "ORDER_HAS_HISTORY", code: "ORDER_HAS_HISTORY" }, { status: 409 });
         }
 
         await reference.delete();

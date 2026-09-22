@@ -164,3 +164,11 @@ export async function deleteThreeDOrder(
         }
     );
 }
+
+export async function archiveThreeDOrder(id: string): Promise<void> {
+    await adminRequest(`/api/admin/3d-printing/orders/${encodeURIComponent(id)}/archive`, { method: "POST" });
+}
+
+export async function restoreThreeDOrder(id: string): Promise<void> {
+    await adminRequest(`/api/admin/3d-printing/orders/${encodeURIComponent(id)}/restore`, { method: "POST" });
+}

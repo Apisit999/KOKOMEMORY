@@ -64,6 +64,7 @@ import {
 import { getTravelFee, getBookingDeposit } from "@/data/booking-pricing";
 import { auth } from "@/lib/firebase";
 import { getPackageById, resolvePackageId } from "@/data/booking-packages";
+import { useI18n } from "@/i18n";
 
 
 /* ============================================================
@@ -100,8 +101,9 @@ const fallbackPackages = {
    HELPERS
 ============================================================ */
 
-function formatThaiDate(
-    dateString: string
+function formatBookingDate(
+    dateString: string,
+    locale: "th" | "en",
 ) {
 
     if (!dateString) {
@@ -121,7 +123,7 @@ function formatThaiDate(
     }
 
     return new Intl.DateTimeFormat(
-        "th-TH",
+        locale === "th" ? "th-TH" : "en-US",
         {
             dateStyle: "long",
         }
@@ -287,6 +289,7 @@ function getBookingId(
 ============================================================ */
 
 function ReviewBookingContent() {
+    const { locale, translate } = useI18n();
 
     const router =
         useRouter();
@@ -488,7 +491,7 @@ function ReviewBookingContent() {
         submitLockRef.current = true;
 
         if (!packageId || !eventDate || !customerName || !phone || !startTime || !endTime) {
-            setSubmitError("ข้อมูลการจองไม่ครบ กรุณากลับไปตรวจสอบข้อมูลอีกครั้ง");
+            setSubmitError(translate("ข้อมูลการจองไม่ครบ กรุณากลับไปตรวจสอบข้อมูลอีกครั้ง"));
             setIsSubmitting(false);
             submitLockRef.current = false;
             return;
@@ -500,7 +503,7 @@ function ReviewBookingContent() {
         const currentUser = auth.currentUser;
 
         if (!currentUser) {
-            setSubmitError("กรุณาเข้าสู่ระบบก่อนทำรายการจอง");
+            setSubmitError(translate("กรุณาเข้าสู่ระบบก่อนทำรายการจอง"));
             setIsSubmitting(false);
             submitLockRef.current = false;
             router.push(`/account/login?redirect=${encodeURIComponent(`/booking/review?${searchParams.toString()}`)}`);
@@ -516,14 +519,14 @@ function ReviewBookingContent() {
         const refreshedUser = auth.currentUser;
 
         if (!refreshedUser) {
-            setSubmitError("ไม่พบเซสชันผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            setSubmitError(translate("ไม่พบเซสชันผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง"));
             setIsSubmitting(false);
             submitLockRef.current = false;
             return;
         }
 
         if (!refreshedUser.emailVerified) {
-            setSubmitError("กรุณายืนยัน Email ก่อนทำรายการจอง");
+            setSubmitError(translate("กรุณายืนยัน Email ก่อนทำรายการจอง"));
             setIsSubmitting(false);
             submitLockRef.current = false;
             return;
@@ -532,7 +535,7 @@ function ReviewBookingContent() {
         const authenticatedEmail = refreshedUser.email?.trim().toLowerCase();
 
         if (!authenticatedEmail) {
-            setSubmitError("ไม่พบ Email ของบัญชี กรุณาเข้าสู่ระบบใหม่อีกครั้ง");
+            setSubmitError(translate("ไม่พบ Email ของบัญชี กรุณาเข้าสู่ระบบใหม่อีกครั้ง"));
             setIsSubmitting(false);
             submitLockRef.current = false;
             return;
@@ -623,11 +626,11 @@ function ReviewBookingContent() {
             } else {
                 const text = await response.text();
                 console.error("Booking Create API returned non-JSON:", text.slice(0, 1000));
-                throw new Error("เซิร์ฟเวอร์ตอบกลับข้อมูลไม่ถูกต้อง");
+                throw new Error(translate("เซิร์ฟเวอร์ตอบกลับข้อมูลไม่ถูกต้อง"));
             }
 
             if (!response.ok || !result.success || !result.bookingId) {
-                const error = new Error(result.error || "ไม่สามารถสร้างรายการจองได้") as Error & { code?: string };
+                const error = new Error(result.error || translate("ไม่สามารถสร้างรายการจองได้")) as Error & { code?: string };
                 error.code = result.code || `HTTP_${response.status}`;
                 throw error;
             }
@@ -673,16 +676,16 @@ function ReviewBookingContent() {
 
             const typedError = error as { code?: string; message?: string };
             const errorCode = typedError?.code || (error instanceof Error ? error.name : "") || "UNKNOWN_ERROR";
-            const errorMessage = typedError?.message || (error instanceof Error ? error.message : String(error)) || "ไม่ทราบสาเหตุ";
+            const errorMessage = typedError?.message || (error instanceof Error ? error.message : String(error)) || translate("ไม่ทราบสาเหตุ");
 
             if (errorCode === "DATE_ALREADY_BOOKED" || errorMessage === "DATE_ALREADY_BOOKED") {
-                setSubmitError("ขออภัย วันที่นี้มีลูกค้าท่านอื่นจองไปแล้ว กรุณากลับไปเลือกวันใหม่");
+                setSubmitError(translate("ขออภัย วันที่นี้มีลูกค้าท่านอื่นจองไปแล้ว กรุณากลับไปเลือกวันใหม่"));
             } else if (errorCode === "EMAIL_NOT_VERIFIED") {
-                setSubmitError("กรุณายืนยัน Email ก่อนทำรายการจอง");
+                setSubmitError(translate("กรุณายืนยัน Email ก่อนทำรายการจอง"));
             } else if (errorCode === "UNAUTHORIZED" || errorCode === "INVALID_TOKEN") {
-                setSubmitError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง");
+                setSubmitError(translate("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง"));
             } else {
-                setSubmitError(`ไม่สามารถสร้างรายการจองได้ (${errorCode})\n${errorMessage}`);
+                setSubmitError(`${translate("ไม่สามารถสร้างรายการจองได้")} (${errorCode})\n${errorMessage}`);
             }
 
             setIsSubmitting(false);
@@ -716,13 +719,13 @@ function ReviewBookingContent() {
                             </p>
 
                             <p className="truncate text-sm font-bold text-slate-900 sm:text-base">
-                                ขั้นตอนการจอง
+                                {translate("ขั้นตอนการจอง")}
                             </p>
                         </div>
 
                         <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
                             <p className="text-[11px] font-medium text-slate-400">
-                                STEP
+                                {translate("ขั้นตอน")}
                             </p>
 
                             <p className="text-sm font-black text-slate-900">
@@ -794,7 +797,7 @@ function ReviewBookingContent() {
                                         </span>
 
                                         <span>
-                                            {step.label}
+                                            {translate(step.label)}
                                         </span>
                                     </div>
 
@@ -838,16 +841,15 @@ function ReviewBookingContent() {
                         <div>
 
                             <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-500">
-                                Booking Step 4
+                                {translate("ขั้นตอนที่ 4")}
                             </p>
 
                             <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-                                ตรวจสอบข้อมูลการจอง
+                                {translate("ตรวจสอบข้อมูลการจอง")}
                             </h1>
 
                             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                                กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้อง
-                                ก่อนดำเนินการชำระเงิน
+                                {translate("กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้อง ก่อนดำเนินการชำระเงิน")}
                             </p>
 
                         </div>
@@ -868,7 +870,7 @@ function ReviewBookingContent() {
                                 <div className="min-w-0">
 
                                     <p className="text-xs font-semibold text-slate-400">
-                                        แพ็กเกจที่เลือก
+                                        {translate("แพ็กเกจที่เลือก")}
                                     </p>
 
                                     <h2 className="mt-1 break-words text-xl font-black text-slate-900 sm:text-2xl">
@@ -878,13 +880,13 @@ function ReviewBookingContent() {
                                     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
                                         {packageHours > 0 && (
                                             <span className="rounded-full bg-slate-100 px-3 py-1">
-                                                {packageHours} ชั่วโมง
+                                                {packageHours} {translate("ชั่วโมง")}
                                             </span>
                                         )}
 
                                         {packagePaperSize && (
                                             <span className="rounded-full bg-slate-100 px-3 py-1">
-                                                ขนาด {packagePaperSize}
+                                                {translate("ขนาด")} {packagePaperSize}
                                             </span>
                                         )}
 
@@ -905,7 +907,7 @@ function ReviewBookingContent() {
                             {packageFeatures.length > 0 && (
                                 <div className="mt-6 border-t border-slate-100 pt-5">
                                     <p className="text-xs font-semibold text-slate-400">
-                                        สิ่งที่รวมอยู่ในแพ็กเกจ
+                                        {translate("สิ่งที่รวมอยู่ในแพ็กเกจ")}
                                     </p>
 
                                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -945,11 +947,11 @@ function ReviewBookingContent() {
                                 <div>
 
                                     <h2 className="text-lg font-black text-slate-900">
-                                        ข้อมูลลูกค้า
+                                        {translate("ข้อมูลลูกค้า")}
                                     </h2>
 
                                     <p className="text-xs text-slate-400">
-                                        ข้อมูลสำหรับติดต่อ
+                                        {translate("ข้อมูลสำหรับติดต่อ")}
                                     </p>
 
                                 </div>
@@ -968,7 +970,7 @@ function ReviewBookingContent() {
 
                                         <User size={14} />
 
-                                        ชื่อ - นามสกุล
+                                        {translate("ชื่อ - นามสกุล")}
 
                                     </div>
 
@@ -987,7 +989,7 @@ function ReviewBookingContent() {
 
                                         <Phone size={14} />
 
-                                        เบอร์โทรศัพท์
+                                        {translate("เบอร์โทรศัพท์")}
 
                                     </div>
 
@@ -1055,11 +1057,11 @@ function ReviewBookingContent() {
                                 <div>
 
                                     <h2 className="text-lg font-black text-slate-900">
-                                        รายละเอียดงาน
+                                        {translate("รายละเอียดงาน")}
                                     </h2>
 
                                     <p className="text-xs text-slate-400">
-                                        วันที่และรายละเอียดงาน
+                                        {translate("วันที่และรายละเอียดงาน")}
                                     </p>
 
                                 </div>
@@ -1072,13 +1074,11 @@ function ReviewBookingContent() {
                                 <div className="rounded-2xl bg-slate-50 p-4">
 
                                     <p className="text-xs text-slate-400">
-                                        วันที่จัดงาน
+                                            {translate("วันที่จัดงาน")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
-                                        {formatThaiDate(
-                                            eventDate
-                                        )}
+                                        {formatBookingDate(eventDate, locale)}
                                     </p>
 
                                 </div>
@@ -1088,12 +1088,12 @@ function ReviewBookingContent() {
 
                                     <div className="flex items-center gap-2 text-xs text-slate-400">
                                         <Clock3 size={14} />
-                                        เวลาเริ่มงาน
+                                        {translate("เวลาเริ่มงาน")}
                                     </div>
 
                                     <p className="mt-2 font-semibold text-slate-900">
                                         {startTime
-                                            ? `${startTime} น.`
+                                            ? `${startTime} ${translate("น.")}`
                                             : "-"
                                         }
                                     </p>
@@ -1105,12 +1105,12 @@ function ReviewBookingContent() {
 
                                     <div className="flex items-center gap-2 text-xs text-slate-400">
                                         <Clock3 size={14} />
-                                        เวลาสิ้นสุด
+                                        {translate("เวลาสิ้นสุด")}
                                     </div>
 
                                     <p className="mt-2 font-semibold text-slate-900">
                                         {endTime
-                                            ? `${endTime} น.`
+                                            ? `${endTime} ${translate("น.")}`
                                             : "-"
                                         }
                                     </p>
@@ -1121,12 +1121,12 @@ function ReviewBookingContent() {
                                 <div className="rounded-2xl bg-slate-50 p-4">
 
                                     <p className="text-xs text-slate-400">
-                                        ระยะเวลา
+                                        {translate("ระยะเวลา")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
                                         {packageHours > 0
-                                            ? `${packageHours} ชั่วโมง`
+                                            ? `${packageHours} ${translate("ชั่วโมง")}`
                                             : "-"
                                         }
                                     </p>
@@ -1137,11 +1137,11 @@ function ReviewBookingContent() {
                                 <div className="rounded-2xl bg-slate-50 p-4">
 
                                     <p className="text-xs text-slate-400">
-                                        ประเภทงาน
+                                        {translate("ประเภทงาน")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
-                                        {eventType || "-"}
+                                        {eventType ? translate(eventType) : "-"}
                                     </p>
 
                                 </div>
@@ -1150,12 +1150,12 @@ function ReviewBookingContent() {
                                 <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
 
                                     <p className="text-xs text-slate-400">
-                                        จำนวนแขกโดยประมาณ
+                                        {translate("จำนวนแขกโดยประมาณ")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
                                         {guests
-                                            ? `${guests} คน`
+                                            ? `${guests} ${translate("คน")}`
                                             : "-"
                                         }
                                     </p>
@@ -1182,11 +1182,11 @@ function ReviewBookingContent() {
                                 <div>
 
                                     <h2 className="text-lg font-black text-slate-900">
-                                        สถานที่จัดงาน
+                                        {translate("สถานที่จัดงาน")}
                                     </h2>
 
                                     <p className="text-xs text-slate-400">
-                                        รายละเอียดสถานที่
+                                        {translate("รายละเอียดสถานที่")}
                                     </p>
 
                                 </div>
@@ -1200,7 +1200,7 @@ function ReviewBookingContent() {
                                 <div className="rounded-2xl bg-slate-50 p-4">
 
                                     <p className="text-xs text-slate-400">
-                                        สถานที่
+                                        {translate("สถานที่")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
@@ -1215,7 +1215,7 @@ function ReviewBookingContent() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            จังหวัด
+                                            {translate("จังหวัด")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1228,7 +1228,7 @@ function ReviewBookingContent() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            เขต / อำเภอ
+                                            {translate("เขต / อำเภอ")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1241,7 +1241,7 @@ function ReviewBookingContent() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            แขวง / ตำบล
+                                            {translate("แขวง / ตำบล")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1254,7 +1254,7 @@ function ReviewBookingContent() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            รหัสไปรษณีย์
+                                            {translate("รหัสไปรษณีย์")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1271,7 +1271,7 @@ function ReviewBookingContent() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            ที่อยู่เพิ่มเติม
+                                            {translate("ที่อยู่เพิ่มเติม")}
                                         </p>
 
                                         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
@@ -1310,7 +1310,7 @@ function ReviewBookingContent() {
 
                                         <MapPin size={18} />
 
-                                        เปิด Google Maps
+                                        {translate("เปิด Google Maps")}
 
                                     </a>
 
@@ -1330,7 +1330,7 @@ function ReviewBookingContent() {
                             <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-7">
 
                                 <h2 className="text-lg font-black text-slate-900">
-                                    รายละเอียดเพิ่มเติม
+                                        {translate("รายละเอียดเพิ่มเติม")}
                                 </h2>
 
                                 <p className="mt-4 whitespace-pre-wrap break-words rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
@@ -1358,7 +1358,7 @@ function ReviewBookingContent() {
                             <div className="bg-gradient-to-br from-pink-500 to-pink-400 p-6 text-white sm:p-7">
 
                                 <p className="text-sm font-semibold text-white/80">
-                                    สรุปค่าใช้บริการ
+                                        {translate("สรุปค่าใช้บริการ")}
                                 </p>
 
                                 <h2 className="mt-2 text-2xl font-black">
@@ -1368,13 +1368,13 @@ function ReviewBookingContent() {
                                 <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-white/90">
                                     {eventDate && (
                                         <span className="rounded-full bg-white/15 px-3 py-1.5">
-                                            {formatThaiDate(eventDate)}
+                                            {formatBookingDate(eventDate, locale)}
                                         </span>
                                     )}
 
                                     {startTime && endTime && (
                                         <span className="rounded-full bg-white/15 px-3 py-1.5">
-                                            {startTime} - {endTime} น.
+                                            {startTime} - {endTime} {translate("น.")}
                                         </span>
                                     )}
                                 </div>
@@ -1389,20 +1389,20 @@ function ReviewBookingContent() {
                                 <div className="mb-6 rounded-2xl bg-slate-50 p-4">
                                     <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
                                         <CalendarDays size={15} />
-                                        วันและเวลาจัดงาน
+                                            {translate("วันและเวลาจัดงาน")}
                                     </div>
 
                                     <p className="mt-2 text-sm font-bold text-slate-900">
                                         {eventDate
-                                            ? formatThaiDate(eventDate)
+                                            ? formatBookingDate(eventDate, locale)
                                             : "-"
                                         }
                                     </p>
 
                                     <p className="mt-1 text-sm text-slate-500">
                                         {startTime && endTime
-                                            ? `${startTime} - ${endTime} น.`
-                                            : "ยังไม่ได้ระบุเวลา"
+                                            ? `${startTime} - ${endTime} ${translate("น.")}`
+                                            : translate("ยังไม่ได้ระบุเวลา")
                                         }
                                     </p>
                                 </div>
@@ -1413,7 +1413,7 @@ function ReviewBookingContent() {
                                     <div className="flex items-center justify-between gap-4 text-sm">
 
                                         <span className="text-slate-500">
-                                            ราคาแพ็กเกจ
+                                            {translate("ราคาแพ็กเกจ")}
                                         </span>
 
                                         <span className="shrink-0 font-bold text-slate-900">
@@ -1428,13 +1428,13 @@ function ReviewBookingContent() {
                                     <div className="flex items-center justify-between gap-4 text-sm">
 
                                         <span className="text-slate-500">
-                                            ค่าเดินทาง
+                                            {translate("ค่าเดินทาง")}
                                         </span>
 
                                         <span className="shrink-0 font-bold text-slate-900">
 
                                             {travelFee === 0
-                                                ? "ฟรี"
+                                                ? translate("ฟรี")
                                                 : `฿${formatMoney(
                                                     travelFee
                                                 )}`
@@ -1450,7 +1450,7 @@ function ReviewBookingContent() {
                                         <div className="flex items-center justify-between gap-4 text-sm">
 
                                             <span className="text-slate-500">
-                                                ส่วนลด
+                                                {translate("ส่วนลด")}
                                             </span>
 
                                             <span className="shrink-0 font-bold text-green-600">
@@ -1475,11 +1475,11 @@ function ReviewBookingContent() {
                                         <div>
 
                                             <p className="text-sm text-slate-500">
-                                                ยอดรวม
+                                                {translate("ยอดรวม")}
                                             </p>
 
                                             <p className="mt-1 text-xs text-slate-400">
-                                                ราคาประมาณการ
+                                                {translate("ราคาประมาณการ")}
                                             </p>
 
                                         </div>
@@ -1502,7 +1502,7 @@ function ReviewBookingContent() {
                                     <div className="flex items-center justify-between gap-4">
 
                                         <span className="text-sm font-semibold text-slate-700">
-                                            เงินมัดจำ
+                                            {translate("เงินมัดจำ")}
                                         </span>
 
                                         <span className="font-black text-pink-600">
@@ -1510,7 +1510,7 @@ function ReviewBookingContent() {
                                                 ? `฿${formatMoney(
                                                     deposit
                                                 )}`
-                                                : "รอยืนยัน"
+                                                : translate("รอยืนยัน")
                                             }
                                         </span>
 
@@ -1522,7 +1522,7 @@ function ReviewBookingContent() {
                                         <div className="mt-3 flex items-center justify-between gap-4 border-t border-pink-100 pt-3">
 
                                             <span className="text-xs text-slate-500">
-                                                ยอดคงเหลือ
+                                                {translate("ยอดคงเหลือ")}
                                             </span>
 
                                             <span className="text-sm font-bold text-slate-900">
@@ -1542,33 +1542,33 @@ function ReviewBookingContent() {
 
                                 <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-4 ring-1 ring-slate-100">
                                     <p className="text-xs font-bold text-slate-400">
-                                        สรุปข้อมูลการจอง
+                                        {translate("สรุปข้อมูลการจอง")}
                                     </p>
 
                                     <div className="mt-3 space-y-2.5 text-sm">
                                         <div className="flex items-start justify-between gap-4">
-                                            <span className="text-slate-500">ลูกค้า</span>
+                                            <span className="text-slate-500">{translate("ลูกค้า")}</span>
                                             <span className="text-right font-semibold text-slate-900">
                                                 {customerName || "-"}
                                             </span>
                                         </div>
 
                                         <div className="flex items-start justify-between gap-4">
-                                            <span className="text-slate-500">สถานที่</span>
+                                            <span className="text-slate-500">{translate("สถานที่")}</span>
                                             <span className="max-w-[65%] text-right font-semibold text-slate-900">
                                                 {venue || "-"}
                                             </span>
                                         </div>
 
                                         <div className="flex items-start justify-between gap-4">
-                                            <span className="text-slate-500">ประเภทงาน</span>
+                                            <span className="text-slate-500">{translate("ประเภทงาน")}</span>
                                             <span className="text-right font-semibold text-slate-900">
-                                                {eventType || "-"}
+                                                {eventType ? translate(eventType) : "-"}
                                             </span>
                                         </div>
 
                                         <div className="flex items-start justify-between gap-4">
-                                            <span className="text-slate-500">จำนวนแขก</span>
+                                            <span className="text-slate-500">{translate("จำนวนแขก")}</span>
                                             <span className="text-right font-semibold text-slate-900">
                                                 {guests ? `${guests} คน` : "-"}
                                             </span>
@@ -1589,12 +1589,11 @@ function ReviewBookingContent() {
                                     <div>
 
                                         <p className="text-sm font-bold text-green-700">
-                                            ข้อมูลของคุณถูกตรวจสอบก่อนชำระเงิน
+                                            {translate("ข้อมูลของคุณถูกตรวจสอบก่อนชำระเงิน")}
                                         </p>
 
                                         <p className="mt-1 text-xs leading-5 text-green-700/80">
-                                            หลังยืนยัน ระบบจะสร้างเลขรายการจอง
-                                            และเชื่อมไปยังขั้นตอนการชำระเงิน
+                                            {translate("หลังยืนยัน ระบบจะสร้างเลขรายการจอง และเชื่อมไปยังขั้นตอนการชำระเงิน")}
                                         </p>
 
                                     </div>
@@ -1679,7 +1678,7 @@ function ReviewBookingContent() {
                                                 "
                                             />
 
-                                            กำลังสร้างรายการจอง...
+                                            {translate("กำลังสร้างรายการจอง...")}
 
                                         </>
 
@@ -1687,8 +1686,7 @@ function ReviewBookingContent() {
 
                                         <>
 
-                                            ยืนยันข้อมูล
-                                            และดำเนินการต่อ
+                                            {translate("ยืนยันข้อมูล และดำเนินการต่อ")}
 
                                             <ArrowRight
                                                 size={20}
@@ -1733,7 +1731,7 @@ function ReviewBookingContent() {
                                         size={18}
                                     />
 
-                                    กลับไปแก้ไขข้อมูล
+                                    {translate("กลับไปแก้ไขข้อมูล")}
 
                                 </Link>
 

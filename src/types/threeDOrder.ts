@@ -1,6 +1,8 @@
 export type ThreeDOrderStatus =
     | "quote"
     | "pending_confirmation"
+    | "pending_payment"
+    | "paid"
     | "waiting_payment"
     | "queued"
     | "printing"
@@ -11,6 +13,7 @@ export type ThreeDOrderStatus =
     | "cancelled";
 
 export type ThreeDPaymentStatus =
+    | "submitted"
     | "unpaid"
     | "pending_verification"
     | "partial"
@@ -60,6 +63,13 @@ export type ThreeDOrder = {
      * เช่น 3D-20260910-001
      */
     orderNumber: string;
+
+    userId?: string;
+    quoteId?: string;
+    source?: string;
+    isArchived?: boolean;
+    archivedAt?: unknown;
+    archivedBy?: string;
 
     customer: ThreeDOrderCustomer;
 

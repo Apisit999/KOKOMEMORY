@@ -6,6 +6,7 @@ import { getAuth } from "firebase-admin/auth";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { todayBangkok } from "@/lib/bangkok-date";
 import {
     getPackageById,
     resolvePackageId,
@@ -80,15 +81,6 @@ function expectedEndTime(startTime: string, hours: number): string {
     const h = Math.floor(end / 60);
     const m = end % 60;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
-function todayBangkok(): string {
-    return new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Bangkok",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-    }).format(new Date());
 }
 
 function getBearerToken(request: Request): string {
@@ -331,6 +323,7 @@ export async function POST(request: Request) {
                     verifiedBy: null,
                 },
                 bookingStatus: "pending_payment",
+                archiveStatus: "active",
                 holdExpiresAt,
                 note: stringValue(body.note, 3000),
             };
@@ -354,6 +347,7 @@ export async function POST(request: Request) {
                 email: authUser.email,
                 eventDate,
                 bookingStatus: "pending_payment",
+                archiveStatus: "active",
                 createdAt: FieldValue.serverTimestamp(),
             });
 

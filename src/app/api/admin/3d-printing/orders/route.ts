@@ -36,6 +36,8 @@ const SEQUENCE_COLLECTION = "threeDOrderSequences";
 const VALID_ORDER_STATUSES: ThreeDOrderStatus[] = [
     "quote",
     "pending_confirmation",
+    "pending_payment",
+    "paid",
     "waiting_payment",
     "queued",
     "printing",
@@ -711,11 +713,15 @@ function normalizeOrder(
         paymentStatus =
             "refunded";
     } else if (
-        data.paymentStatus ===
-        "pending_verification"
+        data.paymentStatus === "submitted" ||
+        data.paymentStatus === "pending_verification"
     ) {
-        paymentStatus =
-            "pending_verification";
+        paymentStatus = "pending_verification";
+    } else if (
+        data.paymentStatus ===
+        "paid"
+    ) {
+        paymentStatus = "paid";
     } else {
         paymentStatus =
             calculatePaymentStatus(
@@ -732,6 +738,13 @@ function normalizeOrder(
             "string"
                 ? data.orderNumber
                 : "",
+
+        ...(typeof data.userId === "string" ? { userId: data.userId } : {}),
+        ...(typeof data.quoteId === "string" ? { quoteId: data.quoteId } : {}),
+        ...(typeof data.source === "string" ? { source: data.source } : {}),
+        isArchived: data.isArchived === true,
+        ...(data.archivedAt ? { archivedAt: normalizeTimestamp(data.archivedAt) } : {}),
+        ...(typeof data.archivedBy === "string" ? { archivedBy: data.archivedBy } : {}),
 
         customer:
             normalizeCustomer(

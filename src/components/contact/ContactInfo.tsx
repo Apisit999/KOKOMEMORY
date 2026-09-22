@@ -15,6 +15,7 @@ import {
 
 import Link from "next/link";
 import { useI18n } from "@/i18n";
+import { socialLinks } from "@/config/social-links";
 
 const mainContacts = [
     {
@@ -40,7 +41,7 @@ const mainContacts = [
         title: "LINE Official",
         value: "@024ppzhh",
         description: "พูดคุยกับทีมงานโดยตรง",
-        link: "https://line.me/R/ti/p/@024ppzhh",
+        link: socialLinks.line,
         color: "bg-green-100 text-green-500",
         action: "แชทกับเรา",
     },
@@ -52,7 +53,7 @@ const socialContacts = [
         title: "Instagram",
         value: "@kokomemory",
         description: "ติดตามผลงานและภาพบรรยากาศจากงานต่าง ๆ",
-        link: "https://www.instagram.com/photobooth.koko?igsh=MWV0dW1nejZ1eG0zbg==&igsi=MWV0dW1nejZ1eG0zbg==",
+        link: socialLinks.instagram,
         color: "bg-pink-100 text-pink-500",
     },
     {
@@ -60,7 +61,7 @@ const socialContacts = [
         title: "Facebook",
         value: "KOKO Memory",
         description: "ข่าวสาร โปรโมชั่น และผลงานของเรา",
-        link: "https://www.facebook.com/share/1EsxWaJ8th/",
+        link: socialLinks.facebook,
         color: "bg-blue-100 text-blue-600",
     },
 ];

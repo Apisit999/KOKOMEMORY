@@ -122,6 +122,7 @@ export async function PATCH(
             };
 
         const allowedStatuses = [
+            "submitted",
             "pending_verification",
             "verified",
             "rejected",
@@ -153,12 +154,20 @@ export async function PATCH(
             if (current.status === "refunded" || (current.status === "verified" && body.status !== "refunded")) {
                 throw new Error("PAYMENT_STATUS_PROTECTED");
             }
+            const orderId = typeof current.orderId === "string" ? current.orderId : "";
+            const orderRef = adminDb.collection("threeDOrders").doc(orderId);
+            const order = await transaction.get(orderRef);
+            if (!order.exists) throw new Error("ORDER_NOT_FOUND");
+            const orderData = order.data() || {};
+            if (body.status === "verified") {
+                const authoritativeAmount = Number(orderData.totalPrice);
+                if (!Number.isFinite(authoritativeAmount) || Number(current.amount) !== authoritativeAmount) throw new Error("PAYMENT_AMOUNT_MISMATCH");
+                transaction.update(orderRef, { paidAmount: authoritativeAmount, remainingAmount: 0, paymentStatus: "paid", orderStatus: orderData.orderStatus === "pending_payment" ? "paid" : orderData.orderStatus, updatedAt: FieldValue.serverTimestamp() });
+            } else if (body.status === "rejected") {
+                transaction.update(orderRef, { paymentStatus: "unpaid", updatedAt: FieldValue.serverTimestamp() });
+            }
             transaction.update(paymentRef, { status: body.status, updatedAt: FieldValue.serverTimestamp() });
-            transaction.set(adminDb.collection("auditLogs").doc(), {
-                action: "UPDATE_3D_PAYMENT_STATUS", paymentId: id, orderId: current.orderId,
-                previousStatus: current.status, status: body.status, adminUid: admin.uid,
-                createdAt: FieldValue.serverTimestamp(),
-            });
+            transaction.set(adminDb.collection("auditLogs").doc(), { action: body.status === "verified" ? "3d_payment_verified" : body.status === "rejected" ? "3d_payment_rejected" : "UPDATE_3D_PAYMENT_STATUS", paymentId: id, orderId, previousStatus: current.status, status: body.status, adminUid: admin.uid, amount: Number(current.amount) || 0, createdAt: FieldValue.serverTimestamp() });
         });
 
         const updated =
@@ -173,6 +182,7 @@ export async function PATCH(
         });
     } catch (error) {
         if (error instanceof Error && error.message === "PAYMENT_STATUS_PROTECTED") return NextResponse.json({ error: error.message }, { status: 409 });
+        if (error instanceof Error && ["PAYMENT_AMOUNT_MISMATCH", "ORDER_NOT_FOUND"].includes(error.message)) return NextResponse.json({ error: error.message, code: error.message }, { status: error.message === "ORDER_NOT_FOUND" ? 404 : 409 });
         const denied = authErrorResponse(error);
         if (denied) return denied;
         console.error(

@@ -94,6 +94,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { provinces } from "@/data/thailand/provinces";
+import { getAreaLabel, getAreaSearchValues, getProvinceLabel, getProvinceSearchValues } from "@/data/thailand/localized-areas";
+import { useI18n } from "@/i18n";
 import {
     getPackageById,
     resolvePackageId,
@@ -209,6 +211,7 @@ function ProvinceCombobox({
     onChange: (value: string) => void;
     error?: string;
 }) {
+    const { locale, translate } = useI18n();
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -265,11 +268,10 @@ function ProvinceCombobox({
             return provinces;
         }
 
-        return provinces.filter(
-            (province) =>
-                province
-                    .toLocaleLowerCase("th")
-                    .includes(keyword)
+        return provinces.filter((province) =>
+            getProvinceSearchValues(province).some((label) =>
+                label.toLocaleLowerCase("th").includes(keyword),
+            ),
         );
 
     }, [query]);
@@ -317,7 +319,7 @@ function ProvinceCombobox({
                     value={
                         open
                             ? query
-                            : value
+                            : getProvinceLabel(value, locale)
                     }
                     onFocus={() => {
                         setOpen(true);
@@ -342,11 +344,11 @@ function ProvinceCombobox({
                     placeholder={
                         value
                             ? value
-                            : "ค้นหาหรือเลือกจังหวัด..."
+                            : translate("ค้นหาหรือเลือกจังหวัด...")
                     }
                     className="h-full w-full bg-transparent px-3 pr-4 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                     autoComplete="off"
-                    aria-label="ค้นหาจังหวัด"
+                    aria-label={translate("ค้นหาจังหวัด")}
                     aria-expanded={open}
                 />
 
@@ -366,9 +368,9 @@ function ProvinceCombobox({
 
                         <p className="text-xs font-semibold text-slate-500">
 
-                            {query
-                                ? `พบ ${filteredProvinces.length} จังหวัด`
-                                : "ประเทศไทย · 77 จังหวัด"}
+                                {query
+                                ? `${translate("พบ")} ${filteredProvinces.length} ${translate("จังหวัด")}`
+                                : translate("ประเทศไทย · 77 จังหวัด")}
 
                         </p>
 
@@ -381,7 +383,7 @@ function ProvinceCombobox({
                                 }
                                 className="text-xs font-medium text-pink-500 hover:text-pink-600"
                             >
-                                ล้างการค้นหา
+                                {translate("ล้างการค้นหา")}
                             </button>
 
                         )}
@@ -425,7 +427,7 @@ function ProvinceCombobox({
                                         </span>
 
                                         <span>
-                                            {province}
+                                {getProvinceLabel(province, locale)}
                                         </span>
 
                                         {value ===
@@ -456,11 +458,11 @@ function ProvinceCombobox({
                                 </div>
 
                                 <p className="mt-3 font-semibold text-slate-700">
-                                    ไม่พบจังหวัด
+                                    {translate("ไม่พบจังหวัด")}
                                 </p>
 
                                 <p className="mt-1 text-xs text-slate-400">
-                                    ลองพิมพ์ชื่อจังหวัดใหม่อีกครั้ง
+                                    {translate("ลองพิมพ์ชื่อจังหวัดใหม่อีกครั้ง")}
                                 </p>
 
                             </div>
@@ -549,6 +551,7 @@ function ThaiAddressCombobox({
     error?: string;
     disabled?: boolean;
 }) {
+    const { locale, translate } = useI18n();
     /* ========================================================
        REF
        --------------------------------------------------------
@@ -737,11 +740,11 @@ function ThaiAddressCombobox({
         }
 
         return items.filter((item) =>
-            item
-                .toLocaleLowerCase("th")
-                .includes(keyword)
+            getAreaSearchValues(province, item, level).some((label) =>
+                label.toLocaleLowerCase("th").includes(keyword),
+            ),
         );
-    }, [items, query]);
+    }, [items, query, level, province]);
 
     /* ========================================================
        SELECT ITEM
@@ -852,20 +855,15 @@ function ThaiAddressCombobox({
     const isBangkok =
         province === "กรุงเทพมหานคร";
 
-    const areaName =
-        level === "district"
-            ? isBangkok
-                ? "เขต"
-                : "อำเภอ"
-            : isBangkok
-                ? "แขวง"
-                : "ตำบล";
+    const displayAreaName = level === "district"
+        ? translate(isBangkok ? "เขต" : "อำเภอ")
+        : translate(isBangkok ? "แขวง" : "ตำบล");
 
     const placeholder = disabled
         ? level === "district"
-            ? "กรุณาเลือกจังหวัดก่อน"
-            : "กรุณาเลือกเขต / อำเภอก่อน"
-        : `ค้นหาหรือเลือก${areaName}...`;
+            ? translate("กรุณาเลือกจังหวัดก่อน")
+            : translate("กรุณาเลือกเขต / อำเภอก่อน")
+            : `${translate("ค้นหาหรือเลือก")}${displayAreaName}...`;
 
     return (
         <div
@@ -877,7 +875,7 @@ function ThaiAddressCombobox({
             ================================================= */}
 
             <Label>
-                {label}
+                {translate(label)}
 
                 <span className="ml-1 text-pink-500">
                     *
@@ -904,13 +902,13 @@ function ThaiAddressCombobox({
                 />
 
                 <input
-                    value={open ? query : value}
+                    value={open ? query : (value ? getAreaLabel(province, value, level, locale) : "")}
                     disabled={disabled}
                     autoComplete="off"
                     spellCheck={false}
                     placeholder={
                         value
-                            ? value
+                            ? getAreaLabel(province, value, level, locale)
                             : placeholder
                     }
                     onFocus={() => {
@@ -933,7 +931,7 @@ function ThaiAddressCombobox({
                     }}
                     onKeyDown={handleKeyDown}
                     className="h-full w-full bg-transparent px-3 pr-4 text-sm text-slate-800 outline-none placeholder:text-slate-400"
-                    aria-label={`ค้นหา${areaName}`}
+                    aria-label={`${translate("ค้นหา")}${displayAreaName}`}
                     aria-expanded={open}
                     aria-autocomplete="list"
                 />
@@ -952,15 +950,15 @@ function ThaiAddressCombobox({
                     <div className="flex items-center justify-between border-b bg-slate-50 px-4 py-3">
                         <div>
                             <p className="text-xs font-semibold text-slate-700">
-                                {areaName}
+                                {displayAreaName}
                             </p>
 
                             <p className="mt-0.5 text-[11px] text-slate-400">
                                 {loading
-                                    ? "กำลังโหลดข้อมูล..."
+                                    ? translate("กำลังโหลดข้อมูล...")
                                     : query
-                                        ? `พบ ${filteredItems.length} รายการ`
-                                        : `${items.length} รายการ`}
+                                        ? `${translate("พบ")} ${filteredItems.length} ${translate("รายการ")}`
+                                        : `${items.length} ${translate("รายการ")}`}
                             </p>
                         </div>
 
@@ -973,13 +971,13 @@ function ThaiAddressCombobox({
                                 }}
                                 className="text-xs font-medium text-pink-500 hover:text-pink-600"
                             >
-                                ล้างการค้นหา
+                                {translate("ล้างการค้นหา")}
                             </button>
                         )}
                     </div>
 
                     {/* ------------------------------------------------
-                        Loading
+                        {translate("Loading")}
                     ------------------------------------------------ */}
 
                     {loading && (
@@ -987,7 +985,7 @@ function ThaiAddressCombobox({
                             <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-pink-500" />
 
                             <p className="mt-3 text-sm text-slate-400">
-                                กำลังโหลดข้อมูลพื้นที่...
+                                {translate("กำลังโหลดข้อมูลพื้นที่...")}
                             </p>
                         </div>
                     )}
@@ -1042,7 +1040,7 @@ function ThaiAddressCombobox({
                                                     </span>
 
                                                     <span className="truncate">
-                                                        {item}
+                                                        {getAreaLabel(province, item, level, locale)}
                                                     </span>
                                                 </div>
 
@@ -1066,11 +1064,11 @@ function ThaiAddressCombobox({
                                     </div>
 
                                     <p className="mt-3 font-semibold text-slate-700">
-                                        ไม่พบ{areaName}
+                                        {translate("ไม่พบ")}{displayAreaName}
                                     </p>
 
                                     <p className="mt-1 text-xs text-slate-400">
-                                        ลองพิมพ์ชื่อพื้นที่ใหม่อีกครั้ง
+                                        {translate("ลองพิมพ์ชื่อพื้นที่ใหม่อีกครั้ง")}
                                     </p>
                                 </div>
                             )}
@@ -1240,6 +1238,8 @@ function formatTimeRange(
 ============================================================ */
 
 function CustomerContent() {
+
+    const { translate } = useI18n();
 
     const router = useRouter();
 
@@ -1598,7 +1598,7 @@ function CustomerContent() {
         if (!form.fullName.trim()) {
 
             newErrors.fullName =
-                "กรุณากรอกชื่อ-นามสกุล";
+                translate("กรุณากรอกชื่อ-นามสกุล");
 
         }
 
@@ -1609,14 +1609,14 @@ function CustomerContent() {
         if (!form.phone.trim()) {
 
             newErrors.phone =
-                "กรุณากรอกเบอร์โทรศัพท์";
+                translate("กรุณากรอกเบอร์โทรศัพท์");
 
         } else if (
             !/^0\d{9}$/.test(form.phone)
         ) {
 
             newErrors.phone =
-                "กรุณากรอกเบอร์โทรศัพท์ 10 หลัก";
+                translate("กรุณากรอกเบอร์โทรศัพท์ 10 หลัก");
 
         }
 
@@ -1627,7 +1627,7 @@ function CustomerContent() {
         if (!form.eventType) {
 
             newErrors.eventType =
-                "กรุณาเลือกประเภทงาน";
+                translate("กรุณาเลือกประเภทงาน");
 
         }
 
@@ -1637,7 +1637,7 @@ function CustomerContent() {
 
         if (!form.startTime) {
             newErrors.startTime =
-                "กรุณาเลือกเวลาเริ่มงาน";
+                translate("กรุณาเลือกเวลาเริ่มงาน");
         }
 
         /* ----------------------------------------------------
@@ -1653,7 +1653,7 @@ function CustomerContent() {
                 )
         ) {
             newErrors.endTime =
-                "กรุณาตรวจสอบช่วงเวลาจัดงาน";
+                translate("กรุณาตรวจสอบช่วงเวลาจัดงาน");
         }
 
         /* ----------------------------------------------------
@@ -1663,7 +1663,7 @@ function CustomerContent() {
         if (!form.venue.trim()) {
 
             newErrors.venue =
-                "กรุณากรอกชื่อสถานที่จัดงาน";
+                translate("กรุณากรอกชื่อสถานที่จัดงาน");
 
         }
 
@@ -1674,7 +1674,7 @@ function CustomerContent() {
         if (!form.province) {
 
             newErrors.province =
-                "กรุณาเลือกจังหวัด";
+                translate("กรุณาเลือกจังหวัด");
 
         }
 
@@ -1685,7 +1685,7 @@ function CustomerContent() {
         if (!form.district.trim()) {
 
             newErrors.district =
-                "กรุณากรอกเขต / อำเภอ";
+                translate("กรุณากรอกเขต / อำเภอ");
 
         }
 
@@ -1696,7 +1696,7 @@ function CustomerContent() {
         if (!form.subdistrict.trim()) {
 
             newErrors.subdistrict =
-                "กรุณากรอกแขวง / ตำบล";
+                translate("กรุณากรอกแขวง / ตำบล");
 
         }
 
@@ -1712,7 +1712,7 @@ function CustomerContent() {
         ) {
 
             newErrors.email =
-                "รูปแบบ Email ไม่ถูกต้อง";
+                translate("รูปแบบ Email ไม่ถูกต้อง");
 
         }
 
@@ -1726,7 +1726,7 @@ function CustomerContent() {
         ) {
 
             newErrors.googleMaps =
-                "กรุณาใส่ลิงก์ Google Maps ที่ถูกต้อง";
+                translate("กรุณาใส่ลิงก์ Google Maps ที่ถูกต้อง");
 
         }
 
@@ -1908,13 +1908,13 @@ function CustomerContent() {
                             </p>
 
                             <p className="truncate text-sm font-bold text-slate-900 sm:text-base">
-                                ขั้นตอนการจอง
+                                {translate("ขั้นตอนการจอง")}
                             </p>
                         </div>
 
                         <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
                             <p className="text-[11px] font-medium text-slate-400">
-                                STEP
+                                {translate("ขั้นตอน")}
                             </p>
 
                             <p className="text-sm font-black text-slate-900">
@@ -1985,7 +1985,7 @@ function CustomerContent() {
                                         </span>
 
                                         <span>
-                                            {step.label}
+                                            {translate(step.label)}
                                         </span>
                                     </div>
 
@@ -2026,15 +2026,15 @@ function CustomerContent() {
                             <div className="mb-10">
 
                                 <p className="text-sm font-bold uppercase tracking-[0.25em] text-pink-500">
-                                    Booking Step 3
+                                    {translate("ขั้นตอนที่ 3")}
                                 </p>
 
                                 <h1 className="mt-2 text-3xl font-black text-slate-900 md:text-4xl">
-                                    ข้อมูลผู้จองและสถานที่จัดงาน
+                                    {translate("ข้อมูลผู้จองและสถานที่จัดงาน")}
                                 </h1>
 
                                 <p className="mt-3 leading-7 text-slate-500">
-                                    กรุณากรอกข้อมูลให้ครบถ้วน เพื่อให้ทีมงานสามารถเตรียมงานและประเมินค่าเดินทางได้อย่างถูกต้อง
+                                    {translate("กรุณากรอกข้อมูลให้ครบถ้วน เพื่อให้ทีมงานสามารถเตรียมงานและประเมินค่าเดินทางได้อย่างถูกต้อง")}
                                 </p>
 
                             </div>
@@ -2084,7 +2084,7 @@ function CustomerContent() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder="เช่น สมชาย ใจดี"
+                                                    placeholder={translate("เช่น สมชาย ใจดี")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -2136,7 +2136,7 @@ function CustomerContent() {
                                                             )
                                                         )
                                                     }
-                                                    placeholder="0801234567"
+                                                    placeholder={translate("0801234567")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -2170,7 +2170,7 @@ function CustomerContent() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="@kokomemory"
+                                                    placeholder={translate("@kokomemory")}
                                                 className="mt-2 h-12 rounded-xl"
                                             />
 
@@ -2202,7 +2202,7 @@ function CustomerContent() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder="example@email.com"
+                                                    placeholder={translate("example@email.com")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -2260,7 +2260,7 @@ function CustomerContent() {
 
                                                 <SelectTrigger className="mt-2 h-12 rounded-xl">
 
-                                                    <SelectValue placeholder="เลือกประเภทงาน" />
+                                                    <SelectValue placeholder={translate("เลือกประเภทงาน")} />
 
                                                 </SelectTrigger>
 
@@ -2278,7 +2278,7 @@ function CustomerContent() {
                                                                 }
                                                             >
                                                                 {
-                                                                    item.label
+                                                                    translate(item.label)
                                                                 }
                                                             </SelectItem>
 
@@ -2321,7 +2321,7 @@ function CustomerContent() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="เช่น 300"
+                                                placeholder={translate("เช่น 300")}
                                                 className="mt-2 h-12 rounded-xl"
                                             />
 
@@ -2385,7 +2385,7 @@ function CustomerContent() {
                                                             : ""
                                                     }`}
                                                 >
-                                                    <SelectValue placeholder="เลือกเวลาเริ่มงาน" />
+                                                    <SelectValue placeholder={translate("เลือกเวลาเริ่มงาน")} />
                                                 </SelectTrigger>
 
                                                 <SelectContent>
@@ -2503,11 +2503,11 @@ function CustomerContent() {
                                         <div>
 
                                             <h2 className="text-xl font-bold text-slate-900">
-                                                4. สถานที่จัดงาน
+                                                4. {translate("สถานที่จัดงาน")}
                                             </h2>
 
                                             <p className="mt-1 text-sm text-slate-500">
-                                                ข้อมูลส่วนนี้ใช้สำหรับตรวจสอบพื้นที่และคำนวณค่าเดินทาง
+                                                {translate("ข้อมูลส่วนนี้ใช้สำหรับตรวจสอบพื้นที่และคำนวณค่าเดินทาง")}
                                             </p>
 
                                         </div>
@@ -2522,7 +2522,7 @@ function CustomerContent() {
 
                                             <Label>
 
-                                                ชื่อสถานที่จัดงาน
+                                                {translate("ชื่อสถานที่จัดงาน")}
 
                                                 <span className="ml-1 text-pink-500">
                                                     *
@@ -2540,7 +2540,7 @@ function CustomerContent() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="เช่น โรงแรม ABC Bangkok / Impact Arena"
+                                                placeholder={translate("เช่น โรงแรม ABC Bangkok / Impact Arena")}
                                                 className="mt-2 h-12 rounded-xl"
                                             />
 
@@ -2560,7 +2560,7 @@ function CustomerContent() {
 
                                             <Label>
 
-                                                จังหวัด
+                                                {translate("จังหวัด")}
 
                                                 <span className="ml-1 text-pink-500">
                                                     *
@@ -2705,7 +2705,7 @@ function CustomerContent() {
                                         <div>
 
                                             <Label>
-                                                ที่อยู่เพิ่มเติม
+                                                {translate("ที่อยู่เพิ่มเติม")}
                                             </Label>
 
                                             <Textarea
@@ -2718,7 +2718,7 @@ function CustomerContent() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="บ้านเลขที่ อาคาร ถนน ชั้น ห้อง หรือรายละเอียดที่ช่วยให้ทีมงานหาสถานที่ได้ง่ายขึ้น"
+                                                placeholder={translate("บ้านเลขที่ อาคาร ถนน ชั้น ห้อง หรือรายละเอียดที่ช่วยให้ทีมงานหาสถานที่ได้ง่ายขึ้น")}
                                                 className="mt-2 min-h-24 rounded-xl"
                                             />
 
@@ -2729,7 +2729,7 @@ function CustomerContent() {
                                         <div className="max-w-xs">
 
                                             <Label>
-                                                รหัสไปรษณีย์
+                                                {translate("รหัสไปรษณีย์")}
                                             </Label>
 
                                             <div className="relative mt-2">
@@ -2741,7 +2741,7 @@ function CustomerContent() {
                                                         form.postalCode
                                                     }
                                                     readOnly
-                                                    placeholder="เลือกตำบลเพื่อเติมอัตโนมัติ"
+                                                    placeholder={translate("เลือกตำบลเพื่อเติมอัตโนมัติ")}
                                                     className="h-12 rounded-xl bg-slate-50 pr-10"
                                                 />
 
@@ -2755,7 +2755,7 @@ function CustomerContent() {
                                             </div>
 
                                             <p className="mt-2 text-xs text-slate-400">
-                                                ระบบจะเติมรหัสไปรษณีย์อัตโนมัติจากพื้นที่ที่เลือก
+                                                {translate("ระบบจะเติมรหัสไปรษณีย์อัตโนมัติจากพื้นที่ที่เลือก")}
                                             </p>
 
                                         </div>
@@ -2785,7 +2785,7 @@ function CustomerContent() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder="วางลิงก์ Google Maps ของสถานที่จัดงาน"
+                                                    placeholder={translate("วางลิงก์ Google Maps ของสถานที่จัดงาน")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -2848,7 +2848,7 @@ function CustomerContent() {
                                                 e.target.value
                                             )
                                         }
-                                        placeholder="เช่น เวลาเริ่มงาน, ธีมงาน, ต้องการ Backdrop แบบไหน หรือรายละเอียดอื่น ๆ"
+                                        placeholder={translate("เช่น เวลาเริ่มงาน, ธีมงาน, ต้องการ Backdrop แบบไหน หรือรายละเอียดอื่น ๆ")}
                                         className="mt-2 min-h-32 rounded-xl"
                                     />
 
@@ -2881,7 +2881,7 @@ function CustomerContent() {
                                         size={18}
                                     />
 
-                                    กลับไปเลือกวัน
+                                        {translate("กลับไปเลือกวัน")}
 
                                 </Button>
 
@@ -2900,7 +2900,7 @@ function CustomerContent() {
                                     className="h-14 rounded-full bg-pink-500 font-bold text-white hover:bg-pink-400 sm:flex-1"
                                 >
 
-                                    ตรวจสอบข้อมูล
+                                        {translate("ตรวจสอบข้อมูล")}
 
                                     <ArrowRight
                                         size={18}
@@ -2925,11 +2925,11 @@ function CustomerContent() {
                             <CardContent className="p-7">
 
                                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-500">
-                                    Your Booking
+                                    {translate("Your Booking")}
                                 </p>
 
                                 <h2 className="mt-2 text-2xl font-black text-slate-900">
-                                    สรุปการจอง
+                                    {translate("สรุปการจอง")}
                                 </h2>
 
                                 {/* =================================================
@@ -2939,7 +2939,7 @@ function CustomerContent() {
                                 <div className="mt-7 rounded-2xl bg-slate-50 p-5">
 
                                     <p className="text-sm text-slate-500">
-                                        แพ็กเกจ
+                                        {translate("แพ็กเกจ")}
                                     </p>
 
                                     {selectedPackage ? (
@@ -2963,7 +2963,7 @@ function CustomerContent() {
                                                 <div>
 
                                                     <p className="text-xs text-slate-400">
-                                                        ราคา
+                                                        {translate("ราคา")}
                                                     </p>
 
                                                     <p className="text-xl font-black text-pink-500">
@@ -2978,14 +2978,14 @@ function CustomerContent() {
                                                 <div className="text-right">
 
                                                     <p className="text-xs text-slate-400">
-                                                        ระยะเวลา
+                                                        {translate("ระยะเวลา")}
                                                     </p>
 
                                                     <p className="font-bold text-slate-700">
                                                         {
                                                             selectedPackage.hours
                                                         }{" "}
-                                                        ชั่วโมง
+                                                        {translate("ชั่วโมง")}
                                                     </p>
 
                                                 </div>
@@ -2999,7 +2999,7 @@ function CustomerContent() {
                                         <div className="mt-3 rounded-xl bg-red-50 p-3">
 
                                             <p className="text-sm font-semibold text-red-600">
-                                                ไม่พบแพ็กเกจ
+                                                {translate("ไม่พบแพ็กเกจ")}
                                             </p>
 
                                             <button
@@ -3011,7 +3011,7 @@ function CustomerContent() {
                                                 }
                                                 className="mt-1 text-xs text-red-500 underline"
                                             >
-                                                กลับไปเลือกแพ็กเกจ
+                                                {translate("กลับไปเลือกแพ็กเกจ")}
                                             </button>
 
                                         </div>
@@ -3034,7 +3034,7 @@ function CustomerContent() {
                                         />
 
                                         <p className="text-sm text-slate-500">
-                                            วันที่จัดงาน
+                                            {translate("วันที่จัดงาน")}
                                         </p>
 
                                     </div>
@@ -3080,7 +3080,7 @@ function CustomerContent() {
                                 </div>
 
                                 {/* =================================================
-                                    Travel Fee
+                                    {translate("ค่าเดินทาง")}
                                 ================================================= */}
 
                                 {form.province && (
@@ -3109,7 +3109,7 @@ function CustomerContent() {
                                         <div className="mt-3 flex items-center justify-between border-t border-pink-100 pt-3">
 
                                             <span className="text-sm text-slate-500">
-                                                ค่าเดินทาง
+                                                {translate("ค่าเดินทาง")}
                                             </span>
 
                                             <span className="font-bold text-pink-600">
@@ -3139,7 +3139,7 @@ function CustomerContent() {
                                     <div className="flex justify-between text-sm">
 
                                         <span className="text-slate-500">
-                                            ราคาแพ็กเกจ
+                                            {translate("ราคาแพ็กเกจ")}
                                         </span>
 
                                         <span className="font-semibold">
@@ -3156,7 +3156,7 @@ function CustomerContent() {
                                     <div className="mt-3 flex justify-between text-sm">
 
                                         <span className="text-slate-500">
-                                            ค่าเดินทาง
+                                                {translate("ค่าเดินทาง")}
                                         </span>
 
                                         <span className="font-semibold">
@@ -3204,11 +3204,11 @@ function CustomerContent() {
                                     <div>
 
                                         <p className="font-bold text-green-700">
-                                            คำนวณราคาเบื้องต้นแล้ว
+                                            {translate("คำนวณราคาเบื้องต้นแล้ว")}
                                         </p>
 
                                         <p className="mt-1 text-xs leading-5 text-green-700/80">
-                                            ค่าเดินทางเป็นประมาณการเบื้องต้น ทีมงานจะตรวจสอบรายละเอียดสถานที่อีกครั้งก่อนยืนยันการจอง
+                                            {translate("ค่าเดินทางเป็นประมาณการเบื้องต้น ทีมงานจะตรวจสอบรายละเอียดสถานที่อีกครั้งก่อนยืนยันการจอง")}
                                         </p>
 
                                     </div>

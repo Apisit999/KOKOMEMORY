@@ -17,7 +17,16 @@
  * ============================================================
  */
 
-export const provinces = [
+/*
+ * Keep this compatibility export for the API and booking flow. The actual
+ * list is sourced from geothai through localized-areas.ts so it cannot drift
+ * from the labels used by the UI.
+ */
+export { provinces } from "./localized-areas";
+
+/* Legacy literal removed; do not add a second province list here. */
+/*
+export const legacyProvinces = [
     "กรุงเทพมหานคร",
     "กระบี่",
     "กาญจนบุรี",
@@ -93,3 +102,4 @@ export const provinces = [
     "แพร่",
     "แม่ฮ่องสอน",
 ] as const;
+*/

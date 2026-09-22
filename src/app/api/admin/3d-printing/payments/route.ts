@@ -26,12 +26,17 @@ function normalizePayment(
             data.orderNumber || ""
         ),
 
+        ...(typeof data.userId === "string" ? { userId: data.userId } : {}),
+        ...(typeof data.quoteId === "string" ? { quoteId: data.quoteId } : {}),
+
         amount:
             Number(data.amount) || 0,
 
         method: data.method,
 
         status: data.status,
+
+        ...(data.proof && typeof data.proof === "object" ? { proof: { fileName: String((data.proof as Record<string, unknown>).fileName || "proof"), contentType: String((data.proof as Record<string, unknown>).contentType || "application/octet-stream"), size: Number((data.proof as Record<string, unknown>).size || 0) } } : {}),
 
         ...(typeof data.reference === "string"
             ? {
@@ -285,8 +290,8 @@ export async function POST(request: Request) {
         }
 
         const allowedStatuses = [
+            "submitted",
             "pending_verification",
-            "verified",
             "rejected",
             "refunded",
         ];
@@ -329,6 +334,15 @@ export async function POST(request: Request) {
             );
         }
 
+        const orderData = orderSnapshot.data() || {};
+        const authoritativeAmount = Number(orderData.totalPrice);
+        if (!Number.isFinite(authoritativeAmount) || amount !== authoritativeAmount) {
+            return NextResponse.json({ error: "PAYMENT_AMOUNT_MISMATCH", code: "PAYMENT_AMOUNT_MISMATCH" }, { status: 409 });
+        }
+        if (status === "verified") {
+            return NextResponse.json({ error: "ADMIN_VERIFY_REQUIRED", code: "ADMIN_VERIFY_REQUIRED" }, { status: 409 });
+        }
+
         const paymentRef =
             adminDb
                 .collection(
@@ -341,10 +355,12 @@ export async function POST(request: Request) {
             unknown
         > = {
             orderId,
-            orderNumber,
-            amount,
+            orderNumber: String(orderData.orderNumber || orderNumber),
+            userId: String(orderData.userId || ""),
+            quoteId: typeof orderData.quoteId === "string" ? orderData.quoteId : null,
+            amount: authoritativeAmount,
             method,
-            status,
+            status: status === "pending_verification" ? "submitted" : status,
             createdAt:
                 FieldValue.serverTimestamp(),
             updatedAt:

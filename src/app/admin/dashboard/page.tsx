@@ -251,6 +251,8 @@ function getOrderStatusLabel(
         ThreeDOrderStatus,
         string
     > = {
+        pending_payment: "รอชำระเงิน",
+        paid: "ชำระเงินแล้ว",
         quote: "ใบเสนอราคา",
         pending_confirmation: "รอยืนยัน",
         waiting_payment: "รอชำระเงิน",
@@ -445,7 +447,7 @@ export default function AdminDashboardPage() {
 
                 const result = await adminApiFetch<{
                     bookings?: Booking[];
-                }>("/api/admin/booking");
+                }>("/api/admin/booking?view=all");
 
                 if (cancelled) {
                     return;

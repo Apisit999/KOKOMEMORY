@@ -45,9 +45,11 @@ import {
     ShieldCheck,
     Copy,
 } from "lucide-react";
+import { useI18n } from "@/i18n";
 
 function SuccessContent() {
     const router = useRouter();
+    const { translate } = useI18n();
 
     const searchParams = useSearchParams();
 
@@ -60,7 +62,7 @@ function SuccessContent() {
         try {
             await navigator.clipboard.writeText(bookingId);
 
-            alert("คัดลอก Booking ID แล้ว");
+            alert(translate("คัดลอก Booking ID แล้ว"));
         } catch {
             // ไม่ต้องทำอะไร
         }
@@ -80,7 +82,7 @@ function SuccessContent() {
                     <div className="flex items-center gap-2 overflow-x-auto pb-1 text-sm">
 
                         <span className="shrink-0 rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 1
+                            ✓ {translate("ขั้นตอนที่ 1")}
                         </span>
 
                         <span className="text-slate-300">
@@ -88,7 +90,7 @@ function SuccessContent() {
                         </span>
 
                         <span className="shrink-0 rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 2
+                            ✓ {translate("ขั้นตอนที่ 2")}
                         </span>
 
                         <span className="text-slate-300">
@@ -96,7 +98,7 @@ function SuccessContent() {
                         </span>
 
                         <span className="shrink-0 rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 3
+                            ✓ {translate("ขั้นตอนที่ 3")}
                         </span>
 
                         <span className="text-slate-300">
@@ -104,7 +106,7 @@ function SuccessContent() {
                         </span>
 
                         <span className="shrink-0 rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 4
+                            ✓ {translate("ขั้นตอนที่ 4")}
                         </span>
 
                         <span className="text-slate-300">
@@ -112,7 +114,7 @@ function SuccessContent() {
                         </span>
 
                         <span className="shrink-0 rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 5
+                            ✓ {translate("ขั้นตอนที่ 5")}
                         </span>
 
                         <span className="text-slate-300">
@@ -120,7 +122,7 @@ function SuccessContent() {
                         </span>
 
                         <span className="shrink-0 rounded-full bg-pink-500 px-4 py-2 font-semibold text-white">
-                            Step 6
+                            {translate("ขั้นตอนที่ 6")}
                         </span>
 
                     </div>
@@ -149,17 +151,17 @@ function SuccessContent() {
                     </div>
 
                     <p className="mt-6 text-sm font-semibold uppercase tracking-[0.25em] text-pink-500">
-                        Booking Completed
+                        {translate("Booking Completed")}
                     </p>
 
                     <h1 className="mt-3 text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">
-                        ส่งข้อมูลการจองสำเร็จ
+                        {translate("ส่งข้อมูลการจองสำเร็จ")}
                     </h1>
 
                     <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
 
-                        ระบบได้รับข้อมูลการจองและหลักฐานการชำระเงินของคุณแล้ว
-                        ทีมงานจะตรวจสอบและยืนยันการจองอีกครั้ง
+                        {translate("ระบบได้รับข้อมูลการจองและหลักฐานการชำระเงินของคุณแล้ว")}
+                        {" "}{translate("ทีมงานจะตรวจสอบและยืนยันการจองอีกครั้ง")}
 
                     </p>
 
@@ -184,7 +186,7 @@ function SuccessContent() {
                         <div>
 
                             <p className="text-sm text-slate-500">
-                                Booking ID
+                                {translate("Booking ID")}
                             </p>
 
                             <div className="mt-2 flex items-center gap-3">
@@ -197,7 +199,7 @@ function SuccessContent() {
                                     type="button"
                                     onClick={handleCopyBookingId}
                                     className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-pink-500"
-                                    aria-label="คัดลอก Booking ID"
+                                    aria-label={translate("คัดลอก Booking ID")}
                                 >
                                     <Copy size={18} />
                                 </button>
@@ -210,7 +212,7 @@ function SuccessContent() {
 
                             <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
 
-                            รอตรวจสอบการชำระเงิน
+                            {translate("รอตรวจสอบการชำระเงิน")}
 
                         </div>
 
@@ -239,11 +241,11 @@ function SuccessContent() {
                             <div>
 
                                 <h2 className="font-black text-slate-900">
-                                    รายละเอียดการจอง
+                                    {translate("รายละเอียดการจอง")}
                                 </h2>
 
                                 <p className="text-sm text-slate-500">
-                                    ข้อมูลบริการ
+                                    {translate("ข้อมูลบริการ")}
                                 </p>
 
                             </div>
@@ -255,7 +257,7 @@ function SuccessContent() {
                             <div className="rounded-2xl bg-slate-50 p-4">
 
                                 <p className="text-xs text-slate-400">
-                                    แพ็กเกจ
+                                    {translate("แพ็กเกจ")}
                                 </p>
 
                                 <p className="mt-1 font-bold text-slate-900">
@@ -267,11 +269,11 @@ function SuccessContent() {
                             <div className="rounded-2xl bg-slate-50 p-4">
 
                                 <p className="text-xs text-slate-400">
-                                    วันที่จัดงาน
+                                    {translate("วันที่จัดงาน")}
                                 </p>
 
                                 <p className="mt-1 font-bold text-slate-900">
-                                    {date || "รอข้อมูล"}
+                                    {date || translate("รอข้อมูล")}
                                 </p>
 
                             </div>
@@ -295,11 +297,11 @@ function SuccessContent() {
                             <div>
 
                                 <h2 className="font-black text-slate-900">
-                                    การชำระเงิน
+                                    {translate("การชำระเงิน")}
                                 </h2>
 
                                 <p className="text-sm text-slate-500">
-                                    Payment information
+                                    {translate("Payment information")}
                                 </p>
 
                             </div>
@@ -311,7 +313,7 @@ function SuccessContent() {
                             <div className="rounded-2xl bg-slate-50 p-4">
 
                                 <p className="text-xs text-slate-400">
-                                    Payment Reference
+                                    {translate("เลขอ้างอิงการชำระเงิน")}
                                 </p>
 
                                 <p className="mt-1 break-all font-bold text-slate-900">
@@ -329,13 +331,13 @@ function SuccessContent() {
                                     <div>
 
                                         <p className="font-bold text-yellow-800">
-                                            กำลังตรวจสอบ
+                                            {translate("กำลังตรวจสอบ")}
                                         </p>
 
                                         <p className="mt-1 text-xs leading-5 text-yellow-700">
 
-                                            ทีมงานจะตรวจสอบหลักฐานการชำระเงิน
-                                            ก่อนยืนยันการจอง
+                                            {translate("ทีมงานจะตรวจสอบหลักฐานการชำระเงิน")}{" "}
+                                            {translate("ก่อนยืนยันการจอง")}
 
                                         </p>
 
@@ -365,13 +367,13 @@ function SuccessContent() {
                     <div>
 
                         <p className="font-bold text-slate-900">
-                            ข้อมูลการจองของคุณถูกบันทึกแล้ว
+                            {translate("ข้อมูลการจองของคุณถูกบันทึกแล้ว")}
                         </p>
 
                         <p className="mt-1 text-sm leading-6 text-slate-600">
 
-                            กรุณาเก็บ Booking ID นี้ไว้สำหรับติดต่อทีมงาน
-                            และตรวจสอบสถานะการจองในภายหลัง
+                            {translate("กรุณาเก็บ Booking ID นี้ไว้สำหรับติดต่อทีมงาน")}{" "}
+                            {translate("และตรวจสอบสถานะการจองในภายหลัง")}
 
                         </p>
 
@@ -393,7 +395,7 @@ function SuccessContent() {
 
                         <Home size={18} />
 
-                        กลับหน้าแรก
+                        {translate("กลับหน้าแรก")}
 
                     </button>
 
@@ -407,7 +409,7 @@ function SuccessContent() {
                         className="flex h-14 items-center justify-center gap-2 rounded-full bg-pink-500 px-7 font-bold text-white transition hover:bg-pink-400"
                     >
 
-                        ตรวจสอบสถานะการจอง
+                        {translate("ตรวจสอบสถานะการจอง")}
 
                         <ArrowRight size={18} />
 

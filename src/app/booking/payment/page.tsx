@@ -34,6 +34,7 @@ import {
     Upload,
     X,
 } from "lucide-react";
+import { useI18n } from "@/i18n";
 
 /**
  * ============================================================
@@ -206,6 +207,7 @@ function isPaymentSubmitted(booking: Booking) {
 }
 
 function PaymentContent() {
+    const { translate } = useI18n();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -273,7 +275,7 @@ function PaymentContent() {
             if (!bookingId) {
                 setLoadingBooking(false);
                 setBookingError(
-                    "ไม่พบ Booking ID กรุณากลับไปเริ่มขั้นตอนการจองใหม่"
+                    translate("ไม่พบ Booking ID กรุณากลับไปเริ่มขั้นตอนการจองใหม่")
                 );
                 return;
             }
@@ -288,7 +290,7 @@ function PaymentContent() {
 
                 if (!snapshot.exists()) {
                     throw new Error(
-                        "ไม่พบรายการจองนี้ในระบบ"
+                        translate("ไม่พบรายการจองนี้ในระบบ")
                     );
                 }
 
@@ -308,7 +310,7 @@ function PaymentContent() {
                     setBookingError(
                         error instanceof Error
                             ? error.message
-                            : "ไม่สามารถโหลดข้อมูลการจองได้"
+                            : translate("ไม่สามารถโหลดข้อมูลการจองได้")
                     );
                 }
             } finally {
@@ -323,7 +325,7 @@ function PaymentContent() {
         return () => {
             cancelled = true;
         };
-    }, [bookingId]);
+    }, [bookingId, translate]);
 
     useEffect(() => {
         if (!slip || slip.type === "application/pdf") {
@@ -405,7 +407,7 @@ function PaymentContent() {
 
         if (error) {
             setSlip(null);
-            setSlipError(error);
+            setSlipError(translate(error));
             return;
         }
 
@@ -429,7 +431,7 @@ function PaymentContent() {
             );
         } catch {
             setSubmitError(
-                "ไม่สามารถคัดลอกเลขบัญชีได้"
+                translate("ไม่สามารถคัดลอกเลขบัญชีได้")
             );
         }
     }
@@ -472,7 +474,7 @@ function PaymentContent() {
             );
         } catch {
             setSubmitError(
-                "ไม่สามารถบันทึก QR ได้"
+                translate("ไม่สามารถบันทึก QR ได้")
             );
         }
     }
@@ -499,7 +501,7 @@ function PaymentContent() {
             );
 
             setShareMessage(
-                "คัดลอกลิงก์สำหรับแชร์แล้ว"
+                translate("คัดลอกลิงก์สำหรับแชร์แล้ว")
             );
 
             window.setTimeout(
@@ -524,7 +526,7 @@ function PaymentContent() {
 
         if (!bookingId || !booking) {
             setSubmitError(
-                "ไม่พบ Booking ID หรือข้อมูลการจอง"
+                translate("ไม่พบ Booking ID หรือข้อมูลการจอง")
             );
             return;
         }
@@ -543,7 +545,7 @@ function PaymentContent() {
 
         if (alreadySubmitted) {
             setSubmitError(
-                "รายการนี้มีการส่งหลักฐานหรือชำระเงินแล้ว ไม่สามารถส่งซ้ำได้"
+                translate("รายการนี้มีการส่งหลักฐานหรือชำระเงินแล้ว ไม่สามารถส่งซ้ำได้")
             );
             return;
         }
@@ -574,13 +576,13 @@ function PaymentContent() {
 
             if (!currentUser) {
                 throw new Error(
-                    "กรุณาเข้าสู่ระบบก่อนส่งหลักฐานการชำระเงิน"
+                    translate("กรุณาเข้าสู่ระบบก่อนส่งหลักฐานการชำระเงิน")
                 );
             }
 
             if (!currentUser.emailVerified) {
                 throw new Error(
-                    "กรุณายืนยันอีเมลก่อนส่งหลักฐานการชำระเงิน"
+                    translate("กรุณายืนยันอีเมลก่อนส่งหลักฐานการชำระเงิน")
                 );
             }
 
@@ -627,7 +629,7 @@ function PaymentContent() {
             ) {
                 throw new Error(
                     result.error ||
-                    "ไม่สามารถส่งหลักฐานการชำระเงินได้"
+                    translate("ไม่สามารถส่งหลักฐานการชำระเงินได้")
                 );
             }
 
@@ -647,19 +649,19 @@ function PaymentContent() {
             const message =
                 error instanceof Error
                     ? error.message
-                    : "ไม่สามารถส่งหลักฐานการชำระเงินได้ กรุณาลองใหม่อีกครั้ง";
+                    : translate("ไม่สามารถส่งหลักฐานการชำระเงินได้ กรุณาลองใหม่อีกครั้ง");
 
             const friendlyMessage =
                 message === "UNAUTHORIZED"
-                    ? "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง"
+                    ? translate("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง")
                     : message === "INVALID_TOKEN"
-                        ? "การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง"
+                        ? translate("การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง")
                         : message === "EMAIL_NOT_VERIFIED"
-                            ? "กรุณายืนยันอีเมลก่อนส่งหลักฐานการชำระเงิน"
+                            ? translate("กรุณายืนยันอีเมลก่อนส่งหลักฐานการชำระเงิน")
                             : message === "BOOKING_NOT_FOUND"
-                                ? "ไม่พบรายการจองนี้ในระบบ"
+                                ? translate("ไม่พบรายการจองนี้ในระบบ")
                                 : message === "PAYMENT_ALREADY_SUBMITTED"
-                                    ? "รายการนี้ส่งหลักฐานไปแล้ว ไม่สามารถส่งซ้ำได้"
+                                    ? translate("รายการนี้ส่งหลักฐานไปแล้ว ไม่สามารถส่งซ้ำได้")
                                     : message;
 
             setSubmitError(friendlyMessage);
@@ -678,7 +680,7 @@ function PaymentContent() {
                         size={36}
                     />
                     <p className="mt-4 text-sm text-slate-500">
-                        กำลังโหลดข้อมูลการจอง...
+                        {translate("กำลังโหลดข้อมูลการจอง...")}
                     </p>
                 </div>
             </main>
@@ -694,7 +696,7 @@ function PaymentContent() {
                     </div>
 
                     <h1 className="mt-5 text-2xl font-black text-slate-900">
-                        ไม่สามารถเปิดรายการชำระเงิน
+                        {translate("ไม่สามารถเปิดรายการชำระเงิน")}
                     </h1>
 
                     <p className="mt-3 text-sm leading-6 text-slate-500">
@@ -708,7 +710,7 @@ function PaymentContent() {
                         }
                         className="mt-6 rounded-full bg-pink-500 px-6 py-3 text-sm font-bold text-white hover:bg-pink-600"
                     >
-                        กลับไปเริ่มการจอง
+                        {translate("กลับไปเริ่มการจอง")}
                     </button>
                 </div>
             </main>
@@ -745,7 +747,7 @@ function PaymentContent() {
                                     className="flex items-center gap-2 sm:gap-3"
                                 >
                                     <span className="rounded-full bg-green-100 px-3 py-2 text-xs font-semibold text-green-700 sm:px-4 sm:text-sm">
-                                        ✓ {step.label}
+                                        ✓ {translate(step.label)}
                                     </span>
                                     <span className="text-slate-300">
                                         →
@@ -754,7 +756,7 @@ function PaymentContent() {
                             ))}
 
                             <span className="rounded-full bg-pink-500 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-pink-100 ring-4 ring-pink-50 sm:px-4 sm:text-sm">
-                                ⑤ ชำระเงิน
+                                ⑤ {translate("ชำระเงิน")}
                             </span>
 
                             <span className="text-slate-300">
@@ -762,7 +764,7 @@ function PaymentContent() {
                             </span>
 
                             <span className="rounded-full bg-slate-100 px-3 py-2 text-xs text-slate-500 sm:px-4 sm:text-sm">
-                                ⑥ สำเร็จ
+                                ⑥ {translate("สำเร็จ")}
                             </span>
                         </div>
                     </div>
@@ -777,15 +779,15 @@ function PaymentContent() {
                     </div>
 
                     <p className="mt-5 text-sm font-semibold uppercase tracking-[0.25em] text-pink-500">
-                        ขั้นตอนที่ 5 · การชำระเงิน
+                        {translate("ขั้นตอนที่ 5 · การชำระเงิน")}
                     </p>
 
                     <h1 className="mt-3 text-3xl font-black text-slate-900 sm:text-4xl lg:text-5xl">
-                        ชำระเงิน
+                        {translate("ชำระเงิน")}
                     </h1>
 
                     <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                        โอนค่ามัดจำแล้วอัปโหลดหลักฐานเพื่อให้ทีมงานตรวจสอบ
+                        {translate("โอนค่ามัดจำแล้วอัปโหลดหลักฐานเพื่อให้ทีมงานตรวจสอบ")}
                     </p>
                 </div>
             </section>
@@ -798,10 +800,10 @@ function PaymentContent() {
                         <div className="flex items-start justify-between gap-4">
                             <div>
                                 <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
-                                    สรุปการจอง
+                                    {translate("สรุปการจอง")}
                                 </h2>
                                 <p className="mt-1 text-sm text-slate-500">
-                                    ข้อมูลจากรายการจองของคุณ
+                                    {translate("ข้อมูลจากรายการจองของคุณ")}
                                 </p>
                             </div>
 
@@ -814,7 +816,7 @@ function PaymentContent() {
                                 ].join(" ")}
                             >
                                 <p className="text-xs text-slate-500">
-                                    สถานะ
+                                    {translate("สถานะ")}
                                 </p>
                                 <p
                                     className={[
@@ -825,8 +827,8 @@ function PaymentContent() {
                                     ].join(" ")}
                                 >
                                     {alreadySubmitted
-                                        ? "ส่งหลักฐานแล้ว"
-                                        : "รอชำระเงิน"}
+                                        ? translate("ส่งหลักฐานแล้ว")
+                                        : translate("รอชำระเงิน")}
                                 </p>
                             </div>
                         </div>
@@ -834,7 +836,7 @@ function PaymentContent() {
                         <div className="mt-7 grid gap-3 sm:grid-cols-2">
                             <div className="rounded-2xl bg-slate-50 p-5 sm:col-span-2">
                                 <p className="text-xs text-slate-400">
-                                    Booking ID
+                                    {translate("Booking ID")}
                                 </p>
                                 <code className="mt-1 block break-all text-xs font-semibold text-slate-700">
                                     {booking.id}
@@ -843,7 +845,7 @@ function PaymentContent() {
 
                             <div className="rounded-2xl bg-slate-50 p-5">
                                 <p className="text-xs text-slate-400">
-                                    ลูกค้า
+                                    {translate("ลูกค้า")}
                                 </p>
                                 <p className="mt-1 font-bold text-slate-900">
                                     {booking.customer?.name || "-"}
@@ -857,7 +859,7 @@ function PaymentContent() {
 
                             <div className="rounded-2xl bg-slate-50 p-5">
                                 <p className="text-xs text-slate-400">
-                                    แพ็กเกจ
+                                    {translate("แพ็กเกจ")}
                                 </p>
                                 <p className="mt-1 font-bold text-slate-900">
                                     {selectedPackage.name}
@@ -866,7 +868,7 @@ function PaymentContent() {
 
                             <div className="rounded-2xl bg-slate-50 p-5">
                                 <p className="text-xs text-slate-400">
-                                    วันที่จัดงาน
+                                    {translate("วันที่จัดงาน")}
                                 </p>
                                 <p className="mt-1 font-bold text-slate-900">
                                     {formatDate(eventDate)}
@@ -875,10 +877,10 @@ function PaymentContent() {
 
                             <div className="rounded-2xl bg-slate-50 p-5">
                                 <p className="text-xs text-slate-400">
-                                    ประเภทงาน
+                                    {translate("ประเภทงาน")}
                                 </p>
                                 <p className="mt-1 font-bold text-slate-900">
-                                    {booking.event?.type || "-"}
+                                    {booking.event?.type ? translate(booking.event.type) : "-"}
                                 </p>
                             </div>
                         </div>
@@ -886,7 +888,7 @@ function PaymentContent() {
                         <div className="mt-8 border-t pt-6">
                             <div className="flex items-center justify-between">
                                 <span className="text-slate-500">
-                                    ราคาบริการ
+                                    {translate("ราคาบริการ")}
                                 </span>
                                 <span className="font-semibold text-slate-900">
                                     {formatMoney(servicePrice)}
@@ -895,7 +897,7 @@ function PaymentContent() {
 
                             <div className="mt-3 flex items-center justify-between">
                                 <span className="text-slate-500">
-                                    ค่ามัดจำ
+                                    {translate("ค่ามัดจำ")}
                                 </span>
                                 <span className="font-semibold text-pink-500">
                                     {formatMoney(paymentAmount)}
@@ -904,7 +906,7 @@ function PaymentContent() {
 
                             <div className="mt-5 flex items-end justify-between border-t pt-5">
                                 <span className="font-bold text-slate-900">
-                                    ยอดที่ต้องชำระ
+                                    {translate("ยอดที่ต้องชำระ")}
                                 </span>
                                 <span className="text-3xl font-black text-pink-500">
                                     {formatMoney(paymentAmount)}
@@ -915,10 +917,10 @@ function PaymentContent() {
                         {alreadySubmitted && booking.payment?.proofUrl && (
                             <div className="mt-6 rounded-2xl border border-purple-100 bg-purple-50 p-4">
                                 <p className="font-bold text-purple-700">
-                                    ✓ ส่งหลักฐานการชำระเงินแล้ว
+                                    ✓ {translate("ส่งหลักฐานการชำระเงินแล้ว")}
                                 </p>
                                 <p className="mt-1 text-xs leading-5 text-purple-700/80">
-                                    ทีมงานกำลังตรวจสอบหลักฐานของคุณ
+                                    {translate("ทีมงานกำลังตรวจสอบหลักฐานของคุณ")}
                                 </p>
                             </div>
                         )}
@@ -933,10 +935,10 @@ function PaymentContent() {
 
                             <div>
                                 <h2 className="font-black text-slate-900">
-                                    ช่องทางการชำระเงิน
+                                    {translate("ช่องทางการชำระเงิน")}
                                 </h2>
                                 <p className="text-sm text-slate-500">
-                                    ชำระค่ามัดจำ{" "}
+                                    {translate("ชำระค่ามัดจำ")}{" "}
                                     {formatMoney(paymentAmount)}
                                 </p>
                             </div>
@@ -956,7 +958,7 @@ function PaymentContent() {
 
                                     <div>
                                         <p className="text-xs text-emerald-700">
-                                            บัญชีรับเงิน
+                                            {translate("บัญชีรับเงิน")}
                                         </p>
                                         <p className="mt-1 text-lg font-black text-slate-900">
                                             {PAYMENT_ACCOUNT.bankName}
@@ -971,7 +973,7 @@ function PaymentContent() {
                             <div className="space-y-5 p-5">
                                 <div>
                                     <p className="text-xs text-slate-400">
-                                        ชื่อบัญชี
+                                        {translate("ชื่อบัญชี")}
                                     </p>
                                     <p className="mt-1 font-bold text-slate-900">
                                         {PAYMENT_ACCOUNT.accountName}
@@ -980,7 +982,7 @@ function PaymentContent() {
 
                                 <div>
                                     <p className="text-xs text-slate-400">
-                                        เลขบัญชี
+                                        {translate("เลขบัญชี")}
                                     </p>
 
                                     <div className="mt-1 flex items-center justify-between gap-3">
@@ -996,12 +998,12 @@ function PaymentContent() {
                                             {copied ? (
                                                 <>
                                                     <Check size={16} />
-                                                    คัดลอกแล้ว
+                                                    {translate("คัดลอกแล้ว")}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Copy size={16} />
-                                                    คัดลอก
+                                                    {translate("คัดลอก")}
                                                 </>
                                             )}
                                         </button>
@@ -1019,7 +1021,7 @@ function PaymentContent() {
 
                                 <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
                                     <p className="text-xs leading-5 text-amber-800">
-                                        ⚠️ กรุณาตรวจสอบชื่อบัญชี ธนาคาร และเลขบัญชีให้ตรงก่อนโอนเงิน
+                                        ⚠️ {translate("กรุณาตรวจสอบชื่อบัญชี ธนาคาร และเลขบัญชีให้ตรงก่อนโอนเงิน")}
                                     </p>
                                 </div>
                             </div>
@@ -1030,15 +1032,15 @@ function PaymentContent() {
                             <div className="px-5 pt-6 text-center">
                                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-slate-600 shadow-sm">
                                     <span className="h-2 w-2 rounded-full bg-green-500" />
-                                    PromptPay QR Payment
+                                    PromptPay QR
                                 </span>
 
                                 <h3 className="mt-4 text-lg font-black text-slate-900">
-                                    สแกน QR เพื่อชำระเงิน
+                                    {translate("สแกน QR เพื่อชำระเงิน")}
                                 </h3>
 
                                 <p className="mt-1 text-xs text-slate-500">
-                                    รองรับ Mobile Banking
+                                    {translate("รองรับ Mobile Banking")}
                                 </p>
                             </div>
 
@@ -1050,19 +1052,19 @@ function PaymentContent() {
                                 >
                                     <img
                                         src={PAYMENT_ACCOUNT.qrUrl}
-                                        alt="PromptPay QR สำหรับชำระเงิน KOKO Memory"
+                                        alt={translate("PromptPay QR สำหรับชำระเงิน KOKO Memory")}
                                         className="mx-auto aspect-square w-full object-contain"
                                     />
 
                                     <div className="pointer-events-none absolute bottom-7 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-slate-900/85 px-4 py-2 text-xs font-semibold text-white opacity-0 backdrop-blur transition group-hover:opacity-100">
                                         <Maximize2 size={14} />
-                                        ขยาย QR
+                                        {translate("ขยาย QR")}
                                     </div>
                                 </button>
 
                                 <div className="mt-5 rounded-2xl bg-white p-4 text-center ring-1 ring-slate-200">
                                     <p className="text-xs text-slate-400">
-                                        ยอดที่ต้องชำระ
+                                        {translate("ยอดที่ต้องชำระ")}
                                     </p>
                                     <p className="mt-1 text-3xl font-black text-pink-500">
                                         {formatMoney(paymentAmount)}
@@ -1078,12 +1080,12 @@ function PaymentContent() {
                                         {qrSaved ? (
                                             <>
                                                 <Check size={17} />
-                                                บันทึกแล้ว
+                                                {translate("บันทึกแล้ว")}
                                             </>
                                         ) : (
                                             <>
                                                 <Download size={17} />
-                                                บันทึก QR
+                                                {translate("บันทึก QR")}
                                             </>
                                         )}
                                     </button>
@@ -1094,7 +1096,7 @@ function PaymentContent() {
                                         className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
                                     >
                                         <Share2 size={17} />
-                                        แชร์ QR
+                                        {translate("แชร์ QR")}
                                     </button>
                                 </div>
 
@@ -1115,11 +1117,10 @@ function PaymentContent() {
                                         className="mx-auto text-purple-500"
                                     />
                                     <p className="mt-3 font-black text-purple-800">
-                                        ส่งหลักฐานแล้ว
+                                        {translate("ส่งหลักฐานแล้ว")}
                                     </p>
                                     <p className="mt-1 text-xs leading-5 text-purple-700/80">
-                                        ระบบรับหลักฐานของคุณแล้ว
-                                        กรุณารอทีมงานตรวจสอบ
+                                        {translate("ระบบรับหลักฐานของคุณแล้ว")} {translate("กรุณารอทีมงานตรวจสอบ")}
                                     </p>
                                 </div>
                             ) : (
@@ -1145,11 +1146,11 @@ function PaymentContent() {
                                         <span className="mt-3 break-all font-semibold text-slate-900">
                                             {slip
                                                 ? slip.name
-                                                : "อัปโหลดหลักฐานการโอน"}
+                                                : translate("อัปโหลดหลักฐานการโอน")}
                                         </span>
 
                                         <span className="mt-1 text-xs text-slate-500">
-                                            JPG, PNG หรือ PDF • สูงสุด 20 MB
+                                            {translate("JPG, PNG หรือ PDF • สูงสุด 20 MB")}
                                         </span>
 
                                         <input
@@ -1174,7 +1175,7 @@ function PaymentContent() {
                                                 <div className="bg-slate-100 p-3">
                                                     <img
                                                         src={slipPreviewUrl}
-                                                        alt="ตัวอย่างสลิป"
+                                                        alt={translate("ตัวอย่างสลิป")}
                                                         className="mx-auto max-h-[360px] w-full rounded-xl object-contain"
                                                     />
                                                 </div>
@@ -1185,7 +1186,7 @@ function PaymentContent() {
                                                         className="mx-auto text-red-500"
                                                     />
                                                     <p className="mt-2 font-bold text-slate-900">
-                                                        ไฟล์ PDF
+                                                        {translate("ไฟล์ PDF")}
                                                     </p>
                                                 </div>
                                             )}
@@ -1209,7 +1210,7 @@ function PaymentContent() {
                                                     disabled={isSubmitting}
                                                     className="shrink-0 font-bold hover:text-green-900 disabled:opacity-50"
                                                 >
-                                                    เปลี่ยนไฟล์
+                                                    {translate("เปลี่ยนไฟล์")}
                                                 </button>
                                             </div>
                                         </div>
@@ -1233,10 +1234,7 @@ function PaymentContent() {
                                             className="mt-0.5 shrink-0 text-green-600"
                                         />
                                         <p className="text-xs leading-5 text-green-700">
-                                            สลิปจะถูกเก็บไว้ใน Cloudflare R2
-                                            และเชื่อมกับรายการจองนี้
-                                            ระบบจะยังไม่ถือว่าชำระเงินสำเร็จ
-                                            จนกว่า Admin จะตรวจสอบและยืนยัน
+                                            {translate("สลิปจะถูกเก็บไว้ใน Cloudflare R2 และเชื่อมกับรายการจองนี้ ระบบจะยังไม่ถือว่าชำระเงินสำเร็จจนกว่า Admin จะตรวจสอบและยืนยัน")}
                                         </p>
                                     </div>
 
@@ -1256,11 +1254,11 @@ function PaymentContent() {
                                                     size={19}
                                                     className="animate-spin"
                                                 />
-                                                กำลังอัปโหลดและส่งข้อมูล...
+                                                {translate("กำลังอัปโหลดและส่งข้อมูล...")}
                                             </>
                                         ) : (
                                             <>
-                                                ยืนยันการชำระเงิน
+                                                {translate("ยืนยันการชำระเงิน")}
                                                 <ArrowRight size={19} />
                                             </>
                                         )}
@@ -1291,7 +1289,7 @@ function PaymentContent() {
                                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
                             >
                                 <ArrowLeft size={17} />
-                                กลับไปตรวจสอบข้อมูล
+                                {translate("กลับไปตรวจสอบข้อมูล")}
                             </button>
                         </div>
                     </div>
@@ -1304,11 +1302,10 @@ function PaymentContent() {
                     />
                     <div>
                         <p className="font-bold text-slate-900">
-                            หลังส่งหลักฐาน
+                            {translate("หลังส่งหลักฐาน")}
                         </p>
                         <p className="mt-1 text-sm leading-6 text-slate-600">
-                            รายการจะเปลี่ยนเป็น “รอตรวจสอบ”
-                            และทีมงานจะตรวจสอบก่อนยืนยันการชำระเงิน
+                            {translate("รายการจะเปลี่ยนเป็น “รอตรวจสอบ” และทีมงานจะตรวจสอบก่อนยืนยันการชำระเงิน")}
                         </p>
                     </div>
                 </div>
@@ -1330,14 +1327,14 @@ function PaymentContent() {
                             type="button"
                             onClick={() => setQrZoom(false)}
                             className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/75 text-white hover:bg-black"
-                            aria-label="ปิด QR"
+                            aria-label={translate("ปิด QR")}
                         >
                             <X size={20} />
                         </button>
 
                         <img
                             src={PAYMENT_ACCOUNT.qrUrl}
-                            alt="QR สำหรับชำระเงิน KOKO Memory"
+                            alt={translate("QR สำหรับชำระเงิน KOKO Memory")}
                             className="max-h-[88vh] max-w-[90vw] rounded-2xl object-contain"
                         />
 
@@ -1347,7 +1344,7 @@ function PaymentContent() {
                             className="absolute bottom-7 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-slate-900 shadow-lg"
                         >
                             <Download size={17} />
-                            บันทึก QR
+                            {translate("บันทึก QR")}
                         </button>
                     </div>
                 </div>

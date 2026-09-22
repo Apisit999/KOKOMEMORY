@@ -11,6 +11,7 @@ import {
 import { adminDb } from "@/lib/firebase-admin";
 import { requireAdminApi } from "@/lib/require-admin-api";
 import { isAllowedBookingTransition, normalizeBookingStatus } from "@/lib/booking-lifecycle";
+import { ensureReviewRequest } from "@/lib/review-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -182,6 +183,9 @@ export async function PATCH(
                 lifecycleFields.expiredAt = FieldValue.serverTimestamp();
                 lifecycleFields.expiredBy = adminUser.uid;
             }
+            if (target === "completed" && source !== "completed") {
+                lifecycleFields.completedAt = FieldValue.serverTimestamp();
+            }
             transaction.update(bookingRef, lifecycleFields);
             transaction.set(adminDb.collection(AUDIT_COLLECTION).doc(), {
                 action: "UPDATE_BOOKING_STATUS", resource: "booking", bookingId,
@@ -189,6 +193,17 @@ export async function PATCH(
                 createdAt: FieldValue.serverTimestamp(),
             });
         });
+
+        if (updatedStatus === "completed") {
+            try {
+                await ensureReviewRequest(bookingId);
+            } catch (reviewError) {
+                console.error(
+                    "Review request side effect failed:",
+                    reviewError instanceof Error ? reviewError.message : "UNKNOWN_ERROR",
+                );
+            }
+        }
 
         return jsonSuccess({
             bookingId,

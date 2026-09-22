@@ -1,0 +1,11 @@
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { NextResponse } from "next/server";
+import { adminDb } from "@/lib/firebase-admin";
+import { isAdminToken, requireCustomerApi, safeId } from "@/lib/customer-api-auth";
+import { r2 } from "@/lib/r2";
+
+export const runtime = "nodejs";
+
+function privateBucket() { const value = process.env.R2_PRIVATE_BUCKET_NAME?.trim(); if (!value) throw new Error("R2_PRIVATE_BUCKET_NOT_CONFIGURED"); return value; }
+
+export async function GET(request: Request, context: { params: Promise<{ id: string; fileId: string }> }) { try { const user = await requireCustomerApi(request); const params = await context.params; const id = safeId(params.id); const fileId = safeId(params.fileId); if (!id || !fileId) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 }); const snap = await adminDb.collection("3dQuotes").doc(id).get(); if (!snap.exists) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 }); const data = snap.data()!; if (data.userId !== user.uid && !isAdminToken(user)) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 }); const file = Array.isArray(data.files) ? data.files.find((item: Record<string, unknown>) => item.id === fileId) as Record<string, unknown> | undefined : undefined; const expectedPrefix = `3d-quotes/${id}/`; if (!file || typeof file.key !== "string" || !file.key.startsWith(expectedPrefix) || file.key.includes("..")) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 }); const result = await r2.send(new GetObjectCommand({ Bucket: privateBucket(), Key: file.key })); if (!result.Body) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 }); const body = Buffer.from(await result.Body.transformToByteArray()); return new NextResponse(body, { headers: { "Content-Type": String(file.contentType || "application/octet-stream"), "Content-Disposition": `attachment; filename="${String(file.fileName || "file").replace(/[^a-zA-Z0-9._-]/g, "_")}"`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } }); } catch (error) { const code = error instanceof Error ? error.message : "DOWNLOAD_FAILED"; return NextResponse.json({ error: code }, { status: code === "UNAUTHORIZED" ? 401 : code === "R2_PRIVATE_BUCKET_NOT_CONFIGURED" ? 503 : 400 }); } }

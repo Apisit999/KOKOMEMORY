@@ -81,6 +81,7 @@ import {
     CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n";
 
 
 /* ============================================================
@@ -403,12 +404,13 @@ function normalizeDateValue(
    Date → ภาษาไทย
 ============================================================ */
 
-function formatThaiDate(
-    date: Date
+function formatBookingDate(
+    date: Date,
+    locale: "th" | "en",
 ) {
 
     return new Intl.DateTimeFormat(
-        "th-TH",
+        locale === "th" ? "th-TH" : "en-US",
         {
             dateStyle: "long",
         }
@@ -453,6 +455,8 @@ const bookingSteps = [
 ============================================================ */
 
 function ScheduleContent() {
+
+    const { locale, translate } = useI18n();
 
     /* ========================================================
        Router
@@ -741,7 +745,7 @@ function ScheduleContent() {
                     setLockedDates([]);
 
                     setAvailabilityError(
-                        "ไม่สามารถตรวจสอบคิวว่างจากระบบได้ กรุณารีเฟรชหน้าอีกครั้ง"
+                        translate("ไม่สามารถตรวจสอบคิวว่างจากระบบได้ กรุณารีเฟรชหน้าอีกครั้ง")
                     );
 
                     setAvailabilityLoading(
@@ -762,7 +766,7 @@ function ScheduleContent() {
 
         };
 
-    }, []);
+    }, [translate]);
 
 
     /* ========================================================
@@ -989,7 +993,7 @@ function ScheduleContent() {
                 <div className="text-center">
                     <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-pink-100 border-t-pink-500" />
                     <p className="mt-4 text-sm font-medium text-slate-500">
-                        กำลังตรวจสอบบัญชี...
+                        {translate("กำลังตรวจสอบบัญชี...")}
                     </p>
                 </div>
             </main>
@@ -1101,9 +1105,7 @@ function ScheduleContent() {
                                                         }
                                                     `}
                                                 >
-                                                    {
-                                                        step.label
-                                                    }
+                                                    {translate(step.label)}
                                                 </span>
 
                                             </div>
@@ -1183,11 +1185,11 @@ function ScheduleContent() {
                                     <div className="min-w-0">
 
                                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pink-500 sm:text-sm sm:tracking-[0.2em]">
-                                            เลือกวันจัดงาน
+                                            {translate("เลือกวันจัดงาน")}
                                         </p>
 
                                         <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">
-                                            วันที่ต้องการใช้บริการ
+                                            {translate("วันที่ต้องการใช้บริการ")}
                                         </h1>
 
                                     </div>
@@ -1196,7 +1198,7 @@ function ScheduleContent() {
 
 
                                 <p className="mt-4 text-sm leading-6 text-slate-500 sm:text-base">
-                                    เลือกวันที่ต้องการใช้บริการ Photobooth
+                                    {translate("เลือกวันที่ต้องการใช้บริการ Photobooth")}
                                 </p>
 
 
@@ -1208,7 +1210,7 @@ function ScheduleContent() {
 
                                     <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
 
-                                        กำลังตรวจสอบคิวจากระบบ...
+                                        {translate("กำลังตรวจสอบคิวจากระบบ...")}
 
                                     </div>
 
@@ -1244,7 +1246,7 @@ function ScheduleContent() {
                                                 <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
 
                                                 <span className="font-medium">
-                                                    ระบบตรวจสอบคิวแบบ Real-time
+                                                    {translate("ระบบตรวจสอบคิวแบบ Real-time")}
                                                 </span>
 
                                             </div>
@@ -1294,7 +1296,7 @@ function ScheduleContent() {
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-green-500" />
 
                                     <span className="text-sm text-slate-600">
-                                        ว่าง
+                                        {translate("ว่าง")}
                                     </span>
 
                                 </div>
@@ -1305,7 +1307,7 @@ function ScheduleContent() {
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-red-500" />
 
                                     <span className="text-sm text-slate-600">
-                                        จองแล้ว
+                                        {translate("จองแล้ว")}
                                     </span>
 
                                 </div>
@@ -1316,7 +1318,7 @@ function ScheduleContent() {
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-slate-400" />
 
                                     <span className="text-sm text-slate-600">
-                                        ปิดรับ
+                                        {translate("ปิดรับ")}
                                     </span>
 
                                 </div>
@@ -1341,12 +1343,12 @@ function ScheduleContent() {
 
 
                                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pink-500 sm:text-sm sm:tracking-[0.2em]">
-                                    Booking Details
+                                    {translate("รายละเอียดการจอง")}
                                 </p>
 
 
                                 <h2 className="mt-2 text-2xl font-black text-slate-900 sm:mt-3">
-                                    รายละเอียดการจอง
+                                    {translate("รายละเอียดการจอง")}
                                 </h2>
 
 
@@ -1357,7 +1359,7 @@ function ScheduleContent() {
                                 <div className="mt-6 rounded-2xl bg-slate-50 p-4 sm:mt-8 sm:p-5">
 
                                     <p className="text-sm text-slate-500">
-                                        แพ็กเกจ
+                                        {translate("แพ็กเกจ")}
                                     </p>
 
 
@@ -1384,7 +1386,7 @@ function ScheduleContent() {
                                                 <div>
 
                                                     <p className="text-xs text-slate-400">
-                                                        ราคา
+                                                        {translate("ราคา")}
                                                     </p>
 
                                                     <p className="text-xl font-black text-pink-500">
@@ -1400,14 +1402,14 @@ function ScheduleContent() {
                                                 <div className="text-right">
 
                                                     <p className="text-xs text-slate-400">
-                                                        ระยะเวลา
+                                                        {translate("ระยะเวลา")}
                                                     </p>
 
                                                     <p className="font-bold text-slate-700">
                                                         {
                                                             selectedPackage.hours
                                                         }{" "}
-                                                        ชั่วโมง
+                                                        {translate("ชั่วโมง")}
                                                     </p>
 
                                                 </div>
@@ -1419,7 +1421,7 @@ function ScheduleContent() {
                                     ) : (
 
                                         <p className="mt-1 font-medium text-red-500">
-                                            ไม่พบแพ็กเกจ
+                                            {translate("ไม่พบแพ็กเกจ")}
                                         </p>
 
                                     )}
@@ -1434,7 +1436,7 @@ function ScheduleContent() {
                                 <div className="mt-4 rounded-2xl bg-slate-50 p-4 sm:p-5">
 
                                     <p className="text-sm text-slate-500">
-                                        วันจัดงาน
+                                        {translate("วันจัดงาน")}
                                     </p>
 
 
@@ -1448,9 +1450,7 @@ function ScheduleContent() {
                                             />
 
                                             <p className="font-bold leading-6 text-slate-900">
-                                                {formatThaiDate(
-                                                    selectedDate
-                                                )}
+                                                {formatBookingDate(selectedDate, locale)}
                                             </p>
 
                                         </div>
@@ -1458,7 +1458,7 @@ function ScheduleContent() {
                                     ) : (
 
                                         <p className="mt-1 font-medium text-slate-400">
-                                            กรุณาเลือกวันที่
+                                            {translate("กรุณาเลือกวันที่")}
                                         </p>
 
                                     )}
@@ -1481,7 +1481,7 @@ function ScheduleContent() {
                                                 <span className="h-3 w-3 shrink-0 rounded-full bg-green-500" />
 
                                                 <p className="font-semibold text-green-700">
-                                                    วันที่นี้ยังว่าง
+                                                    {translate("วันที่นี้ยังว่าง")}
                                                 </p>
 
                                             </div>
@@ -1506,7 +1506,7 @@ function ScheduleContent() {
                                                 <span className="h-3 w-3 shrink-0 rounded-full bg-red-500" />
 
                                                 <p className="font-semibold text-red-700">
-                                                    วันที่นี้ถูกจองแล้ว
+                                                    {translate("วันที่นี้ถูกจองแล้ว")}
                                                 </p>
 
                                             </div>
@@ -1531,7 +1531,7 @@ function ScheduleContent() {
                                                 <span className="h-3 w-3 shrink-0 rounded-full bg-slate-400" />
 
                                                 <p className="font-semibold text-slate-600">
-                                                    วันที่นี้ปิดรับจอง
+                                                    {translate("วันที่นี้ปิดรับจอง")}
                                                 </p>
 
                                             </div>
@@ -1558,7 +1558,7 @@ function ScheduleContent() {
                                     className="mt-5 h-13 w-full rounded-full bg-pink-500 text-sm font-bold text-white shadow-lg shadow-pink-100 hover:bg-pink-400 sm:mt-6 sm:h-14 sm:text-base"
                                 >
 
-                                    ดำเนินการต่อ
+                                    {translate("ดำเนินการต่อ")}
 
                                     <ArrowRight
                                         size={19}
@@ -1568,7 +1568,7 @@ function ScheduleContent() {
 
 
                                 {/* =================================================
-                                    Back
+                                    {translate("กลับ")}
                                 ================================================= */}
 
                                 <Button
@@ -1585,7 +1585,7 @@ function ScheduleContent() {
                                         size={18}
                                     />
 
-                                    กลับไปเลือกแพ็กเกจ
+                                    {translate("กลับไปเลือกแพ็กเกจ")}
 
                                 </Button>
 
@@ -1601,21 +1601,20 @@ function ScheduleContent() {
                         <div className="rounded-3xl border border-pink-100 bg-pink-50 p-5 sm:p-6">
 
                             <h3 className="font-bold text-slate-900">
-                                💡 หมายเหตุ
+                                {translate("💡 หมายเหตุ")}
                             </h3>
 
 
                             <p className="mt-3 text-sm leading-6 text-slate-600">
 
-                                KOKO Memory รับงานสูงสุด{" "}
+                                KOKO Memory {translate("รับงานสูงสุด")}{" "}
 
                                 <span className="font-bold text-pink-600">
-                                    1 งานต่อวัน
+                                    {translate("1 งานต่อวัน")}
                                 </span>
 
                                 {" "}
-                                เพื่อให้ทีมงานสามารถดูแลคุณภาพของงาน
-                                และให้บริการได้อย่างเต็มที่
+                                {translate("เพื่อให้ทีมงานสามารถดูแลคุณภาพของงาน และให้บริการได้อย่างเต็มที่")}
 
                             </p>
 
@@ -1629,16 +1628,13 @@ function ScheduleContent() {
                         <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
 
                             <h3 className="font-bold text-slate-900">
-                                📍 ค่าเดินทาง
+                                {translate("📍 ค่าเดินทาง")}
                             </h3>
 
 
                             <p className="mt-3 text-sm leading-6 text-slate-500">
 
-                                ราคานี้ยังไม่รวมค่าเดินทางสำหรับพื้นที่
-                                นอกเงื่อนไขที่กำหนด
-                                ระบบจะคำนวณค่าเดินทางหลังจากกรอก
-                                สถานที่จัดงานในขั้นตอนถัดไป
+                                {translate("ราคานี้ยังไม่รวมค่าเดินทางสำหรับพื้นที่นอกเงื่อนไขที่กำหนด ระบบจะคำนวณค่าเดินทางหลังจากกรอกสถานที่จัดงานในขั้นตอนถัดไป")}
 
                             </p>
 

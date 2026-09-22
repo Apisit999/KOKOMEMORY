@@ -19,7 +19,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -52,6 +52,7 @@ import {
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/firebase";
+import CustomerReviewCard from "@/components/reviews/CustomerReviewCard";
 
 
 /* ============================================================
@@ -325,6 +326,9 @@ export default function BookingDetailPage() {
     const router =
         useRouter();
 
+    const searchParams = useSearchParams();
+    const reviewRequested = searchParams.get("review") === "1";
+
     const bookingId =
         typeof params?.id === "string"
             ? params.id
@@ -380,7 +384,9 @@ export default function BookingDetailPage() {
 
                     if (!user) {
                         router.replace(
-                            "/account/login",
+                            reviewRequested && bookingId
+                                ? `/account/login?redirect=${encodeURIComponent(`/account/bookings/${bookingId}?review=1`)}`
+                                : "/account/login",
                         );
                     }
 
@@ -389,7 +395,7 @@ export default function BookingDetailPage() {
 
         return unsubscribe;
 
-    }, [router]);
+    }, [bookingId, reviewRequested, router]);
 
 
     /* ========================================================
@@ -768,6 +774,10 @@ export default function BookingDetailPage() {
                     ================================================= */}
 
                     <div className="space-y-6">
+
+                        {reviewRequested && status.toLowerCase() === "completed" && authUser && (
+                            <CustomerReviewCard bookingId={bookingId} user={authUser} />
+                        )}
 
 
                         {/* EVENT */}

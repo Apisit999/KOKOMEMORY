@@ -461,6 +461,24 @@ export default function AccountPage() {
 
 
                     {/* ==================================================
+                        KOKO 3D
+                    ================================================== */}
+
+                    <div className="group rounded-3xl border border-purple-100 bg-gradient-to-br from-white via-white to-pink-50 p-6 text-left shadow-sm transition hover:-translate-y-1 hover:border-pink-200 hover:shadow-xl hover:shadow-pink-100/50 md:col-span-2">
+                        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                            <div>
+                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-pink-50 text-2xl">✦</div>
+                                <h3 className="text-lg font-bold text-gray-900">KOKO 3D Printing</h3>
+                                <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500">สั่งพิมพ์โมเดล 3D หรือส่งไฟล์ให้เราประเมินราคา</p>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                <button type="button" onClick={() => router.push("/3d-printing")} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-pink-200 hover:text-pink-500">ดู 3D Printing</button>
+                                <button type="button" onClick={() => router.push("/account/3d-printing/quotes/new")} className="rounded-xl bg-[#FF4FA3] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#e83d91]">ขอใบเสนอราคา</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ==================================================
                         PROFILE
                     ================================================== */}
 

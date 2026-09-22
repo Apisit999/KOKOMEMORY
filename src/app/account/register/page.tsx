@@ -7,19 +7,23 @@ import { useRouter } from "next/navigation";
 
 import {
     createUserWithEmailAndPassword,
-    GoogleAuthProvider,
-    signInWithPopup,
     signOut,
     updateProfile,
 } from "firebase/auth";
 
 import {
     doc,
+    getDoc,
     serverTimestamp,
     setDoc,
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
+import {
+    getGoogleAuthErrorCode,
+    signInWithGoogle,
+    syncGoogleUserProfile,
+} from "@/lib/google-auth";
 
 import {
     Eye,
@@ -150,23 +154,22 @@ export default function RegisterPage() {
                CREATE / UPDATE CUSTOMER PROFILE
             ==================================================== */
 
+            const userRef = doc(db, "users", result.user.uid);
+            const profileSnapshot = await getDoc(userRef);
+
             await setDoc(
-                doc(
-                    db,
-                    "users",
-                    result.user.uid,
-                ),
+                userRef,
                 {
                     uid: result.user.uid,
                     name: cleanName,
                     email: cleanEmail,
                     provider: "password",
-                    createdAt:
-                        serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                    ...(profileSnapshot.exists()
+                        ? {}
+                        : { createdAt: serverTimestamp() }),
                 },
-                {
-                    merge: true,
-                },
+                { merge: true },
             );
 
             /* ====================================================
@@ -251,7 +254,7 @@ export default function RegisterPage() {
         } catch (error: unknown) {
             console.error(
                 "Customer Register Error:",
-                error,
+                getFirebaseErrorCode(error),
             );
 
             switch (
@@ -354,18 +357,7 @@ export default function RegisterPage() {
         setGoogleLoading(true);
 
         try {
-            const provider =
-                new GoogleAuthProvider();
-
-            provider.setCustomParameters({
-                prompt: "select_account",
-            });
-
-            const result =
-                await signInWithPopup(
-                    auth,
-                    provider,
-                );
+            const result = await signInWithGoogle();
 
             if (!result.user) {
                 throw new Error(
@@ -377,50 +369,19 @@ export default function RegisterPage() {
                CREATE / UPDATE CUSTOMER PROFILE
             ==================================================== */
 
-            await setDoc(
-                doc(
-                    db,
-                    "users",
-                    result.user.uid,
-                ),
-                {
-                    uid: result.user.uid,
-                    name:
-                        result.user
-                            .displayName ||
-                        "",
-                    email:
-                        result.user.email ||
-                        "",
-                    provider: "google",
-                    createdAt:
-                        serverTimestamp(),
-                },
-                {
-                    merge: true,
-                },
-            );
+            await syncGoogleUserProfile(result.user);
 
             /* ====================================================
                GOOGLE DOES NOT NEED KOKO EMAIL VERIFICATION
             ==================================================== */
 
-            await signOut(auth);
-
-            router.replace(
-                `/account/login?registered=1&provider=google&redirect=${encodeURIComponent(
-                    redirectTarget,
-                )}`,
-            );
+            router.replace(redirectTarget);
 
         } catch (error: unknown) {
-            console.error(
-                "Google Register Error:",
-                error,
-            );
+            console.error("Google Register Error:", getGoogleAuthErrorCode(error));
 
             switch (
-                getFirebaseErrorCode(error)
+                getGoogleAuthErrorCode(error)
             ) {
                 case "auth/popup-closed-by-user":
                     setError(
@@ -449,6 +410,25 @@ export default function RegisterPage() {
                 case "auth/network-request-failed":
                     setError(
                         "ไม่สามารถเชื่อมต่ออินเทอร์เน็ตได้ กรุณาลองใหม่",
+                    );
+                    break;
+
+                case "auth/email-not-verified":
+                    setError(
+                        "อีเมล Google ยังไม่ได้รับการยืนยัน กรุณายืนยันอีเมลแล้วลองใหม่อีกครั้ง",
+                    );
+                    break;
+
+                case "auth/unauthorized-domain":
+                    setError(
+                        "โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase Authentication",
+                    );
+                    break;
+
+                case "auth/invalid-api-key":
+                case "auth/invalid-oauth-client-id":
+                    setError(
+                        "การตั้งค่า Google Authentication ไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ",
                     );
                     break;
 

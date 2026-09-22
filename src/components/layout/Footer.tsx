@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -12,7 +14,11 @@ import {
     FaFacebookF,
     FaInstagram,
 } from "react-icons/fa";
+import { useI18n } from "@/i18n";
+import { socialLinks } from "@/config/social-links";
 export default function Footer() {
+    const { t, translate } = useI18n();
+
     return (
         <footer className="bg-[#223B73] text-white">
 
@@ -45,7 +51,7 @@ export default function Footer() {
                                 </h2>
 
                                 <p className="text-pink-300">
-                                    Wedding Photobooth
+                                    {t("footer.weddingPhotobooth")}
                                 </p>
 
                             </div>
@@ -54,9 +60,7 @@ export default function Footer() {
 
                         <p className="mt-6 sm:mt-8 leading-7 sm:leading-8 text-white/70">
 
-                            บริการ Photobooth งานแต่ง งานอีเวนต์
-                            งานเลี้ยง งานเปิดตัวสินค้า พร้อมระบบ
-                            Live Gallery ดาวน์โหลดรูปผ่าน QR Code
+                            {translate("บริการ Photobooth งานแต่ง งานอีเวนต์ งานเลี้ยง งานเปิดตัวสินค้า พร้อมระบบ Live Gallery ดาวน์โหลดรูปผ่าน QR Code")}
 
                         </p>
 
@@ -104,7 +108,7 @@ export default function Footer() {
                     <div>
 
                         <h3 className="mb-8 text-2xl font-bold">
-                            เมนู
+                            {t("footer.menu")}
                         </h3>
 
                         <ul className="space-y-4">
@@ -118,7 +122,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    หน้าแรก
+                                    {t("common.home")}
 
                                 </Link>
 
@@ -133,7 +137,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    เกี่ยวกับเรา
+                                    {t("common.about")}
 
                                 </Link>
 
@@ -148,7 +152,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    ผลงาน
+                                    {t("common.portfolio")}
 
                                 </Link>
 
@@ -163,7 +167,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    แพ็กเกจ
+                                    {t("common.packages")}
 
                                 </Link>
 
@@ -178,7 +182,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    ติดต่อ
+                                    {t("common.contact")}
 
                                 </Link>
 
@@ -193,7 +197,7 @@ export default function Footer() {
                     <div>
 
                         <h3 className="mb-8 text-2xl font-bold">
-                            บริการ
+                            {t("footer.services")}
                         </h3>
 
                         <ul className="space-y-4 text-white/70">
@@ -219,13 +223,15 @@ export default function Footer() {
                     <div>
 
                         <h3 className="mb-8 text-2xl font-bold">
-                            ติดตามเรา
+                            {t("footer.follow")}
                         </h3>
 
                         <div className="space-y-5">
 
                             <a
-                                href="#"
+                                href={socialLinks.facebook}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-pink-500"
                             >
 
@@ -236,7 +242,9 @@ export default function Footer() {
                             </a>
 
                             <a
-                                href="#"
+                                href={socialLinks.line}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-green-500"
                             >
 
@@ -247,7 +255,9 @@ export default function Footer() {
                             </a>
 
                             <a
-                                href="#"
+                                href={socialLinks.instagram}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-pink-600"
                             >
 
@@ -270,7 +280,7 @@ export default function Footer() {
 
                                     <br />
 
-                                    ให้บริการทั่วประเทศ
+                                    {t("footer.nationwide")}
 
                                 </p>
 

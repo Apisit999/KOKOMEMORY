@@ -108,76 +108,58 @@ export async function GET(request: Request) {
 
                 const images: PortfolioImage[] =
                     rawImages
-                        .filter(
-                            (
-                                image
-                            ): image is Record<
-                                string,
-                                unknown
-                            > =>
-                                Boolean(
-                                    image &&
-                                        typeof image ===
-                                            "object"
-                                )
-                        )
-                        .map(
-                            (
-                                image,
-                                index
-                            ) => ({
+                        .map((image, index): PortfolioImage | null => {
+                            // Keep legacy URL-string records public without
+                            // migrating or changing the Firestore document.
+                            if (typeof image === "string") {
+                                return {
+                                    id: `${doc.id}-${index}`,
+                                    url: image,
+                                    order: index,
+                                } satisfies PortfolioImage;
+                            }
+
+                            if (!image || typeof image !== "object") {
+                                return null;
+                            }
+
+                            const value = image as Record<string, unknown>;
+
+                            return {
                                 id:
-                                    typeof image.id ===
-                                        "string"
-                                        ? image.id
+                                    typeof value.id === "string"
+                                        ? value.id
                                         : `${doc.id}-${index}`,
-
                                 url:
-                                    typeof image.url ===
-                                        "string"
-                                        ? image.url
+                                    typeof value.url === "string"
+                                        ? value.url
                                         : "",
-
                                 key:
-                                    typeof image.key ===
-                                        "string"
-                                        ? image.key
+                                    typeof value.key === "string"
+                                        ? value.key
                                         : undefined,
-
                                 name:
-                                    typeof image.name ===
-                                        "string"
-                                        ? image.name
+                                    typeof value.name === "string"
+                                        ? value.name
                                         : undefined,
-
                                 alt:
-                                    typeof image.alt ===
-                                        "string"
-                                        ? image.alt
+                                    typeof value.alt === "string"
+                                        ? value.alt
                                         : undefined,
-
                                 order:
-                                    typeof image.order ===
-                                        "number"
-                                        ? image.order
+                                    typeof value.order === "number"
+                                        ? value.order
                                         : index,
-                            })
-                        )
+                            } satisfies PortfolioImage;
+                        })
                         .filter(
-                            (
-                                image
-                            ) =>
-                                Boolean(
-                                    image.url
-                                )
+                            (image): image is PortfolioImage =>
+                                image !== null
                         )
+                        .filter((image) => Boolean(image.url))
                         .sort(
-                            (
-                                a,
-                                b
-                            ) =>
-                                (a.order ?? 0) -
-                                (b.order ?? 0)
+                            (a, b) =>
+                                (a.order ?? 0) - (b.order ?? 0)
                         );
 
                 /*

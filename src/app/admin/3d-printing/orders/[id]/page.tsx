@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+    Archive,
     AlertCircle,
     ArrowLeft,
     Check,
@@ -18,7 +19,9 @@ import {
 } from "lucide-react";
 
 import {
+    archiveThreeDOrder,
     deleteThreeDOrder,
+    restoreThreeDOrder,
     getThreeDOrder,
     updateThreeDOrder,
 } from "@/services/threeDOrders";
@@ -172,6 +175,7 @@ export default function ThreeDOrderDetailPage({
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [showArchiveModal, setShowArchiveModal] = useState(false);
 
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -600,6 +604,26 @@ export default function ThreeDOrderDetailPage({
         }
     }
 
+    async function handleArchive() {
+        if (!order || !orderId || order.orderStatus !== "completed") return;
+        setDeleting(true); setError("");
+        try {
+            await archiveThreeDOrder(orderId);
+            setShowArchiveModal(false);
+            setOrder((current) => current ? { ...current, isArchived: true } : current);
+        } catch (cause) {
+            setError(cause instanceof Error ? cause.message : "ไม่สามารถเก็บ Order เข้าคลังได้");
+        } finally { setDeleting(false); }
+    }
+
+    async function handleRestore() {
+        if (!order || !orderId || !order.isArchived) return;
+        setDeleting(true); setError("");
+        try { await restoreThreeDOrder(orderId); setOrder((current) => current ? { ...current, isArchived: false, archivedAt: null, archivedBy: undefined } : current); }
+        catch (cause) { setError(cause instanceof Error ? cause.message : "ไม่สามารถกู้คืน Order ได้"); }
+        finally { setDeleting(false); }
+    }
+
     if (loading) {
         return (
             <main className="mx-auto flex min-h-[70vh] w-full max-w-7xl items-center justify-center">
@@ -686,15 +710,16 @@ export default function ThreeDOrderDetailPage({
                             <p className="mt-2 text-sm text-slate-400">
                                 สร้างเมื่อ {formatDate(order.createdAt)}
                             </p>
+                            {order.quoteId && <Link href={`/admin/3d-printing/quotes/${encodeURIComponent(order.quoteId)}`} className="mt-3 inline-flex text-sm font-bold text-pink-500 hover:text-pink-600">ดู Quote และไฟล์ต้นฉบับ →</Link>}
                         </div>
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                        <button
+                        {(order.orderStatus === "completed" || order.isArchived) && <button
                             type="button"
-                            onClick={handleDelete}
+                            onClick={() => order.isArchived ? void handleRestore() : setShowArchiveModal(true)}
                             disabled={deleting || saving}
-                            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white px-5 text-sm font-bold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {deleting ? (
                                 <Loader2
@@ -702,10 +727,10 @@ export default function ThreeDOrderDetailPage({
                                     className="animate-spin"
                                 />
                             ) : (
-                                <Trash2 size={17} />
+                                <Archive size={17} />
                             )}
-                            ลบ Order
-                        </button>
+                            เก็บเข้าคลัง
+                        </button>}
 
                         <button
                             type="button"
@@ -1856,6 +1881,15 @@ export default function ThreeDOrderDetailPage({
                     </button>
                 </div>
             </section>
+        {showArchiveModal && order && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+                    <h2 className="text-xl font-black">เก็บงานนี้เข้าคลัง?</h2>
+                    <div className="mt-4 space-y-2 text-sm text-slate-600"><p>Order: <b>{order.orderNumber}</b></p><p>Customer: {order.customer.name || order.userId || "—"}</p><p>ยอดรวม: <b>{formatMoney(totals.totalPrice)}</b></p><p>สถานะ: {getStatusLabel(order.orderStatus)}</p><p className="mt-4 rounded-xl bg-blue-50 p-4 text-blue-800">ข้อมูลจะไม่ถูกลบถาวร แต่จะถูกซ่อนจากรายการงานหลัก</p></div>
+                    <div className="mt-5 flex justify-end gap-3"><button type="button" onClick={() => setShowArchiveModal(false)} className="rounded-xl border px-4 py-3 text-sm font-bold">ยกเลิก</button><button type="button" disabled={deleting} onClick={() => void handleArchive()} className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white disabled:opacity-50">{deleting ? "กำลังเก็บ..." : "เก็บเข้าคลัง"}</button></div>
+                </div>
+            </div>
+        )}
         </main>
     );
 }

@@ -5,6 +5,7 @@ export type ThreeDPaymentMethod =
     | "other";
 
 export type ThreeDPaymentStatus =
+    | "submitted"
     | "pending_verification"
     | "verified"
     | "rejected"

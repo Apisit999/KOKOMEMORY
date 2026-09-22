@@ -4,11 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-    GoogleAuthProvider,
-    signInWithEmailAndPassword,
-    signInWithPopup,
-} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import {
     doc,
     getDoc,
@@ -16,6 +12,11 @@ import {
     setDoc,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import {
+    getGoogleAuthErrorCode,
+    signInWithGoogle,
+    syncGoogleUserProfile,
+} from "@/lib/google-auth";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
@@ -192,30 +193,19 @@ export default function LoginPage() {
         setGoogleLoading(true);
 
         try {
-            const provider = new GoogleAuthProvider();
-
-            provider.setCustomParameters({
-                prompt: "select_account",
-            });
-
-            const result = await signInWithPopup(auth, provider);
+            const result = await signInWithGoogle();
 
             if (!result.user) {
                 throw new Error("ไม่พบข้อมูลบัญชี Google");
             }
 
-            await syncUserProfile(
-                result.user.uid,
-                result.user.displayName || "",
-                result.user.email || "",
-                "google",
-            );
+            await syncGoogleUserProfile(result.user);
 
             router.replace(redirectTarget);
         } catch (error: unknown) {
-            console.error("Google Login Error:", error);
+            console.error("Google Login Error:", getGoogleAuthErrorCode(error));
 
-            switch (getFirebaseErrorCode(error)) {
+            switch (getGoogleAuthErrorCode(error)) {
                 case "auth/popup-closed-by-user":
                     setError("หน้าต่าง Google ถูกปิดก่อนเข้าสู่ระบบ");
                     break;
@@ -248,6 +238,23 @@ export default function LoginPage() {
                     setError(
                         "อีเมลนี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบด้วยวิธีที่สมัครไว้",
                     );
+                    break;
+
+                case "auth/email-not-verified":
+                    setError("อีเมล Google ยังไม่ได้รับการยืนยัน กรุณายืนยันอีเมลแล้วลองใหม่อีกครั้ง");
+                    break;
+
+                case "auth/operation-not-allowed":
+                    setError("Google Login ยังไม่ได้เปิดใช้งานใน Firebase Authentication");
+                    break;
+
+                case "auth/unauthorized-domain":
+                    setError("โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase Authentication");
+                    break;
+
+                case "auth/invalid-api-key":
+                case "auth/invalid-oauth-client-id":
+                    setError("การตั้งค่า Google Authentication ไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ");
                     break;
 
                 default:

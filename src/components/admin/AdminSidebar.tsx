@@ -172,6 +172,11 @@ const menuItems: MenuItem[] = [
         icon: <PortfolioIcon />,
     },
     {
+        label: "รีวิวจากลูกค้า",
+        href: "/admin/reviews",
+        icon: <PortfolioIcon />,
+    },
+    {
         label: "หมวดหมู่ Portfolio",
         href: "/admin/portfolio/categories",
         icon: <PortfolioIcon />,
@@ -179,6 +184,11 @@ const menuItems: MenuItem[] = [
     {
         label: "3D Printing",
         href: "/admin/3d-printing",
+        icon: <PrinterIcon />,
+    },
+    {
+        label: "3D Quotes",
+        href: "/admin/3d-printing/quotes",
         icon: <PrinterIcon />,
     },
     {

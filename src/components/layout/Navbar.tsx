@@ -1,45 +1,96 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
+import { Box, BookOpen, CalendarDays, FileText, LogIn, LogOut, Menu, Search, Settings2, Sparkles, UserCircle2, UserPlus, UserRound, X } from "lucide-react";
 import { auth } from "@/lib/firebase";
-import { Search, CalendarDays, Menu, X, UserRound, ChevronDown, LogIn, UserPlus, UserCircle2, BookOpen, Settings2, LogOut } from "lucide-react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useI18n, type MessageKey } from "@/i18n";
 
-const menus = [
-    { title: "common.home", href: "/" }, { title: "common.portfolio", href: "/gallery/portfolio" },
-    { title: "common.services", href: "/services" }, { title: "common.packages", href: "/packages" },
-    { title: "3D Print", href: "/3d-printing" }, { title: "common.about", href: "/about" }, { title: "common.contact", href: "/contact" },
+const navItems = [
+    { title: "common.home", href: "/" },
+    { title: "common.services", href: "/services" },
+    { title: "common.portfolio", href: "/gallery/portfolio" },
+    { title: "common.threeD", href: "/3d-printing" },
+    { title: "common.about", href: "/about" },
+    { title: "common.contact", href: "/contact" },
+] as const;
+
+const accountLinks = [
+    { href: "/account", icon: UserCircle2, label: "common.overview" },
+    { href: "/account/bookings", icon: BookOpen, label: "common.bookings" },
+    { href: "/account/3d-printing", icon: Sparkles, label: "common.threeD" },
+    { href: "/account/3d-printing/quotes", icon: FileText, label: "common.quotes" },
+    { href: "/account/3d-printing/orders", icon: Box, label: "common.orders" },
+    { href: "/account/profile", icon: UserCircle2, label: "common.profile" },
+    { href: "/account/security", icon: Settings2, label: "common.security" },
 ] as const;
 
 export default function Navbar() {
-    const router = useRouter();
     const { t, locale } = useI18n();
-    const [scroll, setScroll] = useState(false), [menuOpen, setMenuOpen] = useState(false), [accountOpen, setAccountOpen] = useState(false), [user, setUser] = useState<User | null>(null);
-    const accountRef = useRef<HTMLDivElement>(null);
+    const pathname = usePathname();
+    const [scrolled, setScrolled] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+
     useEffect(() => onAuthStateChanged(auth, setUser), []);
-    useEffect(() => { const fn = () => setScroll(window.scrollY > 40); fn(); window.addEventListener("scroll", fn); return () => window.removeEventListener("scroll", fn); }, []);
-    useEffect(() => { const outside = (e: MouseEvent) => { if (!accountRef.current?.contains(e.target as Node)) setAccountOpen(false); }; const key = (e: KeyboardEvent) => { if (e.key === "Escape") { setAccountOpen(false); setMenuOpen(false); } }; document.addEventListener("mousedown", outside); document.addEventListener("keydown", key); return () => { document.removeEventListener("mousedown", outside); document.removeEventListener("keydown", key); }; }, []);
-    useEffect(() => { document.body.style.overflow = menuOpen ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [menuOpen]);
-    const closeMenu = () => { setMenuOpen(false); setAccountOpen(false); };
-    const logout = async () => { await signOut(auth); closeMenu(); router.push("/"); };
-    const item = "flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/80 transition hover:bg-white/10 hover:text-[#ff75b8]";
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 40);
+        onScroll();
+        window.addEventListener("scroll", onScroll);
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+    useEffect(() => {
+        if (menuOpen) closeButtonRef.current?.focus();
+        else menuButtonRef.current?.focus();
+    }, [menuOpen]);
+    useEffect(() => {
+        if (!menuOpen) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setMenuOpen(false);
+        };
+        document.addEventListener("keydown", onKeyDown);
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.removeEventListener("keydown", onKeyDown);
+            document.body.style.overflow = "";
+        };
+    }, [menuOpen]);
+
+    const close = () => setMenuOpen(false);
+    const logout = async () => { await signOut(auth); close(); };
+    const isActive = (href: string) => href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`) || (href === "/3d-printing" && (pathname.startsWith("/account/3d-printing") || pathname.startsWith("/admin/3d-printing")));
+    const isAccountActive = (href: string) => href === "/account" ? pathname === "/account" : pathname === href || pathname.startsWith(`${href}/`);
+    const menuLabel = (item: (typeof navItems)[number]) => t(item.title as MessageKey) || (item.href === "/3d-printing" ? "3D Printing" : item.title);
+    const drawerItem = "flex items-center gap-3 rounded-xl border-l-2 border-transparent px-4 py-3 text-sm text-[#EDEDF0] transition [&_svg]:text-[#8F8F99] hover:bg-[#FF4FA3]/10 hover:text-white hover:[&_svg]:text-[#FF4FA3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]";
+
     return <>
-        <header className={`fixed left-0 right-0 top-0 z-[9999] border-b border-white/[0.08] text-white transition-all duration-300 ${scroll ? "bg-[#08090b]/90 shadow-2xl shadow-black/20 backdrop-blur-xl" : "bg-[#08090b]/70 backdrop-blur-lg"}`}>
-            <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:h-24 sm:px-6 lg:px-8">
-                <Link href="/" className="group flex min-w-0 items-center gap-3" aria-label={locale === "en" ? "KOKO Memory home" : "KOKO Memory หน้าแรก"}><Image src="/logo/logo.jpg" alt="KOKO Memory" width={56} height={56} priority className="h-11 w-11 rounded-full object-cover ring-1 ring-white/20 shadow-lg transition duration-200 group-hover:scale-[1.02] sm:h-14 sm:w-14" /><div className="min-w-0"><h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">KOKO Memory</h1><p className="hidden text-[10px] uppercase tracking-[0.18em] text-white/55 sm:block">Photobooth &amp; Event</p></div></Link>
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <LanguageSwitcher />
-                    <Link href="/search" className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm font-medium text-white/85 transition duration-200 hover:-translate-y-px hover:border-white/20 hover:bg-white/10 hover:text-[#ff75b8] sm:flex"><Search size={17} />{t("common.search")}</Link>
-                    <div ref={accountRef} className="relative hidden sm:block"><button type="button" aria-expanded={accountOpen} onClick={() => setAccountOpen((v) => !v)} className={`flex items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-medium transition duration-200 hover:-translate-y-px ${accountOpen ? "border-[#ff4fa3]/50 bg-[#ff4fa3]/15 text-[#ff9ac8] shadow-lg shadow-[#ff4fa3]/10" : "border-white/10 bg-white/[0.06] text-white/85 hover:border-white/20 hover:bg-white/10 hover:text-[#ff75b8]"}`}><UserRound size={17} /><span>{user ? t("common.myAccount") : t("common.account")}</span><ChevronDown size={15} className={accountOpen ? "rotate-180" : ""} /></button>{accountOpen && <div className="absolute right-0 top-[calc(100%+12px)] w-64 rounded-2xl border border-white/10 bg-[#111216]/95 p-2 shadow-2xl shadow-black/40 backdrop-blur-2xl"><p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/40">{user ? t("common.myAccount") : t("common.account")}</p>{user ? <><Link href="/account/profile" onClick={() => setAccountOpen(false)} className={item}><UserCircle2 size={17} />{t("common.profile")}</Link><Link href="/account/bookings" onClick={() => setAccountOpen(false)} className={item}><BookOpen size={17} />{t("common.bookings")}</Link><Link href="/account/security" onClick={() => setAccountOpen(false)} className={item}><Settings2 size={17} />{t("common.accountSettings")}</Link><div className="my-1 border-t border-white/10" /><button type="button" onClick={() => void logout()} className={`${item} w-full hover:bg-red-500/10 hover:text-red-300`}><LogOut size={17} />{t("common.logout")}</button></> : <><Link href="/account/login" onClick={() => setAccountOpen(false)} className={item}><LogIn size={17} />{t("common.login")}</Link><Link href="/account/register" onClick={() => setAccountOpen(false)} className={item}><UserPlus size={17} />{t("common.register")}</Link></>}</div>}</div>
-                    <Link href="/booking" className="hidden items-center gap-2 rounded-full bg-gradient-to-br from-[#ff75b8] via-[#ff4fa3] to-[#ff2f92] px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#ff4fa3]/25 transition duration-200 hover:-translate-y-px hover:brightness-105 hover:shadow-[#ff4fa3]/35 active:scale-[.98] sm:flex"><CalendarDays size={17} />{t("common.bookNow")}</Link>
-                    <button type="button" aria-label="เปิดเมนู" aria-expanded={menuOpen} onClick={() => { setMenuOpen(true); setAccountOpen(false); }} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/85 shadow-lg transition duration-200 hover:scale-105 hover:border-white/20 hover:bg-white/10 active:scale-95"><Menu size={22} /></button>
+        <header className={`fixed left-0 right-0 top-0 z-[9999] border-b border-white/[0.08] text-white transition ${scrolled ? "bg-[#0B0B0F]/95 shadow-2xl backdrop-blur-xl" : "bg-[#0B0B0F]/92 backdrop-blur-xl"}`}>
+            <div className="mx-auto flex min-h-20 max-w-[90rem] items-center justify-between gap-4 px-4 sm:min-h-24 sm:px-6 lg:px-8">
+                <Link href="/" className="flex shrink-0 items-center gap-3" aria-label={locale === "en" ? "KOKO Memory home" : "KOKO Memory หน้าหลัก"}>
+                    <Image src="/logo/logo.jpg" alt="KOKO Memory" width={56} height={56} priority className="h-11 w-11 rounded-full object-cover sm:h-14 sm:w-14" />
+                    <div><h1 className="text-xl font-bold sm:text-2xl">KOKO Memory</h1><p className="hidden text-[10px] uppercase tracking-[.18em] text-white/55 sm:block">Photobooth &amp; Event</p></div>
+                </Link>
+
+                <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                    <div className="hidden sm:block"><LanguageSwitcher /></div>
+                    <Link href="/search" aria-label={t("common.search")} className="hidden items-center gap-2 rounded-full border border-white/10 bg-[#1C1C22] px-4 py-2.5 text-sm text-[#F8F8FA] transition hover:border-[#FF4FA3] hover:bg-[#FF4FA3] sm:flex"><Search size={17} />{t("common.search")}</Link>
+                    <Link href="/account" aria-label={t("common.account")} className="hidden items-center gap-2 rounded-full border border-white/10 bg-[#1C1C22] px-4 py-2.5 text-sm font-medium text-[#F8F8FA] transition hover:border-[#FF4FA3] hover:bg-[#FF4FA3] sm:flex"><UserRound size={17} />{t("common.account")}</Link>
+                    <button ref={menuButtonRef} type="button" aria-label={t("common.openMenu")} aria-expanded={menuOpen} aria-controls="public-navigation-drawer" onClick={() => setMenuOpen(true)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#FF4FA3] bg-[#1C1C22] text-white transition hover:bg-[#FF4FA3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]"><Menu size={22} /></button>
                 </div>
             </div>
         </header>
-        <div onClick={closeMenu} className={`fixed inset-0 z-[10000] transition duration-300 ${menuOpen ? "visible bg-black/60 opacity-100" : "invisible opacity-0"}`}><aside onClick={(e) => e.stopPropagation()} className={`absolute right-0 top-0 flex h-full w-[min(380px,90vw)] flex-col bg-[#101114] text-white shadow-2xl shadow-black/50 transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"}`}><div className="flex items-center justify-between border-b border-white/10 px-6 py-5"><Link href="/" onClick={closeMenu} className="flex items-center gap-3"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={46} height={46} className="rounded-full object-cover" /><div><h2 className="text-xl font-bold">KOKO Memory</h2><p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Photobooth &amp; Event</p></div></Link><button type="button" aria-label={t("common.closeMenu")} onClick={closeMenu} className="flex h-10 w-10 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-[#ff75b8]"><X size={23} /></button></div><nav className="flex-1 overflow-y-auto px-5 py-6"><p className="mb-3 px-3 text-xs font-semibold uppercase tracking-[0.25em] text-white/35">{t("common.menu")}</p>{menus.map((m) => <Link key={m.href} href={m.href} onClick={closeMenu} className="block rounded-xl px-4 py-3.5 text-base font-medium text-white/75 transition hover:bg-white/10 hover:text-[#ff75b8]">{m.title === "3D Print" ? m.title : t(m.title as MessageKey)}</Link>)}<div className="my-5 h-px bg-white/10" /><Link href="/search" onClick={closeMenu} className="mb-3 flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3.5 font-semibold text-white/85 transition hover:border-[#ff4fa3]/30 hover:text-[#ff75b8]"><Search size={18} />{t("common.search")}</Link>{user ? <div className="mb-3 rounded-xl border border-white/10 bg-white/[0.04] p-2"><p className="px-3 py-2 text-xs font-semibold text-white/40">{t("common.myAccount")}</p><Link href="/account/profile" onClick={closeMenu} className={item}><UserCircle2 size={17} />{t("common.profile")}</Link><Link href="/account/bookings" onClick={closeMenu} className={item}><BookOpen size={17} />{t("common.bookings")}</Link><Link href="/account/security" onClick={closeMenu} className={item}><Settings2 size={17} />{t("common.accountSettings")}</Link><button type="button" onClick={() => void logout()} className={`${item} w-full hover:bg-red-500/10 hover:text-red-300`}><LogOut size={17} />{t("common.logout")}</button></div> : <div className="mb-3 grid grid-cols-2 gap-2"><Link href="/account/login" onClick={closeMenu} className="flex items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-3 py-3 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-[#ff75b8]"><LogIn size={16} />{t("common.login")}</Link><Link href="/account/register" onClick={closeMenu} className="flex items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-3 py-3 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-[#ff75b8]"><UserPlus size={16} />{t("common.register")}</Link></div>}<Link href="/booking" onClick={closeMenu} className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-[#ff75b8] via-[#ff4fa3] to-[#ff2f92] py-3.5 font-semibold text-white shadow-lg shadow-[#ff4fa3]/25 transition hover:brightness-105"><CalendarDays size={18} />{t("common.bookNow")}</Link></nav></aside></div>
+
+        <div aria-hidden={!menuOpen} onClick={close} className={`fixed inset-0 z-[10000] bg-black/60 backdrop-blur-[2px] transition-opacity duration-200 ${menuOpen ? "visible opacity-100" : "invisible opacity-0"}`}>
+            <aside id="public-navigation-drawer" role="dialog" aria-modal="true" aria-label={t("common.menu")} onClick={(event) => event.stopPropagation()} className={`absolute right-0 top-0 flex h-full w-[min(420px,90vw)] flex-col border-l border-white/10 bg-[#0B0B0F] text-[#F8F8FA] shadow-2xl transition-transform duration-200 ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
+                <div className="flex items-center justify-between border-b border-white/10 px-6 py-5"><Link href="/" onClick={close} className="flex items-center gap-3"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={46} height={46} className="rounded-full" /><span className="text-xl font-bold text-white">KOKO Memory</span></Link><button ref={closeButtonRef} type="button" aria-label={t("common.closeMenu")} onClick={close} className="rounded-full border border-[#FF4FA3] bg-[#1C1C22] p-2 text-white transition hover:bg-[#FF4FA3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]"><X size={23} /></button></div>
+                <nav aria-label="Mobile navigation" className="flex-1 overflow-y-auto px-5 py-6"><p className="mb-3 px-4 text-[11px] font-bold uppercase tracking-[.15em] text-[#8F8F99]">MAIN</p>{navItems.map((item) => <Link key={item.href} href={item.href} onClick={close} aria-current={isActive(item.href) ? "page" : undefined} className={`${drawerItem} ${isActive(item.href) ? "border-[#FF4FA3] bg-gradient-to-r from-[#FF4FA3]/[.18] to-[#FF4FA3]/[.06] font-semibold text-white [&_svg]:text-[#FF4FA3]" : "font-medium"}`}>{menuLabel(item)}</Link>)}<div className="my-5 h-px bg-white/10" /><p className="mb-3 px-4 text-[11px] font-bold uppercase tracking-[.15em] text-[#8F8F99]">ACCOUNT</p>{user ? <div className="space-y-1">{accountLinks.map(({ href, icon: Icon, label }) => <Link key={href} href={href} onClick={close} className={`${drawerItem} ${isAccountActive(href) ? "border-[#FF4FA3] bg-gradient-to-r from-[#FF4FA3]/[.18] to-[#FF4FA3]/[.06] font-semibold text-white [&_svg]:text-[#FF4FA3]" : ""}`}><Icon size={17} />{t(label)}</Link>)}<button type="button" onClick={() => void logout()} className={`${drawerItem} w-full`}><LogOut size={17} />{t("common.logout")}</button></div> : <div className="grid grid-cols-2 gap-2"><Link href="/account/login" onClick={close} className="rounded-xl bg-[#1C1C22] px-3 py-3 text-center text-sm font-semibold text-[#EDEDF0] transition hover:bg-[#FF4FA3]"><LogIn className="mx-auto mb-1" size={17} />{t("common.login")}</Link><Link href="/account/register" onClick={close} className="rounded-xl bg-[#1C1C22] px-3 py-3 text-center text-sm font-semibold text-[#EDEDF0] transition hover:bg-[#FF4FA3]"><UserPlus className="mx-auto mb-1" size={17} />{t("common.register")}</Link></div>}<Link href="/booking" onClick={close} className="mt-6 flex items-center justify-center gap-2 rounded-[14px] bg-[#FF4FA3] py-3.5 font-semibold text-white shadow-[0_8px_24px_rgba(255,79,163,0.25)] transition hover:bg-[#D93687] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]"><CalendarDays size={18} />{t("common.bookNow")}</Link></nav>
+            </aside>
+        </div>
     </>;
 }

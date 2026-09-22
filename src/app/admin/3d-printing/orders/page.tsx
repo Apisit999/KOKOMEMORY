@@ -2,6 +2,7 @@
 
 import {
     AlertCircle,
+    Archive,
     ArrowDown,
     ArrowUp,
     CalendarDays,
@@ -25,7 +26,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+    archiveThreeDOrder,
     getThreeDOrders,
+    restoreThreeDOrder,
     type ThreeDOrder,
     type ThreeDOrderStatus,
     type ThreeDPaymentStatus,
@@ -57,6 +60,8 @@ type PaymentFilter =
     | "paid"
     | "refunded";
 
+type OrderView = "active" | "completed" | "archived";
+
 
 /* =========================================================
    STATUS CONFIG
@@ -82,6 +87,18 @@ const ORDER_STATUS: Record<
         className:
             "bg-amber-50 text-amber-700 ring-amber-200",
         icon: Clock3,
+    },
+
+    pending_payment: {
+        label: "รอชำระเงิน",
+        className: "bg-orange-50 text-orange-700 ring-orange-200",
+        icon: Wallet,
+    },
+
+    paid: {
+        label: "ชำระเงินแล้ว",
+        className: "bg-green-50 text-green-700 ring-green-200",
+        icon: CheckCircle2,
     },
 
     waiting_payment: {
@@ -149,6 +166,10 @@ const PAYMENT_STATUS: Record<
         className: string;
     }
 > = {
+    submitted: {
+        label: "รอตรวจสอบ",
+        className: "bg-amber-50 text-amber-700 ring-amber-200",
+    },
     unpaid: {
         label: "ยังไม่ชำระ",
         className:
@@ -511,6 +532,13 @@ export default function ThreeDOrdersPage() {
     const [paymentFilter, setPaymentFilter] =
         useState<PaymentFilter>("all");
 
+    const [orderView, setOrderView] =
+        useState<OrderView>("active");
+    const [archiveTarget, setArchiveTarget] =
+        useState<ThreeDOrder | null>(null);
+    const [archiveBusy, setArchiveBusy] =
+        useState(false);
+
     const [sortField, setSortField] =
         useState<
             "date" | "total" | "remaining"
@@ -577,6 +605,32 @@ export default function ThreeDOrdersPage() {
     useEffect(() => {
         void loadOrders();
     }, [loadOrders]);
+
+    const handleArchive = async () => {
+        if (!archiveTarget) return;
+        try {
+            setArchiveBusy(true);
+            await archiveThreeDOrder(archiveTarget.id);
+            setArchiveTarget(null);
+            await loadOrders(true);
+        } catch (cause) {
+            setError(cause instanceof Error ? cause.message : "ไม่สามารถเก็บ Order เข้าคลังได้");
+        } finally {
+            setArchiveBusy(false);
+        }
+    };
+
+    const handleRestore = async (order: ThreeDOrder) => {
+        try {
+            setArchiveBusy(true);
+            await restoreThreeDOrder(order.id);
+            await loadOrders(true);
+        } catch (cause) {
+            setError(cause instanceof Error ? cause.message : "ไม่สามารถกู้คืน Order ได้");
+        } finally {
+            setArchiveBusy(false);
+        }
+    };
 
 
     /* =====================================================
@@ -752,6 +806,8 @@ export default function ThreeDOrdersPage() {
                         const matchesSearch =
                             !query ||
                             orderNumber.includes(query) ||
+                            order.userId?.toLowerCase().includes(query) ||
+                            order.quoteId?.toLowerCase().includes(query) ||
                             customerName.includes(query) ||
                             phone.includes(query) ||
                             email.includes(query) ||
@@ -771,8 +827,17 @@ export default function ThreeDOrdersPage() {
                             order.paymentStatus ===
                                 paymentFilter;
 
+                        const matchesView =
+                            orderView === "archived"
+                                ? order.isArchived === true
+                                : order.isArchived !== true &&
+                                  (orderView === "completed"
+                                      ? order.orderStatus === "completed"
+                                      : order.orderStatus !== "completed");
+
 
                         return (
+                            matchesView &&
                             matchesSearch &&
                             matchesStatus &&
                             matchesPayment
@@ -860,6 +925,7 @@ export default function ThreeDOrdersPage() {
             search,
             statusFilter,
             paymentFilter,
+            orderView,
             sortField,
             sortDirection,
         ]);
@@ -1515,6 +1581,14 @@ export default function ThreeDOrdersPage() {
                 <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
                     <div className="border-b border-slate-200 p-5">
+                        <div className="mb-5 flex flex-wrap gap-2 rounded-xl bg-slate-100 p-1">
+                            {(["active", "completed", "archived"] as OrderView[]).map((view) => (
+                                <button key={view} type="button" onClick={() => setOrderView(view)} className={`rounded-lg px-4 py-2 text-sm font-bold transition ${orderView === view ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}>
+                                    {view === "active" ? "Active" : view === "completed" ? "Completed" : "Archived"}
+                                    <span className="ml-2 text-xs text-slate-400">{orders.filter((order) => view === "archived" ? order.isArchived === true : order.isArchived !== true && (view === "completed" ? order.orderStatus === "completed" : order.orderStatus !== "completed")).length}</span>
+                                </button>
+                            ))}
+                        </div>
 
                         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 
@@ -1934,6 +2008,16 @@ export default function ThreeDOrdersPage() {
 
                                                             </Link>
 
+                                                            {order.isArchived ? (
+                                                                <button type="button" disabled={archiveBusy} onClick={() => void handleRestore(order)} className="ml-2 inline-flex h-9 items-center gap-1 rounded-xl border border-blue-200 bg-blue-50 px-3 text-xs font-bold text-blue-700">
+                                                                    Restore
+                                                                </button>
+                                                            ) : order.orderStatus === "completed" ? (
+                                                                <button type="button" onClick={() => setArchiveTarget(order)} className="ml-2 inline-flex h-9 items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 hover:bg-slate-50">
+                                                                    <Archive className="h-3.5 w-3.5" /> Archive
+                                                                </button>
+                                                            ) : null}
+
                                                         </td>
 
 
@@ -2313,6 +2397,21 @@ export default function ThreeDOrdersPage() {
 
             </div>
 
+        {archiveTarget && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+                    <h2 className="text-xl font-black">เก็บงานนี้เข้าคลัง?</h2>
+                    <div className="mt-4 space-y-2 text-sm text-slate-600">
+                        <p>Order: <b>{archiveTarget.orderNumber}</b></p>
+                        <p>Customer: {archiveTarget.customer?.name || archiveTarget.userId || "—"}</p>
+                        <p>ยอดรวม: <b>฿{formatMoney(Number(archiveTarget.totalPrice) || 0)}</b></p>
+                        <p>สถานะ: {ORDER_STATUS[archiveTarget.orderStatus]?.label || archiveTarget.orderStatus}</p>
+                        <p className="mt-4 rounded-xl bg-blue-50 p-4 text-blue-800">ข้อมูลจะไม่ถูกลบถาวร แต่จะถูกซ่อนจากรายการงานหลัก</p>
+                    </div>
+                    <div className="mt-5 flex justify-end gap-3"><button type="button" onClick={() => setArchiveTarget(null)} className="rounded-xl border px-4 py-3 text-sm font-bold">ยกเลิก</button><button type="button" disabled={archiveBusy} onClick={() => void handleArchive()} className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-bold text-white disabled:opacity-50">{archiveBusy ? "กำลังเก็บ..." : "เก็บเข้าคลัง"}</button></div>
+                </div>
+            </div>
+        )}
         </main>
     );
 }

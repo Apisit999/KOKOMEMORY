@@ -16,6 +16,8 @@ type Booking = {
     id: string;
 
     bookingStatus?: string;
+    archiveStatus?: "active" | "archived";
+    archivedAt?: Timestamp | string | Date | null;
     bookingVersion?: number;
 
     payment?: {
@@ -73,8 +75,12 @@ const STATUS_LABEL: Record<string, string> = {
     payment_submitted: "ส่งหลักฐานแล้ว",
     payment_verified: "ตรวจสอบแล้ว",
     confirmed: "ยืนยันแล้ว",
+    completed: "เสร็จแล้ว",
     cancelled: "ยกเลิก",
+    expired: "หมดอายุ",
 };
+
+type BookingView = "active" | "completed" | "cancelled" | "archived" | "all";
 
 
 /* ============================================================
@@ -358,6 +364,9 @@ function getStatusClass(
         case "confirmed":
             return "bg-green-100 text-green-700";
 
+        case "completed":
+            return "bg-slate-100 text-slate-700";
+
         case "payment_verified":
             return "bg-blue-100 text-blue-700";
 
@@ -384,6 +393,9 @@ function getStatusDotClass(
     switch (status) {
         case "confirmed":
             return "bg-green-500";
+
+        case "completed":
+            return "bg-slate-500";
 
         case "payment_verified":
             return "bg-blue-500";
@@ -480,6 +492,11 @@ export default function AdminBookingsPage() {
         setStatusFilter,
     ] = useState("all");
 
+    const [
+        bookingView,
+        setBookingView,
+    ] = useState<BookingView>("active");
+
 
     /* ========================================================
        DELETE STATE
@@ -511,6 +528,7 @@ export default function AdminBookingsPage() {
         deleteSuccess,
         setDeleteSuccess,
     ] = useState("");
+    const [archiveLoading, setArchiveLoading] = useState("");
 
 
     /* ========================================================
@@ -525,10 +543,10 @@ export default function AdminBookingsPage() {
 
         let cancelled = false;
 
-        void adminApiFetch<{ bookings?: Booking[] }>("/api/admin/booking")
+        void adminApiFetch<{ bookings?: Booking[] }>(`/api/admin/booking?view=${bookingView}`)
             .then((result) => {
                 if (cancelled) return;
-                setBookings((result.bookings || []).filter((booking) => booking.archived !== true));
+                setBookings(result.bookings || []);
                 setLoading(false);
             })
             .catch((err: unknown) => {
@@ -541,7 +559,7 @@ export default function AdminBookingsPage() {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [bookingView]);
 
 
     /* ========================================================
@@ -587,11 +605,16 @@ export default function AdminBookingsPage() {
                             keyword
                         );
 
+                    const isArchived = booking.archiveStatus === "archived";
+                    const matchesView =
+                        bookingView === "all" ||
+                        (bookingView === "archived" && isArchived) ||
+                        (bookingView === "completed" && booking.bookingStatus === "completed" && !isArchived) ||
+                        (bookingView === "cancelled" && booking.bookingStatus === "cancelled") ||
+                        (bookingView === "active" && !isArchived && booking.bookingStatus !== "completed" && booking.bookingStatus !== "cancelled");
                     const matchesStatus =
-                        statusFilter ===
-                            "all" ||
-                        booking.bookingStatus ===
-                            statusFilter;
+                        (statusFilter === "all" || booking.bookingStatus === statusFilter) &&
+                        matchesView;
 
                     return (
                         matchesSearch &&
@@ -599,11 +622,36 @@ export default function AdminBookingsPage() {
                     );
                 }
             );
-        }, [
-            bookings,
-            search,
+    }, [
+        bookings,
+        bookingView,
+        search,
             statusFilter,
-        ]);
+    ]);
+
+    async function handleArchive(booking: Booking) {
+        const archived = booking.archiveStatus === "archived";
+        if (normalizeStatus(booking.bookingStatus) !== "completed") return;
+        if (!window.confirm(archived ? "นำรายการนี้ออกจากประวัติหรือไม่?" : "เก็บรายการนี้เข้าประวัติหรือไม่?")) return;
+        setArchiveLoading(booking.id);
+        try {
+            const user = getAuth().currentUser;
+            if (!user) throw new Error("UNAUTHORIZED");
+            const token = await user.getIdToken();
+            const response = await fetch(`/api/admin/booking/${encodeURIComponent(booking.id)}/archive`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ action: archived ? "restore" : "archive" }),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "ARCHIVE_FAILED");
+            setBookings((current) => current.map((item) => item.id === booking.id ? { ...item, archiveStatus: archived ? "active" : "archived" } : item));
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "ไม่สามารถเปลี่ยนสถานะ Archive ได้");
+        } finally {
+            setArchiveLoading("");
+        }
+    }
 
 
     /* ========================================================
@@ -635,6 +683,11 @@ export default function AdminBookingsPage() {
                         (item) =>
                             item.bookingStatus ===
                             "confirmed"
+                    ).length,
+
+                completed:
+                    bookings.filter(
+                        (item) => item.bookingStatus === "completed"
                     ).length,
             };
         }, [
@@ -1031,6 +1084,32 @@ export default function AdminBookingsPage() {
                 </div>
 
 
+                <section className="mb-4 flex flex-wrap gap-2" aria-label="Booking views">
+                    {([
+                        ["active", "Active"],
+                        ["completed", "Completed"],
+                        ["cancelled", "Cancelled"],
+                        ["archived", "Archived"],
+                        ["all", "All"],
+                    ] as const).map(([view, label]) => (
+                        <button
+                            key={view}
+                            type="button"
+                            onClick={() => {
+                                setBookingView(view);
+                                setStatusFilter("all");
+                            }}
+                            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                                bookingView === view
+                                    ? "bg-pink-500 text-white shadow-sm"
+                                    : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-pink-50 hover:text-pink-600"
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </section>
+
                 {/* =================================================
                     SEARCH / FILTER
                 ================================================= */}
@@ -1379,6 +1458,9 @@ export default function AdminBookingsPage() {
                                                                 {getStatusLabel(
                                                                     booking.bookingStatus
                                                                 )}
+                                                                {booking.archiveStatus === "archived" && (
+                                                                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">Archived</span>
+                                                                )}
                                                             </span>
                                                         </td>
 
@@ -1407,6 +1489,16 @@ export default function AdminBookingsPage() {
 
 
                                                         <td className="px-5 py-5">
+                                                            {normalizeStatus(booking.bookingStatus) === "completed" && (
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={archiveLoading === booking.id}
+                                                                    onClick={() => void handleArchive(booking)}
+                                                                    className="mr-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition hover:bg-blue-100 disabled:opacity-50"
+                                                                >
+                                                                    {archiveLoading === booking.id ? "กำลังบันทึก..." : booking.archiveStatus === "archived" ? "นำออกจาก Archive" : "Archive"}
+                                                                </button>
+                                                            )}
                                                             {canDeleteBooking(
                                                                 booking
                                                             ) ? (
@@ -1500,6 +1592,7 @@ export default function AdminBookingsPage() {
                                                         {getStatusLabel(
                                                             booking.bookingStatus
                                                         )}
+                                                        {booking.archiveStatus === "archived" && <span className="ml-1 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">Archived</span>}
                                                     </span>
 
                                                 </div>
@@ -1577,6 +1670,12 @@ export default function AdminBookingsPage() {
                                                 >
                                                     ดูรายละเอียด
                                                 </button>
+
+                                                {normalizeStatus(booking.bookingStatus) === "completed" && (
+                                                    <button type="button" disabled={archiveLoading === booking.id} onClick={() => void handleArchive(booking)} className="min-h-11 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-100 disabled:opacity-50">
+                                                        {booking.archiveStatus === "archived" ? "นำออกจาก Archive" : "Archive"}
+                                                    </button>
+                                                )}
 
 
                                                 {canDeleteBooking(
