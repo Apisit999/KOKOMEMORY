@@ -172,3 +172,15 @@ export async function archiveThreeDOrder(id: string): Promise<void> {
 export async function restoreThreeDOrder(id: string): Promise<void> {
     await adminRequest(`/api/admin/3d-printing/orders/${encodeURIComponent(id)}/restore`, { method: "POST" });
 }
+
+async function lifecycleAction<T>(id: string, action: string, body?: Record<string, unknown>): Promise<T> {
+    const result = await adminRequest<T>(`/api/admin/3d-printing/orders/${encodeURIComponent(id)}/${action}`, { method: "POST", body: body ? JSON.stringify(body) : undefined });
+    return result;
+}
+
+export const startThreeDOrder = (id: string) => lifecycleAction<{ status: string }>(id, "start");
+export const completeThreeDProduction = (id: string) => lifecycleAction<{ status: string }>(id, "complete-production");
+export const approveThreeDQuality = (id: string) => lifecycleAction<{ status: string }>(id, "quality-check", { approved: true });
+export const rejectThreeDQuality = (id: string) => lifecycleAction<{ status: string }>(id, "quality-check", { approved: false });
+export const shipThreeDOrder = (id: string, carrier: string, trackingNumber: string) => lifecycleAction<{ status: string }>(id, "ship", { carrier, trackingNumber });
+export const completeThreeDOrder = (id: string) => lifecycleAction<{ status: string }>(id, "complete");

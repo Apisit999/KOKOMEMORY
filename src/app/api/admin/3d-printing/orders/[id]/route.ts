@@ -413,6 +413,11 @@ function errorResponse(error: unknown) {
             "Product ที่เลือกไม่ได้เปิดขายอยู่";
     }
 
+    if (["USE_WORKFLOW_ACTION", "USE_PAYMENT_WORKFLOW"].includes(message)) {
+        status = 409;
+        errorText = "การเปลี่ยนสถานะต้องทำผ่าน Workflow Action";
+    }
+
     if (status === 500) {
         console.error(
             "3D order detail admin API error:",
@@ -424,6 +429,7 @@ function errorResponse(error: unknown) {
         {
             success: false,
             error: errorText,
+            ...(status === 409 ? { code: message } : {}),
         },
         { status },
     );
@@ -666,6 +672,13 @@ export async function PATCH(
                 string,
                 unknown
             >;
+
+        if (body.orderStatus !== undefined && body.orderStatus !== previous.orderStatus) {
+            throw new Error("USE_WORKFLOW_ACTION");
+        }
+        if (body.paymentStatus !== undefined && body.paymentStatus !== previous.paymentStatus) {
+            throw new Error("USE_PAYMENT_WORKFLOW");
+        }
 
         /*
          * ถ้าแก้เฉพาะ Status / Payment

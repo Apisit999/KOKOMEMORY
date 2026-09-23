@@ -17,6 +17,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
         const quoteRef = adminDb.collection("3dQuotes").doc(id);
         const orderRef = adminDb.collection("threeDOrders").doc();
+        const paymentRef = adminDb.collection("threeDPayments").doc();
+        const orderNumber = `3D-${Date.now()}`;
         const result = await adminDb.runTransaction(async (tx) => {
             const quote = await tx.get(quoteRef);
             if (!quote.exists || quote.data()?.userId !== user.uid) throw new Error("NOT_FOUND");
@@ -43,7 +45,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
                 notes: String(data.customerNote || ""),
             };
             tx.create(orderRef, {
-                orderNumber: `3D-${Date.now()}`,
+                orderNumber,
                 userId: user.uid,
                 quoteId: id,
                 source: "custom_quote",
@@ -57,6 +59,18 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
                 remainingAmount: total,
                 orderStatus: "pending_payment",
                 paymentStatus: "unpaid",
+                createdAt: FieldValue.serverTimestamp(),
+                updatedAt: FieldValue.serverTimestamp(),
+            });
+            tx.create(paymentRef, {
+                orderId: orderRef.id,
+                quoteId: id,
+                userId: user.uid,
+                orderNumber,
+                amount: total,
+                currency: "THB",
+                method: "bank_transfer",
+                status: "unpaid",
                 createdAt: FieldValue.serverTimestamp(),
                 updatedAt: FieldValue.serverTimestamp(),
             });

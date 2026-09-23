@@ -5,6 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Download, Eye, FileBox, Loader2, Send, Trash2 } from "lucide-react";
 import { adminApiFetch } from "@/lib/admin-api-client";
+import { Admin3DNav } from "@/components/3d/Admin3DNav";
+import { ResourceBreadcrumb } from "@/components/3d/ResourceBreadcrumb";
+import { StatusBadge } from "@/components/3d/StatusBadge";
 import ModelViewer from "./ModelViewer";
 
 type FileItem = { id: string; fileName: string; contentType: string; size: number; kind: string; uploadedAt?: unknown; availability?: string };
@@ -52,9 +55,10 @@ export default function AdminQuoteDetailPage() {
     if (!quote) return <main className="p-8 text-slate-500">กำลังโหลดรายละเอียด...</main>;
     const canDelete = ["inquiry", "rejected", "expired"].includes(quote.status);
 
-    return <main className="min-h-screen bg-[#f7f7fa] px-4 py-7 sm:px-8"><div className="mx-auto max-w-6xl">
+    return <main className="min-h-screen bg-[#f7f7fa] px-4 py-7 sm:px-8"><div className="mx-auto max-w-6xl"><Admin3DNav /><ResourceBreadcrumb items={[{ label: "3D Printing", href: "/admin/3d-printing" }, { label: "Quotes", href: "/admin/3d-printing/quotes" }, { label: quote.quoteNumber }]} />
         <div className="flex flex-wrap items-center justify-between gap-4"><Link href="/admin/3d-printing/quotes" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-pink-500"><ArrowLeft size={17}/>กลับรายการ Quote</Link><div className="flex flex-wrap gap-2">{quote.status === "inquiry" && <button disabled={busy} onClick={() => void sendQuote()} className="inline-flex items-center gap-2 rounded-xl bg-pink-500 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"><Send size={16}/>ส่งใบเสนอราคา</button>}{canDelete && <button onClick={() => setDeleteOpen(true)} className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-600"><Trash2 size={16}/>ลบ Quote</button>}</div></div>
         <header className="mt-5 rounded-[28px] bg-[#0B0B0F] p-7 text-white shadow-xl sm:p-9"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.24em] text-pink-400">KOKO 3D QUOTE</p><h1 className="mt-2 text-3xl font-black">{quote.quoteNumber}</h1><p className="mt-2 text-sm text-slate-400">สร้าง {date(quote.createdAt)} · อัปเดต {date(quote.updatedAt)}</p></div><span className="rounded-full bg-pink-500/15 px-4 py-2 text-sm font-bold text-pink-200">{quote.status}</span></div></header>
+        <div className="mt-3 flex items-center gap-2"><span className="text-xs font-semibold uppercase tracking-wide text-slate-400">สถานะ</span><StatusBadge status={quote.status} /></div>
         {error && <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         <div className="mt-5 grid gap-5 lg:grid-cols-[1.12fr_.88fr]"><div className="space-y-5">
             <section className="rounded-3xl bg-white p-6 shadow-sm"><h2 className="text-lg font-black">ข้อมูลลูกค้า</h2><div className="mt-5 grid gap-4 sm:grid-cols-2"><Info label="User ID" value={quote.userId}/><Info label="ชื่อที่มีในระบบ" value={quote.customer?.displayName || "—"}/><Info label="อีเมล" value={quote.customer?.email || "—"}/><Info label="โทรศัพท์" value={quote.customer?.phoneNumber || "—"}/></div></section>

@@ -124,3 +124,15 @@ export async function updateThreeDPaymentStatus(
 
     return result.payment;
 }
+
+export async function getThreeDPayment(id: string) {
+    return adminRequest<{ payment: ThreeDPayment; order: { orderNumber?: string; orderStatus?: string; paymentStatus?: string; totalPrice?: number; customer?: Record<string, unknown> | null }; quoteNumber?: string }>(`/api/admin/3d-printing/payments/${encodeURIComponent(id)}`);
+}
+
+export async function verifyThreeDPayment(id: string) {
+    return adminRequest<{ success: boolean; status: string }>(`/api/admin/3d-printing/payments/${encodeURIComponent(id)}/verify`, { method: "POST" });
+}
+
+export async function rejectThreeDPayment(id: string, reason: string) {
+    return adminRequest<{ success: boolean; status: string }>(`/api/admin/3d-printing/payments/${encodeURIComponent(id)}/reject`, { method: "POST", body: JSON.stringify({ reason }) });
+}

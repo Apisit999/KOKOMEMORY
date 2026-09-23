@@ -1,3 +1,8 @@
+import { additionalRawMessages } from "./additional-messages";
+import { adminRawMessages } from "./admin-messages";
+import { provinceRawMessages } from "./province-messages";
+import { translateDynamicRaw } from "./dynamic-messages";
+
 export type Locale = "th" | "en";
 
 export const messages = {
@@ -72,8 +77,46 @@ export const messages = {
             explore: "Explore", portfolio: "Portfolio", featured: "Featured", viewAlbum: "View album", viewDetails: "View portfolio details", close: "Close", previous: "Previous image", next: "Next image", viewImage: "View image", emptyAll: "No portfolio items found", emptyCategory: "No portfolio items in this category", emptyDescription: "New work will be added soon", viewAll: "View all work", errorTitle: "Could not load portfolio", errorDescription: "Please try again later.", all: "All", corporate: "Corporate", event: "Event", party: "Party", weddings: "Weddings", introLine1: "Our Work", introLine2: "Every album tells a story", introDescription: "Filled with smiles, people, and once-in-a-lifetime moments. We preserve these details so they can return as memories.", storyLine1: "Behind every photo", storyLine2: "there is a memory", storyDescription: "Behind every image are real people and real moments. We care for the experience and every small detail, so each photo can take you back to that time.", momentsBadge: "Moments We Capture", storyBadge: "More Than a Photo", bookNow: "Start booking",
         },
         footer: { weddingPhotobooth: "Wedding Photobooth", nationwide: "Service available nationwide", menu: "Menu", services: "Services", follow: "Follow us" },
+        account: {
+            nav: { overview: "Overview", bookings: "My bookings", threeDOverview: "3D overview", products: "3D products", orders: "My 3D orders", quotes: "My quotes", profile: "Profile", security: "Security", menu: "Menu", account: "Account", portal: "KOKO Memory Customer Portal", backToWebsite: "Back to website", signOut: "Sign out" },
+            common: { loading: "Loading", error: "Something went wrong", retry: "Try again", noData: "No data yet", viewDetails: "View details", seeAll: "See all", all: "All", breadcrumb: "Breadcrumb", continue: "Continue", submit: "Submit", cancel: "Cancel", save: "Save changes", name: "Name", email: "Email", password: "Password", status: "Status", date: "Date", total: "Total", payment: "Payment", order: "Order", quote: "Quote", customer: "Customer", product: "Product" },
+            dashboard: { welcome: "Welcome back", subtitle: "Manage your bookings, 3D services, and quotes in one place.", quickAccess: "Quick access", startHere: "Get started here", chooseMenu: "Choose where you want to go", bookPhotobooth: "Book a Photobooth", view3D: "View 3D services", chooseProduct: "Browse 3D products", requestQuote: "Request a quote", account: "Your account" },
+            threeD: { title: "3D Printing", overview: "Your 3D workspace", subtitle: "Track quotes, payments, and production progress in one place.", products: "3D products", orders: "My 3D orders", quotes: "My quotes", requestQuote: "Request a quote", recent: "Recent activity", noWork: "No 3D work yet", viewOrder: "View order", viewQuote: "View quote" },
+            auth: { login: "Log in", register: "Create an account", forgotPassword: "Forgot password?", fullName: "Full name", confirmPassword: "Confirm password", google: "Continue with Google" },
+            language: { label: "Language", thai: "Thai", english: "English" }
+            ,status: { pendingPayment: "Pending payment", paid: "Payment completed", production: "In production", ready: "Ready to ship", completed: "Completed", inquiry: "Pending assessment", quoted: "Quote sent", accepted: "Accepted", rejected: "Rejected", expired: "Expired" }
+        },
     },
 } as const;
+
+const accountThai = {
+    nav: { overview: "ภาพรวม", bookings: "การจองของฉัน", threeDOverview: "ภาพรวม 3D", products: "สินค้า 3D", orders: "งาน 3D ของฉัน", quotes: "ใบเสนอราคาของฉัน", profile: "โปรไฟล์", security: "ความปลอดภัย", menu: "เมนู", account: "บัญชี", portal: "พอร์ทัลลูกค้า KOKO Memory", backToWebsite: "กลับไปยังเว็บไซต์", signOut: "ออกจากระบบ" },
+    common: { loading: "กำลังโหลด", error: "เกิดข้อผิดพลาด", retry: "ลองอีกครั้ง", noData: "ยังไม่มีข้อมูล", viewDetails: "ดูรายละเอียด", seeAll: "ดูทั้งหมด", all: "ทั้งหมด", breadcrumb: "เส้นทางหน้า", continue: "ดำเนินการต่อ", submit: "ส่งข้อมูล", cancel: "ยกเลิก", save: "บันทึกการเปลี่ยนแปลง", name: "ชื่อ", email: "อีเมล", password: "รหัสผ่าน", status: "สถานะ", date: "วันที่", total: "ยอดรวม", payment: "การชำระเงิน", order: "คำสั่งซื้อ", quote: "ใบเสนอราคา", customer: "ลูกค้า", product: "สินค้า" },
+    dashboard: { welcome: "ยินดีต้อนรับกลับมา", subtitle: "จัดการการจอง บริการ 3D และใบเสนอราคาของคุณได้ในที่เดียว", quickAccess: "ทางลัด", startHere: "เริ่มต้นจากตรงนี้", chooseMenu: "เลือกเมนูที่ต้องการ", bookPhotobooth: "จอง Photobooth", view3D: "ดูบริการ 3D", chooseProduct: "เลือกสินค้า 3D", requestQuote: "ขอใบเสนอราคา", account: "บัญชีของคุณ" },
+    threeD: { title: "งานพิมพ์ 3D", overview: "พื้นที่จัดการงาน 3D ของคุณ", subtitle: "ติดตามใบเสนอราคา การชำระเงิน และความคืบหน้าการผลิตได้ในที่เดียว", products: "สินค้า 3D", orders: "งาน 3D ของฉัน", quotes: "ใบเสนอราคาของฉัน", requestQuote: "ขอใบเสนอราคา", recent: "รายการล่าสุด", noWork: "ยังไม่มีงาน 3D", viewOrder: "ดูคำสั่งซื้อ", viewQuote: "ดูใบเสนอราคา" },
+    auth: { login: "เข้าสู่ระบบ", register: "สร้างบัญชี", forgotPassword: "ลืมรหัสผ่าน?", fullName: "ชื่อ-นามสกุล", confirmPassword: "ยืนยันรหัสผ่าน", google: "ดำเนินการต่อด้วย Google" },
+    language: { label: "ภาษา", thai: "ไทย", english: "อังกฤษ" },
+    status: { pendingPayment: "รอชำระเงิน", paid: "ชำระเงินแล้ว", production: "กำลังผลิต", ready: "พร้อมส่ง", completed: "เสร็จสิ้น", inquiry: "รอประเมิน", quoted: "ส่งราคาแล้ว", accepted: "ยอมรับแล้ว", rejected: "ปฏิเสธ", expired: "หมดอายุ" }
+} as const;
+Object.assign(messages.th as Record<string, unknown>, { account: accountThai });
+
+export const statusMessages = {
+    th: {
+        inquiry: "รอประเมิน", quoted: "ส่งราคาแล้ว", accepted: "ลูกค้ายอมรับแล้ว", converted: "สร้างคำสั่งซื้อแล้ว", rejected: "ปฏิเสธ", expired: "หมดอายุ",
+        pending_payment: "รอชำระเงิน", unpaid: "รอชำระเงิน", submitted: "รอตรวจสอบ", pending_verification: "รอตรวจสอบ", verified: "ยืนยันแล้ว", rejected_payment: "ไม่ผ่าน", paid: "ชำระเงินแล้ว",
+        queued: "รอเข้าคิวผลิต", production: "กำลังผลิต", printing: "กำลังผลิต", quality_check: "ตรวจคุณภาพ", ready: "พร้อมจัดส่ง", shipping: "กำลังจัดส่ง", completed: "เสร็จสิ้น", archived: "เก็บถาวร"
+    },
+    en: {
+        inquiry: "Pending assessment", quoted: "Quote sent", accepted: "Accepted by customer", converted: "Order created", rejected: "Rejected", expired: "Expired",
+        pending_payment: "Pending payment", unpaid: "Pending payment", submitted: "Pending review", pending_verification: "Pending review", verified: "Verified", rejected_payment: "Rejected", paid: "Payment completed",
+        queued: "Queued for production", production: "In production", printing: "In production", quality_check: "Quality check", ready: "Ready to ship", shipping: "Shipping", completed: "Completed", archived: "Archived"
+    }
+} as const;
+
+export function getStatusMessage(locale: Locale, status?: string): string {
+    const key = String(status || "");
+    return statusMessages[locale][key as keyof typeof statusMessages.th] || (locale === "th" ? "ไม่ระบุสถานะ" : "Status unavailable");
+}
 
 /** User-facing strings shared by existing pages. The Thai side is intentionally
  * kept byte-for-byte as the source text; internal values are not included. */
@@ -214,7 +257,8 @@ export type MessageKey =
     | `stats.${keyof typeof messages.th.stats}`
     | `faq.${keyof typeof messages.th.faq}`
     | `portfolio.${keyof typeof messages.th.portfolio}`
-    | `footer.${keyof typeof messages.th.footer}`;
+    | `footer.${keyof typeof messages.th.footer}`
+    | `account.${keyof typeof accountThai}.${string}`;
 
 // Additional page-specific UI strings collected by the translation coverage audit.
 Object.assign(rawMessages, {
@@ -575,14 +619,18 @@ Object.assign(rawMessages, {
 });
 
 export function getMessage(locale: Locale, key: MessageKey): string {
-    const [section, name] = key.split(".") as [keyof typeof messages.th, string];
-    const value = messages[locale][section][name as never];
+    const [section, ...path] = key.split(".") as [string, ...string[]];
+    const name = path.join(".");
+    const value = section === "account"
+        ? name.split(".").reduce<unknown>((current, part) => (current as Record<string, unknown> | undefined)?.[part], (messages[locale] as typeof messages.th & { account: typeof accountThai }).account)
+        : (messages[locale] as Record<string, Record<string, unknown>>)[section]?.[name];
     // Never expose an internal key in the rendered UI. Missing entries are
     // covered by the audit and remain empty until their translation is added.
     return typeof value === "string" ? value : "";
 }
 
 function repairMojibake(value: string): string {
+    if (/[ก-๙]/u.test(value)) return value;
     try {
         return decodeURIComponent(Array.from(value, (character) =>
             `%${character.charCodeAt(0).toString(16).padStart(2, "0")}`
@@ -625,9 +673,87 @@ const thaiRawMessages: Record<string, string> = {
     "Book now": "จองคิว",
 };
 
+const accountEnglishToThai: Record<string, string> = {
+    "Overview": "ภาพรวม", "My bookings": "การจองของฉัน", "Profile": "โปรไฟล์", "Security": "ความปลอดภัย", "Back to website": "กลับไปยังเว็บไซต์", "Sign out": "ออกจากระบบ", "My account": "บัญชีของฉัน", "3D overview": "ภาพรวม 3D", "3D products": "สินค้า 3D", "My 3D orders": "งาน 3D ของฉัน", "My quotes": "ใบเสนอราคาของฉัน", "View details": "ดูรายละเอียด", "See all": "ดูทั้งหมด", "Continue": "ดำเนินการต่อ", "Submit": "ส่งข้อมูล", "Cancel": "ยกเลิก", "Save": "บันทึก", "Save changes": "บันทึกการเปลี่ยนแปลง", "Loading": "กำลังโหลด", "Error": "เกิดข้อผิดพลาด", "Retry": "ลองอีกครั้ง", "No data": "ยังไม่มีข้อมูล", "Account": "บัญชี", "Email": "อีเมล", "Password": "รหัสผ่าน", "Name": "ชื่อ", "Status": "สถานะ", "Date": "วันที่", "Total": "ยอดรวม", "Payment": "การชำระเงิน", "Order": "คำสั่งซื้อ", "Quote": "ใบเสนอราคา", "Customer": "ลูกค้า", "Product": "สินค้า", "Menu": "เมนู", "Account menu": "เมนูบัญชี", "KOKO Memory Customer Portal": "พอร์ทัลลูกค้า KOKO Memory", "Request a quote": "ขอใบเสนอราคา", "View Order": "ดูคำสั่งซื้อ", "Upload Payment Proof": "อัปโหลดหลักฐานการชำระเงิน", "Payment Under Review": "กำลังตรวจสอบการชำระเงิน", "Manage your bookings, 3D services, and quotes in one place.": "จัดการการจอง บริการ 3D และใบเสนอราคาของคุณได้ในที่เดียว", "Book a Photobooth": "จอง Photobooth", "View 3D services": "ดูบริการ 3D", "Get started here": "เริ่มต้นจากตรงนี้", "Choose where you want to go": "เลือกเมนูที่ต้องการ", "Browse 3D products": "เลือกสินค้า 3D", "Your account": "บัญชีของคุณ", "Browse products or send your files for a quote": "เลือกสินค้า หรือส่งไฟล์ของคุณเพื่อขอใบเสนอราคาและติดตามงานได้ในที่เดียว"
+};
+Object.assign(rawMessages, additionalRawMessages, adminRawMessages, provinceRawMessages);
+const accountThaiToEnglish: Record<string, string> = Object.fromEntries(Object.entries(accountEnglishToThai).map(([english, thai]) => [thai, english]));
+const englishToThai: Record<string, string> = Object.fromEntries(Object.entries(rawMessages).map(([thai, english]) => [english, repairMojibake(thai)]));
+Object.assign(accountThaiToEnglish, {
+    "จัดการการจอง บริการ 3D และใบเสนอราคาของคุณได้จากที่นี่": "Manage your bookings, 3D services, and quotes in one place.",
+    "จอง Photobooth": "Book a Photobooth", "ดูงาน 3D": "View 3D services", "เริ่มต้นจากตรงนี้": "Get started here", "เลือกเมนูที่ต้องการ": "Choose where you want to go", "การจอง": "Bookings", "ดูการจอง Photobooth ของคุณ": "View your Photobooth bookings", "ใบเสนอราคา": "Quotes", "ติดตามราคาและไฟล์งาน 3D": "Track quotes and 3D files", "งาน 3D": "3D work", "ติดตามการผลิตและจัดส่ง": "Track production and delivery", "จัดการข้อมูลส่วนตัว": "Manage your personal information", "สร้างชิ้นงาน 3D ของคุณ": "Create your 3D project", "เลือกสินค้า หรือส่งไฟล์ของคุณเพื่อขอใบเสนอราคาและติดตามงานได้ในที่เดียว": "Browse products or send your files for a quote", "เลือกสินค้า 3D": "Browse 3D products", "บัญชีของคุณ": "Your account", "ดูความปลอดภัยของบัญชี": "View account security",
+    "จัดการงานพิมพ์ 3D ของคุณในที่เดียว": "Manage your 3D printing in one place", "ติดตามใบเสนอราคา การชำระเงิน และสถานะงานพิมพ์ได้ง่าย": "Track quotes, payments, and production status easily", "ดูสินค้า 3D": "Browse 3D products", "งานที่กำลังดำเนินการ": "In progress", "รอการชำระเงิน": "Pending payment", "งานที่เสร็จแล้ว": "Completed work", "ดูรายการ": "View items", "เริ่มต้นใช้งาน": "Get started", "เลือกดูสินค้าพร้อมสั่ง": "Browse products ready to order", "ส่งไฟล์ให้ทีมประเมินราคา": "Send files for a quote", "ติดตาม Order และการผลิต": "Track orders and production", "งานล่าสุด": "Recent activity", "ยังไม่มีงาน 3D": "No 3D work yet", "เริ่มขอใบเสนอราคา": "Request your first quote", "ติดตามคำขอ Custom 3D ของคุณ": "Track your Custom 3D requests", "เสนอราคาแล้ว": "Quote sent", "ยอมรับแล้ว": "Accepted", "ยังไม่มีใบเสนอราคาในหมวดนี้": "No quotes in this category", "กลับ 3D Printing": "Back to 3D Printing", "กลับใบเสนอราคาของฉัน": "Back to my quotes", "รายละเอียดงานและราคา Custom 3D": "Project details and Custom 3D pricing", "สร้าง Order แล้ว": "Order created", "พร้อมติดตามการชำระเงินและการผลิต": "Ready to track payment and production", "ความคืบหน้างาน": "Production progress", "สถานะปัจจุบัน": "Current status", "สรุปคำสั่งซื้อ": "Order summary", "กำลังตรวจสอบการชำระเงิน": "Payment under review", "ชำระเงินเรียบร้อย": "Payment completed", "ส่งหลักฐานการชำระเงิน": "Submit payment proof", "เลือกสลิป": "Choose payment slip", "ยังไม่มีงานในหมวดนี้": "No orders in this category"
+});
+
+Object.assign(accountThaiToEnglish, {
+    "กำลังตรวจสอบบัญชี...": "Checking your account...",
+    "กรุณาเข้าสู่ระบบ": "Please sign in",
+    "คุณต้องเข้าสู่ระบบเพื่อดูรายการจอง": "Sign in to view your bookings",
+    "การจองของฉัน": "My bookings",
+    "บัญชีของฉัน": "My account",
+    "รายการจองของคุณ": "Your bookings",
+    "ดูรายละเอียดการจอง สถานะการชำระเงิน และดำเนินการต่อจากรายการของคุณได้ที่นี่": "View booking details and payment status, and continue from your booking list.",
+    "จองบริการใหม่": "Book a service",
+    "ยังไม่มีรายการจอง": "No bookings yet",
+    "เมื่อคุณยืนยันการจอง รายการจองของคุณจะแสดงอยู่ที่หน้านี้": "Your bookings will appear here after you confirm a booking.",
+    "เริ่มจองบริการ": "Start booking",
+    "รีเฟรชรายการจอง": "Refresh bookings",
+    "ไม่สามารถโหลดรายการจองได้ กรุณาลองใหม่อีกครั้ง": "Unable to load bookings. Please try again.",
+    "รีเฟรชรายการจองไม่สำเร็จ": "Could not refresh bookings.",
+    "ชำระเงิน": "Payment",
+    "ราคา": "Price",
+    "เวลา": "Time",
+    "วันที่จัดงาน": "Event date",
+    "สถานที่": "Venue",
+    "รายละเอียด": "Details",
+    "รายการจอง": "Booking details",
+    "แพ็กเกจ": "Package"
+});
+Object.assign(accountEnglishToThai, {
+    "Checking your account...": "กำลังตรวจสอบบัญชี...",
+    "Please sign in": "กรุณาเข้าสู่ระบบ",
+    "Sign in to view your bookings": "คุณต้องเข้าสู่ระบบเพื่อดูรายการจอง",
+    "My bookings": "การจองของฉัน",
+    "My account": "บัญชีของฉัน",
+    "Your bookings": "รายการจองของคุณ",
+    "View booking details and payment status, and continue from your booking list.": "ดูรายละเอียดการจอง สถานะการชำระเงิน และดำเนินการต่อจากรายการของคุณได้ที่นี่",
+    "Book a service": "จองบริการใหม่",
+    "No bookings yet": "ยังไม่มีรายการจอง",
+    "Your bookings will appear here after you confirm a booking.": "เมื่อคุณยืนยันการจอง รายการจองของคุณจะแสดงอยู่ที่หน้านี้",
+    "Start booking": "เริ่มจองบริการ",
+    "Refresh bookings": "รีเฟรชรายการจอง",
+    "Unable to load bookings. Please try again.": "ไม่สามารถโหลดรายการจองได้ กรุณาลองใหม่อีกครั้ง",
+    "Could not refresh bookings.": "รีเฟรชรายการจองไม่สำเร็จ",
+    "Payment": "การชำระเงิน",
+    "Price": "ราคา",
+    "Time": "เวลา",
+    "Event date": "วันที่จัดงาน",
+    "Venue": "สถานที่",
+    "Details": "รายละเอียด",
+    "Booking details": "รายละเอียดการจอง",
+    "Package": "แพ็กเกจ",
+    "My Bookings": "การจองของฉัน"
+});
+Object.assign(accountThaiToEnglish, {
+    "การจอง": "Bookings",
+    "ดูการจอง Photobooth ของคุณ": "View your Photobooth bookings",
+    "ติดตามราคาและไฟล์งาน 3D": "Track quotes and 3D files",
+    "ติดตามการผลิตและจัดส่ง": "Track production and delivery",
+    "จัดการข้อมูลส่วนตัว": "Manage your personal information"
+});
+Object.assign(accountEnglishToThai, {
+    "Bookings": "การจอง",
+    "View your Photobooth bookings": "ดูการจอง Photobooth ของคุณ",
+    "Track quotes and 3D files": "ติดตามราคาและไฟล์งาน 3D",
+    "Track production and delivery": "ติดตามการผลิตและจัดส่ง",
+    "Manage your personal information": "จัดการข้อมูลส่วนตัว"
+});
+
 export function translateRaw(locale: Locale, value: string): string {
     if (/^(?:common|gallery|stats|faq|portfolio|footer)\./u.test(value.trim())) return "";
-    if (locale !== "en") return thaiRawMessages[value] ?? value;
+    if (value.trim() in statusMessages[locale]) return getStatusMessage(locale, value.trim());
+    const normalizedValue = value.replace(/\s+/gu, " ").trim();
+    if (locale !== "en") return thaiRawMessages[value] ?? thaiRawMessages[normalizedValue] ?? accountEnglishToThai[value] ?? accountEnglishToThai[normalizedValue] ?? englishToThai[value] ?? (/[à¸-à¹™]/u.test(value) ? repairMojibake(value) : value);
     if (!/[ก-๙]/u.test(value)) return value;
     const leading = value.match(/^\s*/)?.[0] ?? "";
     const trailing = value.match(/\s*$/)?.[0] ?? "";
@@ -637,8 +763,10 @@ export function translateRaw(locale: Locale, value: string): string {
     // time so the Thai source text remains byte-for-byte unchanged.
     const repairedCore = repairMojibake(core);
     const normalizedRepairedCore = repairedCore.replace(/\s+/gu, " ").trim();
-    const direct = rawMessages[core] ?? rawMessages[repairedCore] ?? rawMessages[normalizedRepairedCore];
-    if (direct) return `${leading}${direct}${trailing}`;
+    const direct = rawMessages[core] ?? rawMessages[repairedCore] ?? rawMessages[normalizedRepairedCore] ?? accountThaiToEnglish[repairedCore] ?? accountThaiToEnglish[normalizedRepairedCore];
+    if (direct !== undefined) return `${leading}${direct}${trailing}`;
+    const translatedDynamic = translateDynamicRaw(normalizedRepairedCore);
+    if (translatedDynamic !== undefined) return `${leading}${translatedDynamic}${trailing}`;
     // Never apply a unit conversion to a sentence. The old fallback used
     // bare suffix replacements, which turned phrases such as "ทุกคน" into
     // corrupted mixed-language text. Dynamic unit strings are handled only

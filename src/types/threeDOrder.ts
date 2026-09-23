@@ -114,6 +114,16 @@ export type ThreeDOrder = {
     dueDate?: string;
 
     shippingAddress?: ThreeDShippingAddress;
+    carrier?: string;
+    trackingNumber?: string;
+    startedAt?: unknown;
+    productionCompletedAt?: unknown;
+    qualityCheckedAt?: unknown;
+    qualityCheckedBy?: string;
+    shippedAt?: unknown;
+    shippedBy?: string;
+    completedAt?: unknown;
+    completedBy?: string;
 
     createdAt?: unknown;
     updatedAt?: unknown;

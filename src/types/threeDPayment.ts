@@ -5,6 +5,7 @@ export type ThreeDPaymentMethod =
     | "other";
 
 export type ThreeDPaymentStatus =
+    | "unpaid"
     | "submitted"
     | "pending_verification"
     | "verified"
@@ -17,7 +18,11 @@ export type ThreeDPayment = {
     orderId: string;
     orderNumber: string;
 
+    quoteId?: string;
+    userId?: string;
+
     amount: number;
+    currency?: string;
 
     method: ThreeDPaymentMethod;
     status: ThreeDPaymentStatus;
@@ -26,6 +31,18 @@ export type ThreeDPayment = {
     note?: string;
 
     paidAt?: string;
+
+    proof?: {
+        fileName: string;
+        contentType: string;
+        size: number;
+    };
+    submittedAt?: unknown;
+    verifiedAt?: unknown;
+    rejectedAt?: unknown;
+    verifiedBy?: string;
+    rejectedBy?: string;
+    rejectReason?: string;
 
     createdAt?: unknown;
     updatedAt?: unknown;

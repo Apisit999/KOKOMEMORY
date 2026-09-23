@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { authErrorResponse } from "@/lib/api-error";
+import { requireAdminApi } from "@/lib/require-admin-api";
+import { transitionThreeDOrder } from "@/lib/three-d-order-lifecycle";
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) { try { const admin = await requireAdminApi(request); const { id } = await context.params; const body = await request.json().catch(() => ({})) as { approved?: boolean }; if (body.approved !== true) return NextResponse.json({ success: false, error: "QC_REQUIRES_REVIEW", code: "QC_REQUIRES_REVIEW" }, { status: 409 }); return NextResponse.json({ success: true, ...(await transitionThreeDOrder(id, "quality-approve", admin.uid)) }); } catch (error) { const denied = authErrorResponse(error); if (denied) return denied; const code = error instanceof Error ? error.message : "ORDER_TRANSITION_FAILED"; return NextResponse.json({ success: false, error: code, code }, { status: code === "ORDER_NOT_FOUND" ? 404 : 409 }); } }

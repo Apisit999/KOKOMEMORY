@@ -192,6 +192,21 @@ const menuItems: MenuItem[] = [
         icon: <PrinterIcon />,
     },
     {
+        label: "3D Orders",
+        href: "/admin/3d-printing/orders",
+        icon: <PrinterIcon />,
+    },
+    {
+        label: "3D Payments",
+        href: "/admin/3d-printing/payments",
+        icon: <PaymentIcon />,
+    },
+    {
+        label: "3D Products",
+        href: "/admin/3d-printing/products",
+        icon: <PrinterIcon />,
+    },
+    {
         label: "ตั้งค่า",
         href: "/admin/settings",
         icon: <SettingsIcon />,
@@ -301,11 +316,17 @@ export default function AdminSidebar({
                             }
 
                             return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    onClick={onClose}
-                                    className={`
+                                <div key={item.href}>
+                                    {item.href === "/admin/3d-printing" && (
+                                        <div className="mb-2 mt-5 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                            KOKO 3D
+                                        </div>
+                                    )}
+
+                                    <Link
+                                        href={item.href}
+                                        onClick={onClose}
+                                        className={`
                                         group
                                         flex
                                         items-center
@@ -314,6 +335,11 @@ export default function AdminSidebar({
                                         px-3
                                         py-2.5
                                         transition
+                                        ${
+                                            item.href.startsWith("/admin/3d-printing/")
+                                                ? "ml-2 border-l border-pink-100 pl-4"
+                                                : ""
+                                        }
                                         ${
                                             isActive
                                                 ? "bg-pink-50 text-pink-600"
@@ -332,7 +358,8 @@ export default function AdminSidebar({
                                     {isActive && (
                                         <span className="h-1.5 w-1.5 rounded-full bg-pink-500" />
                                     )}
-                                </Link>
+                                    </Link>
+                                </div>
                             );
                         })}
                     </div>

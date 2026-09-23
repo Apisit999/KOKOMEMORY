@@ -25,6 +25,7 @@ import {
     getThreeDProducts,
     type ThreeDProduct,
 } from "@/services/threeDProducts";
+import { Admin3DNav } from "@/components/3d/Admin3DNav";
 
 /* =========================================================
    PAGE
@@ -108,6 +109,7 @@ export default function ThreeDPrintingDashboardPage() {
 
     return (
         <main className="mx-auto w-full max-w-7xl space-y-5 sm:space-y-6">
+            <Admin3DNav />
             {/* =====================================================
                 HEADER
             ===================================================== */}

@@ -24,6 +24,12 @@ import {
     restoreThreeDOrder,
     getThreeDOrder,
     updateThreeDOrder,
+    startThreeDOrder,
+    completeThreeDProduction,
+    approveThreeDQuality,
+    rejectThreeDQuality,
+    shipThreeDOrder,
+    completeThreeDOrder,
 } from "@/services/threeDOrders";
 
 import {
@@ -41,6 +47,8 @@ import type {
     ThreeDOrderStatus,
     ThreeDPaymentStatus,
 } from "@/types/threeDOrder";
+import { Admin3DNav } from "@/components/3d/Admin3DNav";
+import { ResourceBreadcrumb } from "@/components/3d/ResourceBreadcrumb";
 
 type RouteContext = {
     params: Promise<{ id: string }>;
@@ -624,6 +632,29 @@ export default function ThreeDOrderDetailPage({
         finally { setDeleting(false); }
     }
 
+    async function runLifecycle(action: "start" | "production" | "quality" | "ship" | "complete" | "archive") {
+        if (!order || !orderId) return;
+        setSaving(true); setError(""); setSuccess("");
+        try {
+            if (action === "start") await startThreeDOrder(orderId);
+            if (action === "production") await completeThreeDProduction(orderId);
+            if (action === "quality") await approveThreeDQuality(orderId);
+            if (action === "ship") {
+                const carrier = window.prompt("ชื่อบริษัทขนส่ง", order.carrier || "") || "";
+                const trackingNumber = window.prompt("เลขติดตามพัสดุ", order.trackingNumber || "") || "";
+                await shipThreeDOrder(orderId, carrier, trackingNumber);
+            }
+            if (action === "complete") { if (!window.confirm("ยืนยันว่าลูกค้าได้รับงานแล้วใช่หรือไม่?")) return; await completeThreeDOrder(orderId); }
+            if (action === "archive") { if (!window.confirm("เก็บ Order ที่เสร็จแล้วเข้าคลังใช่หรือไม่?")) return; await archiveThreeDOrder(orderId); }
+            await loadOrder(orderId); setSuccess("อัปเดต Workflow สำเร็จ");
+        } catch (cause) { setError(cause instanceof Error ? cause.message : "ไม่สามารถอัปเดต Workflow ได้"); } finally { setSaving(false); }
+    }
+
+    async function handleQualityReject() {
+        if (!orderId || !window.confirm("QC ไม่ผ่านจะยังไม่มีการเปลี่ยนสถานะจนกว่าจะมีผลการตรวจใหม่ ยืนยันหรือไม่?")) return;
+        setSaving(true); setError(""); try { await rejectThreeDQuality(orderId); } catch (cause) { setError(cause instanceof Error && cause.message === "QC_REQUIRES_REVIEW" ? "QC ไม่ผ่าน: ระบบยังไม่เปลี่ยนสถานะ เพื่อป้องกันการสร้างสถานะที่ไม่มีใน workflow" : "ไม่สามารถบันทึกผล QC ได้"); } finally { setSaving(false); }
+    }
+
     if (loading) {
         return (
             <main className="mx-auto flex min-h-[70vh] w-full max-w-7xl items-center justify-center">
@@ -678,6 +709,8 @@ export default function ThreeDOrderDetailPage({
 
     return (
         <main className="mx-auto w-full max-w-7xl space-y-6 pb-10">
+            <Admin3DNav />
+            <ResourceBreadcrumb items={[{ label: "3D Printing", href: "/admin/3d-printing" }, { label: "Orders", href: "/admin/3d-printing/orders" }, { label: `Order #${order.orderNumber}` }]} />
             {/* Header */}
             <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -802,29 +835,7 @@ export default function ThreeDOrderDetailPage({
                                 สถานะการผลิต
                             </p>
 
-                            <select
-                                value={order.orderStatus}
-                                onChange={(event) =>
-                                    setOrder({
-                                        ...order,
-                                        orderStatus:
-                                            event.target
-                                                .value as ThreeDOrderStatus,
-                                    })
-                                }
-                                className="mt-1 bg-transparent text-sm font-black text-slate-900 outline-none"
-                            >
-                                {ORDER_STATUS_OPTIONS.map(
-                                    (item) => (
-                                        <option
-                                            key={item.value}
-                                            value={item.value}
-                                        >
-                                            {item.label}
-                                        </option>
-                                    )
-                                )}
-                            </select>
+                            <p className="mt-1 text-sm font-black text-slate-900">{getStatusLabel(order.orderStatus)}</p>
                         </div>
                     </div>
                 </Card>
@@ -840,29 +851,7 @@ export default function ThreeDOrderDetailPage({
                                 สถานะการชำระ
                             </p>
 
-                            <select
-                                value={order.paymentStatus}
-                                onChange={(event) =>
-                                    setOrder({
-                                        ...order,
-                                        paymentStatus:
-                                            event.target
-                                                .value as ThreeDPaymentStatus,
-                                    })
-                                }
-                                className="mt-1 max-w-[220px] bg-transparent text-sm font-black text-slate-900 outline-none"
-                            >
-                                {PAYMENT_STATUS_OPTIONS.map(
-                                    (item) => (
-                                        <option
-                                            key={item.value}
-                                            value={item.value}
-                                        >
-                                            {item.label}
-                                        </option>
-                                    )
-                                )}
-                            </select>
+                            <p className="mt-1 text-sm font-black text-slate-900">{getPaymentStatusLabel(order.paymentStatus)}</p>
                         </div>
                     </div>
                 </Card>
@@ -897,6 +886,8 @@ export default function ThreeDOrderDetailPage({
                     </div>
                 </Card>
             </section>
+
+            <WorkflowCard order={order} busy={saving} onAction={(action) => void runLifecycle(action)} onQualityReject={() => void handleQualityReject()} />
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
                 <div className="space-y-6">
@@ -2082,4 +2073,11 @@ function InfoRow({
             </span>
         </div>
     );
+}
+
+function WorkflowCard({ order, busy, onAction, onQualityReject }: { order: ThreeDOrder; busy: boolean; onAction: (action: "start" | "production" | "quality" | "ship" | "complete" | "archive") => void; onQualityReject: () => void }) {
+    const steps = ["paid", "queued", "printing", "quality_check", "ready", "shipping", "completed"] as const;
+    const labels: Record<string, string> = { paid: "ชำระเงินแล้ว", queued: "รอเข้าคิวผลิต", printing: "กำลังผลิต", quality_check: "ตรวจคุณภาพ", ready: "พร้อมส่ง", shipping: "กำลังจัดส่ง", completed: "เสร็จสิ้น" };
+    const current = steps.indexOf(order.orderStatus as (typeof steps)[number]);
+    return <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#D93687]">WORKFLOW</p><h2 className="mt-2 text-xl font-black">สถานะงานและสิ่งที่ต้องทำต่อ</h2></div><span className="rounded-full bg-[#FFE4F1] px-3 py-1.5 text-xs font-bold text-[#D93687]">{getStatusLabel(order.orderStatus)}</span></div><div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{steps.map((step, index) => <div key={step} className={`rounded-2xl border p-4 ${index < current ? "border-emerald-100 bg-emerald-50" : index === current ? "border-pink-200 bg-[#FFE4F1]" : "border-slate-100 bg-slate-50"}`}><p className="text-xs font-bold text-slate-400">{index < current ? "เสร็จแล้ว" : index === current ? "กำลังดำเนินการ" : "ถัดไป"}</p><p className="mt-1 text-sm font-black text-slate-800">{labels[step]}</p></div>)}</div><div className="mt-6 flex flex-wrap gap-3">{order.orderStatus === "queued" && <button disabled={busy} onClick={() => onAction("start")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">เริ่มผลิต</button>}{order.orderStatus === "printing" && <button disabled={busy} onClick={() => onAction("production")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ผลิตเสร็จ → ตรวจคุณภาพ</button>}{order.orderStatus === "quality_check" && <><button disabled={busy} onClick={() => onAction("quality")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">✓ QC ผ่าน</button><button disabled={busy} onClick={onQualityReject} className="rounded-xl border border-red-200 px-5 py-3 text-sm font-bold text-red-600 disabled:opacity-50">✕ QC ไม่ผ่าน</button></>}{order.orderStatus === "ready" && <button disabled={busy} onClick={() => onAction("ship")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ยืนยันจัดส่ง</button>}{order.orderStatus === "shipping" && <button disabled={busy} onClick={() => onAction("complete")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ยืนยันส่งมอบแล้ว</button>}{order.orderStatus === "completed" && !order.isArchived && <button disabled={busy} onClick={() => onAction("complete")} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 disabled:opacity-50">เก็บเข้าคลัง</button>}</div>{order.orderStatus === "ready" && (order.carrier || order.trackingNumber) && <p className="mt-4 text-sm text-slate-500">{order.carrier || "ขนส่ง"} · {order.trackingNumber || "ไม่มีเลขติดตาม"}</p>}</section>;
 }

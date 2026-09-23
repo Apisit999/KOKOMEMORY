@@ -1,36 +1,10 @@
 "use client";
 import Link from "next/link";
-import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, FileText, Plus } from "lucide-react";
+import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-
-export default function QuotesPage() {
-    const [quotes, setQuotes] = useState<Record<string, unknown>[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                setLoading(false);
-                return;
-            }
-
-            void (async () => {
-                try {
-                    const res = await fetch("/api/3d/quotes", {
-                        headers: { Authorization: `Bearer ${await user.getIdToken()}` },
-                        cache: "no-store",
-                    });
-                    const data = await res.json();
-                    setQuotes(Array.isArray(data.quotes) ? data.quotes : []);
-                } finally {
-                    setLoading(false);
-                }
-            })();
-        });
-
-        return unsubscribe;
-    }, []);
-
-    return <main className="min-h-screen bg-[#f8f7f9] px-5 py-8 sm:px-8"><div className="mx-auto max-w-5xl"><div className="flex items-center justify-between gap-4"><div><h1 className="text-3xl font-black text-slate-900">คำขอใบเสนอราคา</h1><p className="mt-2 text-sm text-slate-500">คำขอ Custom 3D Printing ของคุณ</p></div><Link href="/account/3d-printing/quotes/new" className="rounded-xl bg-pink-500 px-4 py-3 text-sm font-bold text-white">สร้างคำขอ</Link></div>{loading ? <p className="mt-8 text-sm text-slate-500">กำลังโหลด...</p> : <div className="mt-8 space-y-3">{quotes.length ? quotes.map((quote) => <Link key={String(quote.id)} href={`/account/3d-printing/quotes/${quote.id}`} className="block rounded-2xl bg-white p-5 shadow-sm transition hover:shadow-md"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="font-black text-slate-900">{String(quote.quoteNumber || quote.id)}</p><p className="mt-1 text-sm text-slate-500">{String(quote.material)} / {String(quote.color)} · {String(quote.quantity)} ชิ้น</p></div><span className="rounded-full bg-pink-50 px-3 py-1 text-xs font-bold text-pink-600">{String(quote.status)}</span></div></Link>) : <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500">ยังไม่มีคำขอใบเสนอราคา</div>}</div>}</div></main>;
-}
+import { StatusBadge } from "@/components/3d/StatusBadge";
+type Quote = Record<string, unknown>;
+function date(value: unknown) { if (!value) return "—"; const parsed = typeof value === "object" && value && "_seconds" in value ? new Date(Number((value as { _seconds: number })._seconds) * 1000) : new Date(String(value)); return Number.isNaN(parsed.getTime()) ? "—" : parsed.toLocaleDateString("th-TH"); }
+export default function QuotesPage() { const [quotes, setQuotes] = useState<Quote[]>([]); const [filter, setFilter] = useState("all"); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); useEffect(() => onAuthStateChanged(auth, (user) => { if (!user) return setLoading(false); void (async () => { try { const response = await fetch("/api/3d/quotes", { headers: { Authorization: `Bearer ${await user.getIdToken()}` }, cache: "no-store" }); const data = await response.json(); if (!response.ok) throw new Error("ไม่สามารถโหลดใบเสนอราคาได้"); setQuotes(Array.isArray(data.quotes) ? data.quotes : []); } catch (e) { setError(e instanceof Error ? e.message : "ไม่สามารถโหลดข้อมูลได้"); } finally { setLoading(false); } })(); }), []); const filters = [["all", "ทั้งหมด"], ["inquiry", "รอประเมิน"], ["quoted", "เสนอราคาแล้ว"], ["accepted", "ยอมรับแล้ว"], ["rejected", "ปฏิเสธ"], ["expired", "หมดอายุ"]]; const visible = quotes.filter((quote) => filter === "all" || String(quote.status) === filter); return <main className="min-h-screen bg-[#F7F7FA] px-4 py-7 sm:px-8"><div className="mx-auto max-w-6xl"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><Link href="/account/3d-printing" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500"><ArrowLeft size={16}/>กลับ 3D Printing</Link><p className="mt-6 text-xs font-black uppercase tracking-[.2em] text-[#D93687]">KOKO 3D PRINTING</p><h1 className="mt-2 text-3xl font-black">ใบเสนอราคาของฉัน</h1><p className="mt-2 text-sm text-slate-500">ติดตามคำขอ Custom 3D ของคุณ</p></div><Link href="/account/3d-printing/quotes/new" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF4FA3] px-4 py-3 text-sm font-bold text-black"><Plus size={17}/>ขอใบเสนอราคา</Link></div><div className="mt-7 flex gap-2 overflow-x-auto pb-1">{filters.map(([value, label]) => <button key={value} onClick={() => setFilter(value)} className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-bold ${filter === value ? "bg-[#FFE4F1] text-[#D93687]" : "bg-white text-slate-500 ring-1 ring-slate-200"}`}>{label}</button>)}</div>{error && <p className="mt-5 rounded-2xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}{loading ? <div className="mt-8 space-y-3">{[1, 2, 3].map((item) => <div key={item} className="h-28 animate-pulse rounded-2xl bg-white"/>)}</div> : !visible.length ? <div className="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center"><FileText className="mx-auto text-slate-300" size={42}/><p className="mt-4 font-bold text-slate-700">ยังไม่มีใบเสนอราคาในหมวดนี้</p></div> : <div className="mt-8 grid gap-4 md:grid-cols-2">{visible.map((quote) => <Link key={String(quote.id)} href={`/account/3d-printing/quotes/${quote.id}`} className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-6"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Quote</p><p className="mt-1 text-lg font-black">{String(quote.quoteNumber || quote.id)}</p><p className="mt-1 text-xs text-slate-400">{date(quote.createdAt)}</p></div><StatusBadge status={String(quote.status)}/></div><div className="mt-5 flex items-end justify-between gap-4"><div><p className="text-sm text-slate-600">{String(quote.material || "ยังไม่ระบุวัสดุ")} · {String(quote.color || "ยังไม่ระบุสี")} · {String(quote.quantity || 1)} ชิ้น</p>{quote.total !== undefined && <p className="mt-2 text-lg font-black">฿{Number(quote.total || 0).toLocaleString("th-TH")}</p>}</div><span className="inline-flex items-center gap-1 text-sm font-bold text-[#D93687]">ดูรายละเอียด <ArrowRight size={16}/></span></div></Link>)}</div>}</div></main>; }
