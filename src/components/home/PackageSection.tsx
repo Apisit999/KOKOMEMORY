@@ -50,94 +50,21 @@ import {
     Clock3,
     Camera,
 } from "lucide-react";
+import { getPackageById, type PackageItem } from "@/data/booking-packages";
 
 
-/* ============================================================
-   PACKAGE DATA
-   ------------------------------------------------------------
-   ตอนนี้ใช้ข้อมูลชั่วคราว
-   ภายหลังสามารถย้ายไป Firebase ได้
-============================================================ */
-
-const packages = [
-
-    {
-        id: "starter",
-
-        name: "Starter",
-
-        price: "7,900",
-
-        time: "2 ชั่วโมง",
-
-        description:
-            "แพ็กเกจเริ่มต้นสำหรับงานเล็ก ๆ ที่ต้องการเก็บทุกช่วงเวลาสำคัญ",
-
-        popular: false,
-
-        features: [
-            "Photobooth",
-            "Photo Strip",
-            "พร็อพถ่ายรูป",
-            "ทีมงานดูแล",
-            "Live Gallery",
-        ],
-    },
-
-
-    {
-        id: "premium",
-
-        name: "Premium",
-
-        price: "9,900",
-
-        time: "3 ชั่วโมง",
-
-        description:
-            "แพ็กเกจยอดนิยมสำหรับงานแต่ง งานเลี้ยง และ Event ที่ต้องการความครบ",
-
-        popular: true,
-
-        features: [
-            "Photobooth",
-            "Photo Strip",
-            "Live Gallery",
-            "QR Download",
-            "DSLR Full Frame",
-            "Backdrop",
-            "ไฟ Studio",
-        ],
-    },
-
-
-    {
-        id: "vip",
-
-        name: "VIP",
-
-        price: "12,900",
-
-        time: "4 ชั่วโมง",
-
-        description:
-            "ประสบการณ์ระดับ VIP พร้อมทีมงานและอุปกรณ์แบบจัดเต็มสำหรับงานสำคัญ",
-
-        popular: false,
-
-        features: [
-            "Photobooth",
-            "Unlimited Print",
-            "Live Gallery",
-            "QR Download",
-            "DSLR Full Frame",
-            "Backdrop Premium",
-            "Prop Premium",
-            "ทีมงาน 2 คน",
-        ],
-    },
-
-];
+const packages = ["photobooth-s", "photobooth-m1", "photobooth-l1"]
+    .map((id) => getPackageById(id))
+    .filter((item): item is PackageItem => item !== null)
+    .map((item) => ({
+        id: item.id,
+        name: item.title,
+        price: item.price.toLocaleString("th-TH"),
+        time: `${item.hours} ชั่วโมง`,
+        description: `รูปพิมพ์ขนาด ${item.paperSize} พร้อมทีมงานดูแลตลอดงาน`,
+        popular: Boolean(item.popular),
+        features: item.features,
+    }));
 
 
 /* ============================================================
@@ -512,7 +439,7 @@ export default function PackageSection() {
 
 
                     <Link
-                        href="/booking/package"
+                        href="/packages"
                         className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-pink-500 transition hover:text-pink-600 sm:text-base"
                     >
 

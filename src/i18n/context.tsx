@@ -50,7 +50,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
     const value = useMemo<I18nContextValue>(() => ({
         locale,
-        setLocale: (next) => setLocaleState(next),
+        setLocale: (next) => {
+            setLocaleState(next);
+            try {
+                window.localStorage.setItem(STORAGE_KEY, next);
+            } catch {
+                // The in-memory locale still works when browser storage is unavailable.
+            }
+        },
         t: (key) => getMessage(locale, key),
         translate: (value) => translateRaw(locale, value),
     }), [locale]);

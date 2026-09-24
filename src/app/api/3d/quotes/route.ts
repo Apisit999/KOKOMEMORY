@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { requireCustomerApi } from "@/lib/customer-api-auth";
+import { findThreeDQuoteMaterial } from "@/lib/threeDQuoteOptions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
         const material = typeof body.material === "string" ? body.material.trim() : "";
         const color = typeof body.color === "string" ? body.color.trim() : "";
         const quantity = Math.floor(Number(body.quantity));
-        if (!material || !color || !Number.isInteger(quantity) || quantity < 1 || quantity > 10000) throw new Error("INVALID_QUOTE");
+        if (!findThreeDQuoteMaterial(material) || !color || color.length > 60 || !Number.isInteger(quantity) || quantity < 1 || quantity > 10000) throw new Error("INVALID_QUOTE");
         const ref = adminDb.collection(COLLECTION).doc();
         const count = (await adminDb.collection(COLLECTION).where("userId", "==", user.uid).get()).size + 1;
         const quoteNumber = `Q3D-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${String(count).padStart(3, "0")}`;

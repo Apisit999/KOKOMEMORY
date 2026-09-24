@@ -52,6 +52,7 @@ import {
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/firebase";
+import { isBookingHoldExpired } from "@/lib/booking-lifecycle";
 import CustomerReviewCard from "@/components/reviews/CustomerReviewCard";
 
 
@@ -120,6 +121,7 @@ type Booking = {
     };
 
     bookingStatus?: string;
+    holdExpiresAt?: unknown;
 
     note?: string;
 
@@ -198,6 +200,9 @@ function getStatusLabel(
         case "canceled":
             return "ยกเลิกแล้ว";
 
+        case "expired":
+            return "หมดเวลาชำระเงิน";
+
         case "completed":
             return "เสร็จสิ้น";
 
@@ -236,6 +241,9 @@ function getStatusClass(
         case "cancelled":
         case "canceled":
         case "released":
+            return "bg-slate-100 text-slate-500 ring-slate-200";
+
+        case "expired":
             return "bg-slate-100 text-slate-500 ring-slate-200";
 
         case "completed":
@@ -308,6 +316,7 @@ function canPay(
 
     return (
         bookingStatus === "pending_payment" &&
+        !isBookingHoldExpired(booking.holdExpiresAt) &&
         paymentStatus !== "verified" &&
         paymentStatus !== "paid"
     );
@@ -631,7 +640,9 @@ export default function BookingDetailPage() {
 
 
     const status =
-        booking.bookingStatus || "";
+        booking.bookingStatus === "pending_payment" && isBookingHoldExpired(booking.holdExpiresAt)
+            ? "expired"
+            : booking.bookingStatus || "";
     const canCancel = ["pending_payment", "payment_submitted", "confirmed"].includes(status.toLowerCase());
 
     const paymentStatus =

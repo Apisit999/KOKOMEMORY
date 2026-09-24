@@ -4,7 +4,7 @@ import Navbar from "../layout/Navbar";
 
 export default function HeroSection() {
     return (
-        <section className="relative min-h-[680px] h-[100svh] overflow-hidden sm:min-h-[760px]">
+        <section className="relative min-h-[100svh] overflow-hidden sm:min-h-[760px]">
 
             {/* =====================================================
                 BACKGROUND
@@ -39,7 +39,7 @@ export default function HeroSection() {
                 HERO CONTENT
             ===================================================== */}
 
-            <div className="relative z-20 flex min-h-[680px] h-full items-center justify-center px-5 pt-24 sm:min-h-[760px] sm:px-6">
+            <div className="relative z-20 flex min-h-[100svh] items-center justify-center px-5 py-28 sm:min-h-[760px] sm:px-6 sm:py-32">
 
                 <div className="w-full max-w-5xl text-center text-white">
 
@@ -166,7 +166,7 @@ export default function HeroSection() {
                 SCROLL INDICATOR
             ===================================================== */}
 
-            <div className="absolute bottom-6 left-1/2 z-30 -translate-x-1/2 sm:bottom-8">
+            <div className="absolute bottom-8 left-1/2 z-30 hidden -translate-x-1/2 sm:block">
 
                 <div className="flex flex-col items-center gap-2">
 

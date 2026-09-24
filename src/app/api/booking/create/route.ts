@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { getTravelFee, getBookingDeposit } from "@/data/booking-pricing";
 import { NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp, type DocumentReference } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebase-admin";
 import { todayBangkok } from "@/lib/bangkok-date";
@@ -55,6 +55,18 @@ function numberValue(value: unknown): number | null {
     if (typeof value !== "number") return null;
     const number = value;
     return Number.isFinite(number) ? number : null;
+}
+
+function timestampMillis(value: unknown): number | null {
+    if (value instanceof Date) return value.getTime();
+    if (value && typeof value === "object" && "toMillis" in value && typeof value.toMillis === "function") {
+        return value.toMillis();
+    }
+    if (typeof value === "string" || typeof value === "number") {
+        const parsed = new Date(value).getTime();
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
 }
 
 function validDate(value: string): boolean {
@@ -256,15 +268,80 @@ export async function POST(request: Request) {
                     throw new Error("BOOKING_CANCELLED_RETRY");
                 }
 
-                return { created: false, bookingId: bookingRef.id };
+                const existingHoldExpired =
+                    existingStatus === "expired" ||
+                    (existingStatus === "pending_payment" &&
+                        (timestampMillis(existing.holdExpiresAt) ?? Number.POSITIVE_INFINITY) <= Date.now());
+                const existingUploadStartedAt = timestampMillis(existing.paymentUploadLock?.startedAt);
+                const existingUploadInProgress = Boolean(
+                    existingUploadStartedAt !== null && Date.now() - existingUploadStartedAt < 10 * 60 * 1000,
+                );
+
+                if (existingHoldExpired && !existingUploadInProgress) {
+                    if (existingStatus === "pending_payment") {
+                        transaction.update(bookingRef, {
+                            bookingStatus: "expired",
+                            expiredAt: FieldValue.serverTimestamp(),
+                            expiredBy: "system",
+                            updatedAt: FieldValue.serverTimestamp(),
+                        });
+
+                        if (dateSnapshot.exists && dateSnapshot.data()?.bookingId === bookingRef.id) {
+                            transaction.update(dateLockRef, {
+                                status: "released",
+                                updatedAt: FieldValue.serverTimestamp(),
+                            });
+                        }
+                    }
+
+                    return { created: false, bookingId: bookingRef.id, expired: true };
+                }
+
+                return { created: false, bookingId: bookingRef.id, expired: false };
             }
+
+            let expiredBookingRef: DocumentReference | null = null;
 
             if (dateSnapshot.exists) {
                 const lock = dateSnapshot.data() || {};
                 const status = stringValue(lock.status, 100).toLowerCase();
                 if (!RELEASED_STATUSES.has(status)) {
-                    throw new Error("DATE_ALREADY_BOOKED");
+                    const lockExpiresAt = timestampMillis(lock.holdExpiresAt);
+                    const lockedBookingId = stringValue(lock.bookingId, 200);
+                    if (status !== "reserved" || lockExpiresAt === null || lockExpiresAt > Date.now() || !lockedBookingId) {
+                        throw new Error("DATE_ALREADY_BOOKED");
+                    }
+
+                    const lockedBookingRef = adminDb.collection("bookings").doc(lockedBookingId);
+                    const lockedBookingSnapshot = await transaction.get(lockedBookingRef);
+                    const lockedBooking = lockedBookingSnapshot.data() || {};
+                    const uploadStartedAt = timestampMillis(lockedBooking.paymentUploadLock?.startedAt);
+                    const bookingHoldExpiresAt = timestampMillis(lockedBooking.holdExpiresAt);
+                    const uploadInProgress = Boolean(
+                        uploadStartedAt !== null && Date.now() - uploadStartedAt < 10 * 60 * 1000,
+                    );
+
+                    if (
+                        !lockedBookingSnapshot.exists ||
+                        stringValue(lockedBooking.bookingStatus, 100).toLowerCase() !== "pending_payment" ||
+                        bookingHoldExpiresAt === null ||
+                        bookingHoldExpiresAt > Date.now() ||
+                        uploadInProgress
+                    ) {
+                        throw new Error("DATE_ALREADY_BOOKED");
+                    }
+
+                    expiredBookingRef = lockedBookingRef;
                 }
+            }
+
+            if (expiredBookingRef) {
+                transaction.update(expiredBookingRef, {
+                    bookingStatus: "expired",
+                    expiredAt: FieldValue.serverTimestamp(),
+                    expiredBy: "system",
+                    updatedAt: FieldValue.serverTimestamp(),
+                });
             }
 
             const bookingData = {
@@ -351,8 +428,12 @@ export async function POST(request: Request) {
                 createdAt: FieldValue.serverTimestamp(),
             });
 
-            return { created: true, bookingId: bookingRef.id };
+            return { created: true, bookingId: bookingRef.id, expired: false };
         });
+
+        if (result.expired) {
+            return errorResponse("เวลาพักคิวหมดแล้ว กรุณาลองจองอีกครั้ง", 409, "BOOKING_EXPIRED");
+        }
 
         return NextResponse.json({
             success: true,

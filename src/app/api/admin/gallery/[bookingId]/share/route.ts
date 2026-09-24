@@ -12,7 +12,10 @@ export async function POST(request: Request, context: { params: Promise<{ bookin
         const { bookingId } = await context.params;
         if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId)) return NextResponse.json({ success: false, error: "INVALID_BOOKING_ID" }, { status: 400 });
         if (!(await adminDb.collection("bookings").doc(bookingId).get()).exists) return NextResponse.json({ success: false, error: "BOOKING_NOT_FOUND" }, { status: 404 });
-        const result = await createGalleryShare(bookingId);
+        const body = await request.json().catch(() => ({})) as { scope?: unknown; label?: unknown };
+        const scope = body.scope === "event" ? "event" : "album";
+        const label = typeof body.label === "string" ? body.label : undefined;
+        const result = await createGalleryShare(bookingId, 60 * 60 * 24 * 30, { scope, label });
         return NextResponse.json({ success: true, ...result });
     } catch {
         return NextResponse.json({ success: false, error: "UNAUTHORIZED" }, { status: 401 });

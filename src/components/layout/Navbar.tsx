@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { Box, BookOpen, CalendarDays, FileText, LogIn, LogOut, Menu, Search, Settings2, Sparkles, UserCircle2, UserPlus, UserRound, X } from "lucide-react";
+import { Box, BookOpen, CalendarDays, FileText, LogIn, LogOut, Menu, Settings2, Sparkles, UserCircle2, UserPlus, UserRound, X } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useI18n, type MessageKey } from "@/i18n";
@@ -37,6 +37,7 @@ export default function Navbar() {
     const [user, setUser] = useState<User | null>(null);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const wasMenuOpenRef = useRef(false);
 
     useEffect(() => onAuthStateChanged(auth, setUser), []);
     useEffect(() => {
@@ -47,7 +48,8 @@ export default function Navbar() {
     }, []);
     useEffect(() => {
         if (menuOpen) closeButtonRef.current?.focus();
-        else menuButtonRef.current?.focus();
+        else if (wasMenuOpenRef.current) menuButtonRef.current?.focus();
+        wasMenuOpenRef.current = menuOpen;
     }, [menuOpen]);
     useEffect(() => {
         if (!menuOpen) return;
@@ -74,13 +76,12 @@ export default function Navbar() {
             <div className="mx-auto flex min-h-20 max-w-[90rem] items-center justify-between gap-4 px-4 sm:min-h-24 sm:px-6 lg:px-8">
                 <Link href="/" className="flex shrink-0 items-center gap-3" aria-label={locale === "en" ? "KOKO Memory home" : "KOKO Memory หน้าหลัก"}>
                     <Image src="/logo/logo.jpg" alt="KOKO Memory" width={56} height={56} priority className="h-11 w-11 rounded-full object-cover sm:h-14 sm:w-14" />
-                    <div><h1 className="text-xl font-bold sm:text-2xl">KOKO Memory</h1><p className="hidden text-[10px] uppercase tracking-[.18em] text-white/55 sm:block">Photobooth &amp; Event</p></div>
+                    <div className="max-[400px]:hidden"><h1 className="text-xl font-bold sm:text-2xl">KOKO Memory</h1><p className="hidden text-[10px] uppercase tracking-[.18em] text-white/55 sm:block">Photobooth &amp; Event</p></div>
                 </Link>
 
                 <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                    <div className="hidden sm:block"><LanguageSwitcher /></div>
-                    <Link href="/search" aria-label={t("common.search")} className="hidden items-center gap-2 rounded-full border border-white/10 bg-[#1C1C22] px-4 py-2.5 text-sm text-[#F8F8FA] transition hover:border-[#FF4FA3] hover:bg-[#FF4FA3] sm:flex"><Search size={17} />{t("common.search")}</Link>
-                    <Link href="/account" aria-label={t("common.account")} className="hidden items-center gap-2 rounded-full border border-white/10 bg-[#1C1C22] px-4 py-2.5 text-sm font-medium text-[#F8F8FA] transition hover:border-[#FF4FA3] hover:bg-[#FF4FA3] sm:flex"><UserRound size={17} />{t("common.account")}</Link>
+                    <LanguageSwitcher appearance="dark" />
+                    <Link href="/account" aria-label={t("common.account")} className="hidden items-center gap-2 rounded-full border border-white/10 bg-[#1C1C22] px-4 py-2.5 text-sm font-medium text-[#F8F8FA] transition hover:border-[#FF4FA3] hover:bg-[#FF4FA3] md:flex"><UserRound size={17} />{t("common.account")}</Link>
                     <button ref={menuButtonRef} type="button" aria-label={t("common.openMenu")} aria-expanded={menuOpen} aria-controls="public-navigation-drawer" onClick={() => setMenuOpen(true)} className="flex h-11 w-11 items-center justify-center rounded-full border border-[#FF4FA3] bg-[#1C1C22] text-white transition hover:bg-[#FF4FA3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]"><Menu size={22} /></button>
                 </div>
             </div>

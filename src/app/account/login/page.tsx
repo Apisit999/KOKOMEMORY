@@ -374,7 +374,7 @@ export default function LoginPage() {
                             />
 
                             <FloatingCard
-                                image="/gallery/3.jpg"
+                                image="/gallery/3.png"
                                 className="right-[4%] top-[18%] sm:right-[14%] sm:top-[11%] lg:right-[8%] lg:left-auto lg:top-[16%]"
                                 delay="2.6s"
                                 rotate="8deg"

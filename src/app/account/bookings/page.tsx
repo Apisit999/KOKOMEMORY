@@ -53,6 +53,7 @@ import {
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/firebase";
+import { isBookingHoldExpired } from "@/lib/booking-lifecycle";
 
 
 /* ============================================================
@@ -76,6 +77,7 @@ type Booking = {
     userId?: string;
 
     bookingStatus?: BookingStatus;
+    holdExpiresAt?: unknown;
 
     package?: {
         id?: string;
@@ -178,6 +180,9 @@ function getStatusLabel(status?: string) {
         case "released":
             return "ปล่อยคิวแล้ว";
 
+        case "expired":
+            return "หมดเวลาชำระเงิน";
+
         default:
             return "กำลังตรวจสอบ";
     }
@@ -200,6 +205,7 @@ function getStatusClass(status?: string) {
         case "cancelled":
         case "canceled":
         case "released":
+        case "expired":
             return "bg-slate-100 text-slate-500 ring-slate-200";
 
         case "completed":
@@ -258,6 +264,7 @@ function canPay(booking: Booking) {
 
     return (
         bookingStatus === "pending_payment" &&
+        !isBookingHoldExpired(booking.holdExpiresAt) &&
         paymentStatus !== "verified" &&
         paymentStatus !== "paid"
     );
@@ -810,7 +817,9 @@ export default function MyBookingsPage() {
                         {bookings.map((booking) => {
 
                             const status =
-                                booking.bookingStatus || "";
+                                booking.bookingStatus === "pending_payment" && isBookingHoldExpired(booking.holdExpiresAt)
+                                    ? "expired"
+                                    : booking.bookingStatus || "";
 
                             const paymentStatus =
                                 booking.payment?.status || "unpaid";

@@ -9,7 +9,6 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 
 import {
     Menu,
-    Bell,
 } from "lucide-react";
 
 
@@ -160,48 +159,6 @@ export default function AdminLayout({
                         {/* RIGHT */}
 
                         <div className="flex items-center gap-3">
-
-                            <button
-                                type="button"
-                                aria-label="การแจ้งเตือน"
-                                className="
-                                    relative
-                                    flex
-                                    h-11
-                                    w-11
-                                    items-center
-                                    justify-center
-                                    rounded-2xl
-                                    border
-                                    border-slate-200
-                                    bg-white
-                                    text-slate-500
-                                    shadow-sm
-                                    transition
-                                    hover:border-pink-200
-                                    hover:bg-pink-50
-                                    hover:text-pink-500
-                                "
-                            >
-
-                                <Bell size={19} />
-
-                                <span
-                                    className="
-                                        absolute
-                                        right-2.5
-                                        top-2.5
-                                        h-2
-                                        w-2
-                                        rounded-full
-                                        bg-pink-500
-                                        ring-2
-                                        ring-white
-                                    "
-                                />
-
-                            </button>
-
 
                             <div
                                 className="

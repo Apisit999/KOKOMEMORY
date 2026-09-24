@@ -510,13 +510,7 @@ function ReviewBookingContent() {
             return;
         }
 
-        try {
-            await currentUser.reload();
-        } catch (error) {
-            console.error("KOKO AUTH RELOAD ERROR:", error);
-        }
-
-        const refreshedUser = auth.currentUser;
+        const refreshedUser = currentUser;
 
         if (!refreshedUser) {
             setSubmitError(translate("ไม่พบเซสชันผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง"));
@@ -630,6 +624,13 @@ function ReviewBookingContent() {
             }
 
             if (!response.ok || !result.success || !result.bookingId) {
+                if (result.code === "BOOKING_EXPIRED") {
+                    try {
+                        sessionStorage.removeItem(`koko_booking_id_${bookingFingerprint}`);
+                    } catch {
+                        // Session storage may be unavailable in some browser contexts.
+                    }
+                }
                 const error = new Error(result.error || translate("ไม่สามารถสร้างรายการจองได้")) as Error & { code?: string };
                 error.code = result.code || `HTTP_${response.status}`;
                 throw error;
@@ -680,6 +681,8 @@ function ReviewBookingContent() {
 
             if (errorCode === "DATE_ALREADY_BOOKED" || errorMessage === "DATE_ALREADY_BOOKED") {
                 setSubmitError(translate("ขออภัย วันที่นี้มีลูกค้าท่านอื่นจองไปแล้ว กรุณากลับไปเลือกวันใหม่"));
+            } else if (errorCode === "BOOKING_EXPIRED") {
+                setSubmitError(translate("เวลาพักคิวหมดแล้ว กรุณากดทำรายการอีกครั้งเพื่อจองคิวใหม่"));
             } else if (errorCode === "EMAIL_NOT_VERIFIED") {
                 setSubmitError(translate("กรุณายืนยัน Email ก่อนทำรายการจอง"));
             } else if (errorCode === "UNAUTHORIZED" || errorCode === "INVALID_TOKEN") {
@@ -1702,11 +1705,7 @@ function ReviewBookingContent() {
                                 {/* Back */}
 
                                 <Link
-                                    href={`/booking/customer?package=${encodeURIComponent(
-                                        packageId
-                                    )}&date=${encodeURIComponent(
-                                        eventDate
-                                    )}`}
+                                    href={`/booking/customer?${searchParams.toString()}`}
                                     className="
                                         mt-3
                                         flex

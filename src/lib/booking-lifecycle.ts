@@ -26,6 +26,13 @@ export function isAllowedBookingTransition(from: unknown, to: unknown): boolean 
 
 export function isBookingHoldExpired(value: unknown, now = Date.now()): boolean {
     if (!value) return false;
-    const date = value instanceof Date ? value : new Date(value as string | number);
+    const timestamp = value as { toDate?: () => Date; toMillis?: () => number };
+    const date = value instanceof Date
+        ? value
+        : typeof timestamp.toDate === "function"
+            ? timestamp.toDate()
+            : typeof timestamp.toMillis === "function"
+                ? new Date(timestamp.toMillis())
+                : new Date(value as string | number);
     return Number.isFinite(date.getTime()) && date.getTime() <= now;
 }

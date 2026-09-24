@@ -54,19 +54,13 @@ import {
 
 import {
     collection,
+    documentId,
     onSnapshot,
     type Timestamp,
+    query,
+    where,
 } from "firebase/firestore";
-
-import {
-    auth,
-} from "@/lib/firebase";
-
 import { db } from "@/lib/firebase";
-
-import {
-    onAuthStateChanged,
-} from "firebase/auth";
 
 import {
     CalendarDays,
@@ -476,76 +470,6 @@ function ScheduleContent() {
         searchParams.get("package");
 
     /* ========================================================
-       BOOKING AUTH GUARD
-       --------------------------------------------------------
-       Guest       → Login
-       Unverified  → Security / Email Verification
-       Verified    → เข้า Step 2 ได้
-    ======================================================== */
-
-    const [
-        authChecking,
-        setAuthChecking,
-    ] = useState(true);
-
-    const [
-        isAuthenticated,
-        setIsAuthenticated,
-    ] = useState(false);
-
-    useEffect(() => {
-        const unsubscribe =
-            onAuthStateChanged(
-                auth,
-                (user) => {
-                    if (!user) {
-                        setIsAuthenticated(false);
-                        setAuthChecking(false);
-
-                        const currentPath =
-                            `/booking/schedule?${searchParams.toString()}`;
-
-                        const redirect =
-                            encodeURIComponent(
-                                currentPath
-                            );
-
-                        window.location.replace(
-                            `/account/login?redirect=${redirect}`
-                        );
-
-                        return;
-                    }
-
-                    if (!user.emailVerified) {
-                        setIsAuthenticated(false);
-                        setAuthChecking(false);
-
-                        const currentPath =
-                            `/booking/schedule?${searchParams.toString()}`;
-
-                        const redirect =
-                            encodeURIComponent(
-                                currentPath
-                            );
-
-                        window.location.replace(
-                            `/account/security?redirect=${redirect}`
-                        );
-
-                        return;
-                    }
-
-                    setIsAuthenticated(true);
-                    setAuthChecking(false);
-                }
-            );
-
-        return () => unsubscribe();
-    }, [searchParams]);
-
-
-    /* ========================================================
        Selected Date
     ======================================================== */
 
@@ -553,6 +477,8 @@ function ScheduleContent() {
         selectedDate,
         setSelectedDate,
     ] = useState<Date>();
+
+    const [visibleMonth, setVisibleMonth] = useState(() => new Date());
 
 
     /* ========================================================
@@ -592,9 +518,11 @@ function ScheduleContent() {
         setAvailabilityError,
     ] = useState("");
 
+    const [availabilityRefresh, setAvailabilityRefresh] = useState(0);
+
 
     /* ========================================================
-       Real-time Firestore
+       Month-scoped real-time Firestore
        --------------------------------------------------------
        อ่านเฉพาะ bookingDates
        --------------------------------------------------------
@@ -606,19 +534,29 @@ function ScheduleContent() {
 
         setAvailabilityLoading(true);
         setAvailabilityError("");
+        let expiryTimer: number | undefined;
+
+        const monthStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+        const monthEnd = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 2, 0);
+        const toDateKey = (date: Date) =>
+            `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+        const availabilityQuery = query(
+            collection(db, "bookingDates"),
+            where(documentId(), ">=", toDateKey(monthStart)),
+            where(documentId(), "<=", toDateKey(monthEnd)),
+        );
 
 
         const unsubscribeBookingDates =
             onSnapshot(
-                collection(
-                    db,
-                    "bookingDates"
-                ),
+                availabilityQuery,
 
                 (snapshot) => {
 
                     const dates =
                         new Set<string>();
+                    let nextHoldExpiry: number | null = null;
 
 
                     snapshot.forEach(
@@ -656,6 +594,15 @@ function ScheduleContent() {
                                 )
                             ) {
                                 return;
+                            }
+
+                            const holdExpiresAt = data.holdExpiresAt as Timestamp | undefined;
+                            if (status === "reserved" && holdExpiresAt && typeof holdExpiresAt.toMillis === "function") {
+                                const expiresAt = holdExpiresAt.toMillis();
+                                if (expiresAt <= Date.now()) return;
+                                nextHoldExpiry = nextHoldExpiry === null
+                                    ? expiresAt
+                                    : Math.min(nextHoldExpiry, expiresAt);
                             }
 
 
@@ -724,6 +671,14 @@ function ScheduleContent() {
                         false
                     );
 
+                    if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
+                    if (nextHoldExpiry !== null) {
+                        expiryTimer = window.setTimeout(
+                            () => setAvailabilityRefresh((current) => current + 1),
+                            Math.max(0, nextHoldExpiry - Date.now()) + 50,
+                        );
+                    }
+
                 },
 
                 (error) => {
@@ -763,10 +718,11 @@ function ScheduleContent() {
         return () => {
 
             unsubscribeBookingDates();
+            if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
 
         };
 
-    }, [translate]);
+    }, [availabilityRefresh, translate, visibleMonth]);
 
 
     /* ========================================================
@@ -987,19 +943,6 @@ function ScheduleContent() {
        Render
     ======================================================== */
 
-    if (authChecking || !isAuthenticated) {
-        return (
-            <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-                <div className="text-center">
-                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-pink-100 border-t-pink-500" />
-                    <p className="mt-4 text-sm font-medium text-slate-500">
-                        {translate("กำลังตรวจสอบบัญชี...")}
-                    </p>
-                </div>
-            </main>
-        );
-    }
-
     return (
 
         <main className="min-h-screen overflow-x-hidden bg-slate-50">
@@ -1013,7 +956,7 @@ function ScheduleContent() {
 
                 <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
 
-                    <div className="overflow-x-auto pb-1 scrollbar-hide">
+                    <div className="overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
                         <div className="mx-auto flex min-w-max items-start justify-center px-2 sm:min-w-0">
 
@@ -1262,10 +1205,12 @@ function ScheduleContent() {
                                 Calendar
                             ================================================= */}
 
-                            <div className="flex justify-center overflow-x-auto">
+                            <div className="flex justify-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
 
                                 <Calendar
                                     mode="single"
+                                    month={visibleMonth}
+                                    onMonthChange={setVisibleMonth}
                                     selected={
                                         selectedDate
                                     }
@@ -1279,7 +1224,7 @@ function ScheduleContent() {
                                         },
                                         isDateUnavailable,
                                     ]}
-                                    className="rounded-2xl border p-3 [--cell-size:2.75rem] sm:p-4 sm:[--cell-size:3rem] md:[--cell-size:3.5rem]"
+                                    className="rounded-2xl border p-2 [--cell-size:1.875rem] min-[360px]:[--cell-size:2.25rem] min-[390px]:[--cell-size:2.5rem] sm:p-4 sm:[--cell-size:3rem] md:[--cell-size:3.5rem]"
                                 />
 
                             </div>

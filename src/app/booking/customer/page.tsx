@@ -70,8 +70,6 @@ import {
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { travelFees } from "@/data/booking-pricing";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 
 
 import {
@@ -1269,58 +1267,6 @@ function CustomerContent() {
        Verified    → เข้า Step 3 ได้
     ======================================================== */
 
-    const [authChecking, setAuthChecking] =
-        useState(true);
-
-    const [isAuthenticated, setIsAuthenticated] =
-        useState(false);
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(
-            auth,
-            (user) => {
-                if (!user) {
-                    setIsAuthenticated(false);
-                    setAuthChecking(false);
-
-                    const currentPath =
-                        `/booking/customer?${searchParams.toString()}`;
-
-                    const redirect =
-                        encodeURIComponent(currentPath);
-
-                    window.location.replace(
-                        `/account/login?redirect=${redirect}`
-                    );
-
-                    return;
-                }
-
-                if (!user.emailVerified) {
-                    setIsAuthenticated(false);
-                    setAuthChecking(false);
-
-                    const currentPath =
-                        `/booking/customer?${searchParams.toString()}`;
-
-                    const redirect =
-                        encodeURIComponent(currentPath);
-
-                    window.location.replace(
-                        `/account/security?redirect=${redirect}`
-                    );
-
-                    return;
-                }
-
-                setIsAuthenticated(true);
-                setAuthChecking(false);
-            }
-        );
-
-        return () => unsubscribe();
-    }, [searchParams]);
-
     /* ========================================================
        หา Package
        --------------------------------------------------------
@@ -1385,6 +1331,29 @@ function CustomerContent() {
         note: "",
 
     });
+
+    useEffect(() => {
+        if (!searchParams.has("name") || !searchParams.has("phone")) return;
+
+        setForm({
+            fullName: searchParams.get("name") ?? "",
+            phone: searchParams.get("phone") ?? "",
+            lineId: searchParams.get("line") ?? "",
+            email: searchParams.get("email") ?? "",
+            eventType: searchParams.get("event") ?? "",
+            guestCount: searchParams.get("guests") ?? "",
+            startTime: searchParams.get("startTime") ?? "",
+            endTime: searchParams.get("endTime") ?? "",
+            venue: searchParams.get("venue") ?? "",
+            province: searchParams.get("province") ?? "",
+            district: searchParams.get("district") ?? "",
+            subdistrict: searchParams.get("subdistrict") ?? "",
+            address: searchParams.get("address") ?? "",
+            postalCode: searchParams.get("postalCode") ?? "",
+            googleMaps: searchParams.get("googleMaps") ?? "",
+            note: searchParams.get("note") ?? "",
+        });
+    }, [searchParams]);
 
     /* ========================================================
        FORM ERRORS
@@ -1868,19 +1837,6 @@ function CustomerContent() {
         );
 
     };
-
-    if (authChecking || !isAuthenticated) {
-        return (
-            <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-                <div className="text-center">
-                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-pink-100 border-t-pink-500" />
-                    <p className="mt-4 text-sm font-medium text-slate-500">
-                        กำลังตรวจสอบบัญชี...
-                    </p>
-                </div>
-            </main>
-        );
-    }
 
     return (
 

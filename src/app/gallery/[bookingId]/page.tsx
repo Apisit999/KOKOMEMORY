@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
@@ -34,6 +34,10 @@ export default function GalleryPage() {
 
     const [downloadingId, setDownloadingId] =
         useState("");
+    const [olderCursor, setOlderCursor] = useState("");
+    const [loadingOlder, setLoadingOlder] = useState(false);
+    const updateCursorRef = useRef("");
+    const refreshInProgressRef = useRef(false);
 
     // =========================================
     // LOAD GALLERY
@@ -46,14 +50,19 @@ export default function GalleryPage() {
             return;
         }
 
-        async function loadGallery() {
+        async function loadGallery(since?: string, isUpdate = false, older?: string) {
+            if (isUpdate) refreshInProgressRef.current = true;
+            let nextCursor = "";
             try {
                 const user = auth.currentUser;
                 const idToken = user ? await user.getIdToken() : "";
-                setLoading(true);
                 setError("");
 
-                const galleryQuery = guestToken ? `?guestToken=${encodeURIComponent(guestToken)}` : "";
+                const query = new URLSearchParams();
+                if (guestToken) query.set("guestToken", guestToken);
+                if (since) query.set("since", since);
+                if (older) query.set("older", older);
+                const galleryQuery = query.size ? `?${query.toString()}` : "";
                 const response = await fetch(
                     `/api/gallery/${encodeURIComponent(bookingId)}${galleryQuery}`,
                     {
@@ -72,6 +81,9 @@ export default function GalleryPage() {
                     photos?: Photo[];
                     error?: string;
                     message?: string;
+                    nextSince?: string | null;
+                    serverCursor?: string;
+                    olderCursor?: string | null;
                 };
 
                 try {
@@ -107,11 +119,19 @@ export default function GalleryPage() {
                     );
                 }
 
-                setPhotos(
-                    Array.isArray(data.photos)
-                        ? data.photos
-                        : []
-                );
+                const receivedPhotos = Array.isArray(data.photos) ? data.photos : [];
+                if (since || older) {
+                    setPhotos((current) => {
+                        const merged = new Map(current.map((photo) => [photo.id, photo]));
+                        for (const photo of receivedPhotos) merged.set(photo.id, photo);
+                        return Array.from(merged.values());
+                    });
+                } else {
+                    setPhotos(receivedPhotos);
+                }
+                if (data.nextSince) nextCursor = data.nextSince;
+                else if (!older && data.serverCursor) updateCursorRef.current = data.serverCursor;
+                if (!since) setOlderCursor(data.olderCursor || "");
             } catch (error) {
                 console.error(
                     "Gallery error:",
@@ -125,11 +145,48 @@ export default function GalleryPage() {
                 );
             } finally {
                 setLoading(false);
+                if (older) setLoadingOlder(false);
+                if (isUpdate) {
+                    if (nextCursor) window.setTimeout(() => void loadGallery(nextCursor, true), 100);
+                    else refreshInProgressRef.current = false;
+                }
             }
         }
 
-        loadGallery();
+        void loadGallery();
+        const refreshTimer = window.setInterval(() => {
+            if (document.visibilityState === "visible" && updateCursorRef.current && !refreshInProgressRef.current) void loadGallery(updateCursorRef.current, true);
+        }, 8000);
+        return () => window.clearInterval(refreshTimer);
     }, [bookingId, guestToken]);
+
+    async function loadOlderPhotos() {
+        if (!olderCursor || loadingOlder) return;
+        setLoadingOlder(true);
+        const query = new URLSearchParams();
+        if (guestToken) query.set("guestToken", guestToken);
+        query.set("older", olderCursor);
+        try {
+            const user = auth.currentUser;
+            const idToken = user ? await user.getIdToken() : "";
+            const response = await fetch(`/api/gallery/${encodeURIComponent(bookingId)}?${query.toString()}`, {
+                headers: idToken ? { Authorization: `Bearer ${idToken}` } : undefined,
+                cache: "no-store",
+            });
+            const result = await response.json() as { success?: boolean; photos?: Photo[]; olderCursor?: string | null };
+            if (!response.ok || !result.success) throw new Error("โหลดรูปเพิ่มเติมไม่สำเร็จ");
+            setPhotos((current) => {
+                const merged = new Map(current.map((photo) => [photo.id, photo]));
+                for (const photo of result.photos || []) merged.set(photo.id, photo);
+                return Array.from(merged.values());
+            });
+            setOlderCursor(result.olderCursor || "");
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "โหลดรูปเพิ่มเติมไม่สำเร็จ");
+        } finally {
+            setLoadingOlder(false);
+        }
+    }
 
     // =========================================
     // DOWNLOAD
@@ -163,68 +220,18 @@ export default function GalleryPage() {
                 downloadUrl
             );
 
-            const response =
-                await fetch(downloadUrl, { headers: idToken ? { Authorization: `Bearer ${idToken}` } : undefined });
+            const response = await fetch(downloadUrl, { headers: idToken ? { Authorization: `Bearer ${idToken}` } : undefined, cache: "no-store" });
+            const result = await response.json().catch(() => ({})) as { success?: boolean; downloadUrl?: string; error?: string };
+            if (!response.ok || !result.success || !result.downloadUrl) throw new Error(result.error || "ดาวน์โหลดรูปไม่สำเร็จ");
 
-            if (!response.ok) {
-                let errorMessage =
-                    "ดาวน์โหลดรูปไม่สำเร็จ";
-
-                try {
-                    const data =
-                        await response.json();
-
-                    errorMessage =
-                        data.error ||
-                        errorMessage;
-                } catch {
-                    // API ไม่ได้ส่ง JSON
-                }
-
-                throw new Error(
-                    errorMessage
-                );
-            }
-
-            const blob =
-                await response.blob();
-
-            if (blob.size === 0) {
-                throw new Error(
-                    "ไฟล์ที่ดาวน์โหลดมีขนาด 0"
-                );
-            }
-
-            const blobUrl =
-                window.URL.createObjectURL(
-                    blob
-                );
-
-            const link =
-                document.createElement("a");
-
-            link.href = blobUrl;
-
-            link.download =
-                photo.fileName ||
-                "koko-memory-photo.jpg";
-
+            const link = document.createElement("a");
+            link.href = result.downloadUrl;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
             link.style.display = "none";
-
-            document.body.appendChild(
-                link
-            );
-
+            document.body.appendChild(link);
             link.click();
-
             link.remove();
-
-            // รอเล็กน้อยก่อน revoke
-            setTimeout(() => {
-                window.URL.revokeObjectURL(
-                    blobUrl
-                );
-            }, 1000);
 
         } catch (error) {
             console.error(
@@ -459,6 +466,10 @@ export default function GalleryPage() {
                                 )}
 
                             </div>
+
+                            {olderCursor && <button type="button" onClick={() => void loadOlderPhotos()} disabled={loadingOlder} className="mx-auto mt-8 block rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 disabled:opacity-50">
+                                {loadingOlder ? "กำลังโหลดรูป..." : "โหลดรูปเพิ่มเติม"}
+                            </button>}
 
                         </div>
                     )}

@@ -216,6 +216,25 @@ export async function POST(
     let lockAcquired = false;
 
     try {
+        const authorization = request.headers.get("authorization") || "";
+        if (!authorization.startsWith("Bearer ")) {
+            throw new Error("UNAUTHORIZED");
+        }
+
+        const idToken = authorization.slice("Bearer ".length).trim();
+        if (!idToken) throw new Error("UNAUTHORIZED");
+
+        let decodedToken;
+        try {
+            decodedToken = await getAuth().verifyIdToken(idToken, true);
+        } catch {
+            throw new Error("INVALID_TOKEN");
+        }
+
+        const userRecord = await getAuth().getUser(decodedToken.uid);
+        if (userRecord.disabled) throw new Error("USER_DISABLED");
+        if (!userRecord.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+
         /* =====================================================
            1. FORM DATA
         ===================================================== */
@@ -262,25 +281,6 @@ export async function POST(
         bookingId =
             bookingIdValue.trim();
         if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId)) throw new Error("INVALID_BOOKING_ID");
-
-        const authorization = request.headers.get("authorization") || "";
-        if (!authorization.startsWith("Bearer ")) {
-            throw new Error("UNAUTHORIZED");
-        }
-
-        const idToken = authorization.slice("Bearer ".length).trim();
-        if (!idToken) throw new Error("UNAUTHORIZED");
-
-        let decodedToken;
-        try {
-            decodedToken = await getAuth().verifyIdToken(idToken, true);
-        } catch {
-            throw new Error("INVALID_TOKEN");
-        }
-
-        const userRecord = await getAuth().getUser(decodedToken.uid);
-        if (userRecord.disabled) throw new Error("USER_DISABLED");
-        if (!userRecord.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
 
         const ownershipSnapshot = await adminDb
             .collection(BOOKING_COLLECTION)
@@ -540,6 +540,16 @@ export async function POST(
                         bookingRef
                     );
 
+                const bookingDate = typeof snapshot.data()?.event?.date === "string"
+                    ? snapshot.data()?.event?.date as string
+                    : "";
+                const dateRef = bookingDate
+                    ? adminDb.collection("bookingDates").doc(bookingDate)
+                    : null;
+                const dateSnapshot = dateRef
+                    ? await transaction.get(dateRef)
+                    : null;
+
                 if (!snapshot.exists) {
                     throw new Error(
                         "BOOKING_NOT_FOUND"
@@ -580,6 +590,14 @@ export async function POST(
                     getExpectedPaymentAmount(
                         booking
                     );
+
+                if (dateRef && dateSnapshot?.exists && dateSnapshot.data()?.bookingId === bookingRef.id) {
+                    transaction.update(dateRef, {
+                        status: "reserved",
+                        holdExpiresAt: FieldValue.delete(),
+                        updatedAt: now,
+                    });
+                }
 
                 transaction.set(adminDb.collection("auditLogs").doc(), {
                     action: "SUBMIT_PAYMENT", resource: "payment", bookingId,

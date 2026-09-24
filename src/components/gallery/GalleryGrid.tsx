@@ -1249,7 +1249,7 @@ export default function GalleryGrid() {
                         backdrop-blur-xl
                         sm:p-5
                     "
-                    onMouseDown={(event) => {
+                    onClick={(event) => {
 
                         if (
                             event.target ===
