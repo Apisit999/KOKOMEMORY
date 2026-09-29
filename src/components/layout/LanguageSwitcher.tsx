@@ -6,7 +6,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useI18n } from "@/i18n";
 
 const languages = [
-    { code: "th", label: "ไทย", shortLabel: "TH" },
+    { code: "th", label: "\u0e44\u0e17\u0e22", shortLabel: "TH" },
     { code: "en", label: "English", shortLabel: "EN" },
 ] as const;
 
@@ -75,7 +75,7 @@ export default function LanguageSwitcher({ appearance = "light" }: { appearance?
                 ref={triggerRef}
                 id={triggerId}
                 type="button"
-                aria-label={locale === "th" ? `เปลี่ยนภาษา ภาษาปัจจุบัน ${currentLanguage.label}` : `Change language. Current language: ${currentLanguage.label}`}
+                aria-label={locale === "th" ? `\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e20\u0e32\u0e29\u0e32 \u0e20\u0e32\u0e29\u0e32\u0e1b\u0e31\u0e08\u0e08\u0e38\u0e1a\u0e31\u0e19 ${currentLanguage.label}` : `Change language. Current language: ${currentLanguage.label}`}
                 aria-haspopup="menu"
                 aria-expanded={open}
                 aria-controls={menuId}

@@ -55,15 +55,48 @@ export default function DomTranslator() {
 
     useEffect(() => {
         const root = document.documentElement;
+        const pendingNodes = new Set<Node>();
+        let frame: number | null = null;
         const observer = new MutationObserver((records) => {
-            observer.disconnect();
             for (const record of records) {
-                if (record.type === "characterData") translateTree(record.target, locale);
-                else if (record.type === "attributes") translateTree(record.target, locale);
-                else for (const node of record.addedNodes) translateTree(node, locale);
+                if (record.type === "characterData" || record.type === "attributes") {
+                    pendingNodes.add(record.target);
+                } else {
+                    for (const node of record.addedNodes) pendingNodes.add(node);
+                }
             }
-            observer.observe(root, options);
+
+            if (pendingNodes.size > 0 && frame === null) {
+                frame = window.requestAnimationFrame(flushPendingNodes);
+            }
         });
+
+        function flushPendingNodes() {
+            frame = null;
+            if (pendingNodes.size === 0) return;
+
+            const nodes = [...pendingNodes];
+            const nodeSet = new Set(nodes);
+            pendingNodes.clear();
+            observer.disconnect();
+
+            for (const node of nodes) {
+                let ancestor = node.parentNode;
+                let coveredByAncestor = false;
+                while (ancestor) {
+                    if (nodeSet.has(ancestor)) {
+                        coveredByAncestor = true;
+                        break;
+                    }
+                    ancestor = ancestor.parentNode;
+                }
+                if (!coveredByAncestor && (node === root || root.contains(node))) {
+                    translateTree(node, locale);
+                }
+            }
+
+            observer.observe(root, options);
+        }
         const options: MutationObserverInit = {
             subtree: true,
             childList: true,
@@ -73,7 +106,11 @@ export default function DomTranslator() {
         };
         translateTree(root, locale);
         observer.observe(root, options);
-        return () => observer.disconnect();
+        return () => {
+            observer.disconnect();
+            if (frame !== null) window.cancelAnimationFrame(frame);
+            pendingNodes.clear();
+        };
     }, [locale]);
 
     return null;

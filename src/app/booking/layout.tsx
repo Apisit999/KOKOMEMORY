@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
 export default function BookingLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -39,5 +40,16 @@ export default function BookingLayout({ children }: { children: React.ReactNode 
 
         return unsubscribe;
     }, [router]);
-    return ready ? children : null;
+    if (!ready) return null;
+
+    return (
+        <div>
+            <div className="border-b border-slate-200 bg-white">
+                <div className="mx-auto flex max-w-7xl justify-end px-4 py-2 sm:px-6">
+                    <LanguageSwitcher appearance="light" />
+                </div>
+            </div>
+            {children}
+        </div>
+    );
 }
