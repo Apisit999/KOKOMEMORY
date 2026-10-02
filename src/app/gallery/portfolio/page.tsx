@@ -137,7 +137,7 @@ export default function GalleryPage() {
                         relative
                         isolate
                         overflow-hidden
-                        bg-[#0d1b3a]
+                        bg-[#141516]
                         text-white
                     "
                 >
@@ -191,7 +191,7 @@ export default function GalleryPage() {
                             absolute
                             inset-0
                             -z-20
-                            bg-[#0d1b3a]/65
+                            bg-[#141516]/70
                         "
                     />
 
@@ -206,8 +206,8 @@ export default function GalleryPage() {
                             inset-0
                             -z-20
                             bg-gradient-to-r
-                            from-[#08152f]/95
-                            via-[#102450]/65
+                            from-[#141516]/95
+                            via-[#141516]/65
                             to-transparent
                         "
                     />
@@ -223,9 +223,9 @@ export default function GalleryPage() {
                             inset-0
                             -z-20
                             bg-gradient-to-b
-                            from-[#07132e]/40
+                            from-[#141516]/40
                             via-transparent
-                            to-[#07152f]/80
+                            to-[#141516]/80
                         "
                     />
 
@@ -263,7 +263,7 @@ export default function GalleryPage() {
                             h-[620px]
                             w-[620px]
                             rounded-full
-                            bg-blue-400/10
+                            bg-[#D5EE85]/10
                             blur-[150px]
                             motion-safe:animate-[kokoGlow_15s_ease-in-out_infinite_reverse]
                         "
@@ -1117,7 +1117,7 @@ export default function GalleryPage() {
                         relative
                         isolate
                         overflow-hidden
-                        bg-[#0d1b3a]
+                        bg-[#141516]
                         px-5
                         py-24
                         text-white
@@ -1157,7 +1157,7 @@ export default function GalleryPage() {
                             h-[650px]
                             w-[650px]
                             rounded-full
-                            bg-blue-400/10
+                            bg-[#D5EE85]/10
                             blur-[150px]
                         "
                     />

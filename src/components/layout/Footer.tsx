@@ -20,7 +20,7 @@ export default function Footer() {
     const { t, translate } = useI18n();
 
     return (
-        <footer className="bg-[#223B73] text-white">
+        <footer className="bg-[#141516] text-white">
 
             <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
 
@@ -40,6 +40,7 @@ export default function Footer() {
                                     fill
                                     priority
                                     className="object-cover"
+                                    sizes="(max-width: 640px) 56px, 64px"
                                 />
 
                             </div>
@@ -50,8 +51,8 @@ export default function Footer() {
                                     KOKO Memory
                                 </h2>
 
-                                <p className="text-pink-300">
-                                    {t("footer.weddingPhotobooth")}
+                                <p className="text-[#D5EE85]">
+                                    Creative Technology Studio
                                 </p>
 
                             </div>
@@ -60,7 +61,7 @@ export default function Footer() {
 
                         <p className="mt-6 sm:mt-8 leading-7 sm:leading-8 text-white/70">
 
-                            {translate("บริการ Photobooth งานแต่ง งานอีเวนต์ งานเลี้ยง งานเปิดตัวสินค้า พร้อมระบบ Live Gallery ดาวน์โหลดรูปผ่าน QR Code")}
+                            {translate("บริการเช่า Photobooth โปรแกรม Photobooth ซอฟต์แวร์ธุรกิจ และงานออกแบบ/พิมพ์ 3D พร้อมดูแลทุกขั้นตอน")}
 
                         </p>
 
@@ -70,7 +71,7 @@ export default function Footer() {
 
                                 <Phone
                                     size={20}
-                                    className="text-pink-400"
+                                    className="text-[#D5EE85]"
                                 />
 
                                 080-081-9933
@@ -92,10 +93,10 @@ export default function Footer() {
 
                                 <Mail
                                     size={20}
-                                    className="text-blue-300"
+                                    className="text-[#D5EE85]"
                                 />
 
-                                info@kokomemory.com
+                                kokomemory@gmail.com
 
                             </div>
 
@@ -173,6 +174,10 @@ export default function Footer() {
 
                             </li>
 
+                            <li><Link href="/photobooth" className="flex items-center gap-2 text-white/70 hover:text-[#D5EE85]"><ChevronRight size={16} />Photobooth</Link></li>
+
+                            <li><Link href="/software" className="flex items-center gap-2 text-white/70 hover:text-[#D5EE85]"> <ChevronRight size={16} />Software</Link></li>
+
                             <li>
 
                                 <Link
@@ -202,17 +207,13 @@ export default function Footer() {
 
                         <ul className="space-y-4 text-white/70">
 
-                            <li>Wedding Photobooth</li>
+                            <li>Photobooth rental</li>
 
-                            <li>360 Booth</li>
+                            <li>Photobooth software</li>
 
-                            <li>Live Gallery</li>
+                            <li>3D printing</li>
 
-                            <li>Backdrop</li>
-
-                            <li>Template Design</li>
-
-                            <li>QR Download</li>
+                            <li>Business software</li>
 
                         </ul>
 
@@ -245,7 +246,7 @@ export default function Footer() {
                                 href={socialLinks.line}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-green-500"
+                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-[#778E38]"
                             >
 
                                 <MessageCircle />
@@ -258,7 +259,7 @@ export default function Footer() {
                                 href={socialLinks.instagram}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-pink-600"
+                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-[#778E38]"
                             >
 
                                 <FaInstagram size={20} />

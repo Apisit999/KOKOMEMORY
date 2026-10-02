@@ -129,6 +129,10 @@ function PrinterIcon() {
     );
 }
 
+function MailIcon() {
+    return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>;
+}
+
 function SettingsIcon() {
     return (
         <svg
@@ -176,6 +180,7 @@ const menuItems: MenuItem[] = [
         href: "/admin/reviews",
         icon: <PortfolioIcon />,
     },
+    { label: "คำขอสอบถาม", href: "/admin/enquiries", icon: <MailIcon /> },
     {
         label: "หมวดหมู่ Portfolio",
         href: "/admin/portfolio/categories",

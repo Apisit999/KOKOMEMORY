@@ -1,0 +1,26 @@
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Camera, Check, Clock3, Images, Sparkles } from "lucide-react";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { useI18n } from "@/i18n";
+import { packages } from "@/data/booking-packages";
+import "./studio.css";
+
+export default function PhotoboothLanding() {
+  const { locale } = useI18n();
+  const en = locale === "en";
+  const t = (th: string, english: string) => en ? english : th;
+  const packageGroups = [
+    { category: "photobooth", title: t("Photobooth", "Photobooth") },
+    { category: "360", title: t("360 Photobooth", "360 Photobooth") },
+  ];
+  return <div className="koko-studio"><Navbar /><main className="studio-rental">
+    <section className="rental-hero studio-wrap"><div><p className="studio-eyebrow">KOKO MEMORY / EVENT EXPERIENCE</p><h1>{t("เปลี่ยนช่วงเวลา\nให้กลายเป็นความทรงจำ", "Make the moment\na lasting memory.")}</h1><p>{t("เช่า Photobooth สำหรับงานแต่ง งานเลี้ยง และอีเวนต์ เลือกรูปแบบภาพพิมพ์และช่วงเวลาให้เหมาะกับงานของคุณ", "Photobooth rental for weddings, parties and events. Find the print style and duration that fit your day.")}</p><div className="studio-actions"><Link href="/packages" className="studio-button">{t("ดูแพ็กเกจและราคา", "View packages & pricing")}<ArrowRight size={18}/></Link><Link href="/enquiry?service=rental" className="studio-text-link">{t("ปรึกษาทีมงาน", "Talk to our team")}<ArrowRight size={17}/></Link></div></div><figure className="rental-photo"><Image src="/hero/wedding.jpg" alt={t("บรรยากาศงานแต่งและบริการ Photobooth", "Wedding celebration and photobooth experience")} fill priority sizes="(max-width:800px) 100vw, 55vw"/><figcaption>KOKO MEMORY / GOOD TIMES, PRINTED.</figcaption></figure></section>
+    <section className="rental-highlights studio-wrap">{[[Camera,t("ถ่ายภาพไม่จำกัด", "Unlimited photos"),t("เก็บโมเมนต์สนุก ๆ ตลอดช่วงเวลาที่จอง", "Capture moments throughout your booked session.")],[Images,t("ได้ทั้งภาพพิมพ์และไฟล์", "Prints & digital photos"),t("เลือกรูปแบบภาพพิมพ์ตามแพ็กเกจ พร้อมรับไฟล์ผ่าน QR Code", "Choose a print format by package and access files via QR code.")],[Sparkles,t("มีทีมงานดูแลงาน", "An attendant at your event"),t("ทีมงานช่วยดูแลการใช้งานตลอดงาน", "Our team helps operate the booth during your event.")]].map(([Icon,title,detail])=><article key={String(title)}><Icon size={25}/><h2>{String(title)}</h2><p>{String(detail)}</p></article>)}</section>
+    <section className="rental-packages studio-wrap"><div className="studio-heading"><div><p className="studio-eyebrow">PACKAGES / PHOTOGRAPHY</p><h2>{t("เลือกรูปแบบที่เหมาะกับงาน", "Choose the right experience.")}</h2></div><Link className="studio-text-link" href="/packages">{t("ดูแพ็กเกจทั้งหมด", "All packages")}<ArrowRight size={17}/></Link></div>{packageGroups.map(group=><div key={group.category} className="rental-package-group"><h3>{group.title}</h3><div className="rental-grid">{packages.filter(item=>item.category===group.category).map(item=><article key={item.id} className="rental-card"><div className="rental-card-title"><span>{item.group === "starter" ? t("เริ่มต้น", "STARTER") : item.group === "standard" ? t("มาตรฐาน", "STANDARD") : item.group === "premium" ? t("พรีเมียม", "PREMIUM") : t("360 Photobooth", "360 PHOTOBOOTH")}</span>{item.popular && <small>{t("ยอดนิยม", "POPULAR")}</small>}</div><h4>{item.title}</h4><p className="rental-price">฿{item.price.toLocaleString("th-TH")}</p><p className="rental-meta"><Clock3 size={15}/> {item.hours} {t("ชั่วโมง", "hours")} <span>·</span> {item.paperSize ? `${t("ภาพพิมพ์", "Print")} ${item.paperSize}` : t("ดิจิทัล", "Digital")}</p><ul>{item.features.map(feature=><li key={feature}><Check size={15}/>{feature}</li>)}</ul><Link href={`/booking/package?package=${encodeURIComponent(item.id)}`}>{t("เลือกแพ็กเกจนี้", "Choose this package")}<ArrowRight size={17}/></Link></article>)}</div></div>)}</section>
+    <section className="rental-how studio-wrap"><p className="studio-eyebrow">HOW TO BOOK</p><h2>{t("เริ่มจองได้ใน 3 ขั้นตอน", "Book in three steps.")}</h2><div className="studio-steps">{[[t("เลือกแพ็กเกจ", "Choose a package"),t("เลือกรูปแบบภาพพิมพ์และจำนวนชั่วโมง", "Pick a print style and duration.")],[t("ใส่ข้อมูลงาน", "Add event details"),t("ระบุวัน เวลา สถานที่ และรายละเอียดการจัดงาน", "Share the date, time, venue and event details.")],[t("ตรวจสอบและยืนยัน", "Review & confirm"),t("ตรวจค่าใช้จ่ายและรายละเอียดก่อนยืนยันการจอง", "Review event details and costs before confirming.")]].map(([title,detail],i)=><article key={title}><span>0{i+1}</span><h3>{title}</h3><p>{detail}</p></article>)}</div><p className="rental-auth-note">{t("การเริ่มจองจะให้เข้าสู่ระบบก่อน หากยังไม่ได้เข้าสู่ระบบ ระบบจะพากลับมารายการที่เลือกหลังเข้าสู่ระบบ", "Booking requires an account. If you are signed out, you will return to your selected package after login.")}</p></section>
+    <section className="studio-end studio-wrap"><p className="studio-eyebrow">MAKE YOUR EVENT A LITTLE MORE YOU</p><h2>{t("พร้อมเลือกแพ็กเกจแล้วหรือยัง?", "Ready to find your package?")}</h2><Link className="studio-button" href="/packages">{t("ดูราคาและแพ็กเกจ", "Explore packages")}<ArrowRight size={18}/></Link></section>
+  </main><Footer/></div>;
+}

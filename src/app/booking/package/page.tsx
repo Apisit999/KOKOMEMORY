@@ -677,7 +677,7 @@ function PackageContent() {
                 <div className="pointer-events-none absolute -right-32 top-10 h-72 w-72 rounded-full bg-purple-100/60 blur-3xl sm:h-96 sm:w-96" />
 
 
-                <div className="relative mx-auto w-full max-w-7xl px-4 pb-12 pt-24 text-center sm:px-6 sm:pb-16 sm:pt-28 lg:px-8 lg:pt-32">
+                <div className="booking-package-hero relative mx-auto w-full max-w-7xl px-4 pb-12 pt-24 text-center sm:px-6 sm:pb-16 sm:pt-28 lg:px-8 lg:pt-32">
 
                     <span className="inline-flex max-w-full items-center gap-2 rounded-full bg-pink-100 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-pink-600 sm:px-5 sm:text-sm sm:tracking-[0.25em]">
 

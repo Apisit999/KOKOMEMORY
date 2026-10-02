@@ -3,9 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { CalendarDays, ChevronRight, FileText, Home, LayoutDashboard, LogOut, Menu, Printer, ShieldCheck, ShoppingBag, UserRound, X } from "lucide-react";
+import { CalendarDays, ChevronRight, FileText, Home, LayoutDashboard, LoaderCircle, LogOut, Menu, Printer, ShieldCheck, ShoppingBag, UserRound, X } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { useI18n } from "@/i18n";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
@@ -35,17 +35,53 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
     const { locale } = useI18n();
     const [open, setOpen] = useState(false);
     const [user, setUser] = useState<User | null>(null);
+    const [authReady, setAuthReady] = useState(false);
+    const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const menuRef = useRef<HTMLElement>(null);
     const isPublicPage = publicPages.includes(pathname);
 
     useEffect(() => onAuthStateChanged(auth, (current) => {
         setUser(current);
+        setAuthReady(true);
         if (!current && !isPublicPage) router.replace(`/account/login?redirect=${encodeURIComponent(pathname)}`);
     }), [isPublicPage, pathname, router]);
 
+    useEffect(() => {
+        if (!open) return;
+        const menuButton = menuButtonRef.current;
+        const focusable = () => menuRef.current?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+        focusable()?.[0]?.focus();
+        const handleMenuKey = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setOpen(false);
+                menuButton?.focus();
+                return;
+            }
+            if (event.key !== "Tab") return;
+            const items = focusable();
+            if (!items?.length) return;
+            const first = items[0];
+            const last = items[items.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+        window.addEventListener("keydown", handleMenuKey);
+        return () => {
+            window.removeEventListener("keydown", handleMenuKey);
+            if (document.activeElement !== menuButton) menuButton?.focus();
+        };
+    }, [open]);
+
     if (isPublicPage) return <>{children}</>;
+    if (!authReady || !user) return <main className="flex min-h-screen items-center justify-center bg-[#F8F8FB] px-5"><div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-sm font-semibold text-slate-600 shadow-sm"><LoaderCircle size={19} className="animate-spin text-[#D93687]" />{locale === "th" ? "กำลังตรวจสอบบัญชีของคุณ…" : "Checking your account…"}</div></main>;
 
     const text = (label: Label) => label[locale];
-    const isActive = (href: string) => pathname === href || (href !== "/account" && pathname.startsWith(`${href}/`));
+    const isActive = (href: string) => pathname === href || (href !== "/account" && href !== "/account/3d-printing" && pathname.startsWith(`${href}/`));
     const pageTitle = pathname.startsWith("/account/3d-printing") ? "KOKO 3D" : pathname === "/account/bookings" ? text({ th: "การจองของฉัน", en: "My bookings" }) : pathname === "/account/profile" ? text({ th: "โปรไฟล์", en: "Profile" }) : pathname === "/account/security" ? text({ th: "ความปลอดภัย", en: "Security" }) : text({ th: "ภาพรวม", en: "Overview" });
 
     const renderLink = (item: NavItem, mobile = false) => {
@@ -69,7 +105,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
         <button type="button" onClick={() => void signOut(auth)} className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600"><LogOut size={18} />{locale === "th" ? "ออกจากระบบ" : "Sign out"}</button>
     </div>;
 
-    return <div data-account-shell className="min-h-screen bg-[#F8F8FB] text-[#111116]"><style jsx global>{`[data-account-shell] main > main.bg-slate-50 > header{display:none}[data-account-shell] main > main.bg-slate-50{background:#F8F8FB;min-height:calc(100vh - 72px)}`}</style>
+    return <div data-account-shell className="min-h-screen bg-[#F8F8FB] text-[#111116]"><style jsx global>{`[data-account-shell] main.bg-slate-50 > header{display:none}[data-account-shell] main.bg-slate-50{background:#F8F8FB;min-height:calc(100vh - 72px)}`}</style>
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-[264px] flex-col border-r border-[#E9E9EF] bg-white px-4 py-6 lg:flex">
             <Link href="/account" className="mb-8 flex items-center gap-3 px-2"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={44} height={44} className="h-10 w-10 rounded-full object-cover" priority /><span><b className="block text-base tracking-tight">KOKO Memory</b><small className="text-[10px] uppercase tracking-[.2em] text-slate-400">{locale === "th" ? "บัญชีของฉัน" : "My account"}</small></span></Link>
             {navigation()}
@@ -77,11 +113,11 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
         </aside>
         <div className="lg:pl-[264px]">
             <header className="sticky top-0 z-40 border-b border-[#E9E9EF] bg-white/95 backdrop-blur-xl">
-                <div className="flex h-[72px] items-center justify-between gap-3 px-3 sm:gap-4 sm:px-8"><div className="flex min-w-0 items-center gap-2 sm:gap-3"><button type="button" className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 lg:hidden" onClick={() => setOpen(true)} aria-label={locale === "th" ? "เปิดเมนู" : "Open menu"}><Menu size={20} /></button><div className="min-w-0"><p className="truncate text-xs font-bold text-slate-400">KOKO Memory Customer Portal</p><h1 className="truncate text-lg font-black">{pageTitle}</h1></div></div><div className="flex shrink-0 items-center gap-2 sm:gap-3"><LanguageSwitcher appearance="light" /><div className="hidden items-center gap-2 border-l border-slate-100 pl-3 sm:flex"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFE4F1] text-sm font-black text-[#D93687]">{(user?.displayName || user?.email || "K").charAt(0).toUpperCase()}</div><span className="hidden max-w-[150px] truncate text-sm font-semibold text-slate-700 xl:block">{user?.displayName || user?.email || "KOKO"}</span></div></div></div>
+                <div className="flex h-[72px] items-center justify-between gap-3 px-3 sm:gap-4 sm:px-8"><div className="flex min-w-0 items-center gap-2 sm:gap-3"><button ref={menuButtonRef} type="button" className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 lg:hidden" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="account-mobile-menu" aria-label={locale === "th" ? "เปิดเมนู" : "Open menu"}><Menu size={20} /></button><div className="min-w-0"><p className="truncate text-xs font-bold text-slate-400">KOKO Memory Customer Portal</p><h1 className="truncate text-lg font-black">{pageTitle}</h1></div></div><div className="flex shrink-0 items-center gap-2 sm:gap-3"><LanguageSwitcher appearance="light" /><div className="hidden items-center gap-2 border-l border-slate-100 pl-3 sm:flex"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFE4F1] text-sm font-black text-[#D93687]">{(user?.displayName || user?.email || "K").charAt(0).toUpperCase()}</div><span className="hidden max-w-[150px] truncate text-sm font-semibold text-slate-700 xl:block">{user?.displayName || user?.email || "KOKO"}</span></div></div></div>
             </header>
-            <main>{breadcrumb(pathname, locale)}{children}</main>
+            <div>{breadcrumb(pathname, locale)}{children}</div>
         </div>
-        {open && <div className="fixed inset-0 z-[60] bg-slate-950/35 lg:hidden" onClick={() => setOpen(false)}><aside className="flex h-dvh w-[min(320px,88vw)] flex-col bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="mb-8 flex shrink-0 items-center justify-between"><Link href="/account" onClick={() => setOpen(false)} className="flex items-center gap-3"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={38} height={38} className="h-9 w-9 rounded-full object-cover" /><b>KOKO Memory</b></Link><button type="button" onClick={() => setOpen(false)} aria-label={locale === "th" ? "ปิดเมนู" : "Close menu"} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><X size={21} /></button></div>{navigation(true)}<div className="mt-auto shrink-0">{secondary(true)}</div></aside></div>}
+        {open && <div className="fixed inset-0 z-[60] bg-slate-950/35 lg:hidden" onClick={() => setOpen(false)}><aside id="account-mobile-menu" ref={menuRef} role="dialog" aria-modal="true" aria-label={locale === "th" ? "เมนูบัญชี" : "Account menu"} className="flex h-dvh w-[min(320px,88vw)] flex-col bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="mb-8 flex shrink-0 items-center justify-between"><Link href="/account" onClick={() => setOpen(false)} className="flex items-center gap-3"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={38} height={38} className="h-9 w-9 rounded-full object-cover" /><b>KOKO Memory</b></Link><button type="button" onClick={() => setOpen(false)} aria-label={locale === "th" ? "ปิดเมนู" : "Close menu"} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><X size={21} /></button></div>{navigation(true)}<div className="mt-auto shrink-0">{secondary(true)}</div></aside></div>}
     </div>;
 }
 
