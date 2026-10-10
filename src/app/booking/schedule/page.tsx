@@ -73,7 +73,7 @@ import { Calendar } from "@/components/ui/calendar";
 import {
     Card,
     CardContent,
-} from "@/components/ui/card";
+} from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n";
 
