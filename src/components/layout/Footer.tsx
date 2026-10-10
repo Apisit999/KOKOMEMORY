@@ -20,11 +20,11 @@ export default function Footer() {
     const { t, translate } = useI18n();
 
     return (
-        <footer className="bg-[#141516] text-white">
+        <footer className="border-t border-white/10 bg-[#0B0B0F] text-white">
 
             <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
 
-                <div className="grid gap-10 sm:gap-12 lg:grid-cols-4">
+                <div className="grid gap-10 sm:gap-12 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr_1fr]">
 
                     {/* Company */}
 
@@ -51,7 +51,7 @@ export default function Footer() {
                                     KOKO Memory
                                 </h2>
 
-                                <p className="text-[#D5EE85]">
+                                <p className="text-[#FF8CC4]">
                                     Creative Technology Studio
                                 </p>
 
@@ -59,22 +59,22 @@ export default function Footer() {
 
                         </div>
 
-                        <p className="mt-6 sm:mt-8 leading-7 sm:leading-8 text-white/70">
+                        <p className="mt-6 max-w-md text-sm leading-7 text-white/70 sm:mt-8 sm:text-base sm:leading-8">
 
                             {translate("บริการเช่า Photobooth โปรแกรม Photobooth ซอฟต์แวร์ธุรกิจ และงานออกแบบ/พิมพ์ 3D พร้อมดูแลทุกขั้นตอน")}
 
                         </p>
 
-                        <div className="mt-8 space-y-4">
+                        <div className="mt-8 space-y-4 text-sm sm:text-base">
 
                             <div className="flex items-center gap-3">
 
                                 <Phone
                                     size={20}
-                                    className="text-[#D5EE85]"
+                                    className="text-[#FF8CC4]"
                                 />
 
-                                080-081-9933
+                                <a href="tel:+66800819933" className="text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">080-081-9933</a>
 
                             </div>
 
@@ -85,7 +85,7 @@ export default function Footer() {
                                     className="text-green-400"
                                 />
 
-                                @024ppzhh
+                                <a href={socialLinks.line} target="_blank" rel="noopener noreferrer" className="text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">@024ppzhh</a>
 
                             </div>
 
@@ -93,10 +93,10 @@ export default function Footer() {
 
                                 <Mail
                                     size={20}
-                                    className="text-[#D5EE85]"
+                                    className="text-[#FF8CC4]"
                                 />
 
-                                kokomemory@gmail.com
+                                <a href="mailto:kokomemory@gmail.com" className="break-all text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">kokomemory@gmail.com</a>
 
                             </div>
 
