@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 
 import PortfolioLightbox from "@/components/gallery/PortfolioLightbox";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import "@/components/studio/studio.css";
 
 interface PortfolioImage {
     id?: string;
@@ -226,9 +229,9 @@ export default function PortfolioDetailPage() {
 
     return (
 
-        <main
-            className="
-                min-h-screen
+        <div className="koko-studio portfolio-detail">
+            <Navbar />
+        <main className="portfolio-detail-main min-h-screen
                 overflow-hidden
                 bg-white
             "
@@ -921,7 +924,8 @@ export default function PortfolioDetailPage() {
             </section>
 
         </main>
-
+            <Footer />
+        </div>
     );
 
 }

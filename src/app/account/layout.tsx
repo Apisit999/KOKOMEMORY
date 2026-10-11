@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import brandLogo from "../../../public/logo/logo.jpg";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
-import { CalendarDays, ChevronRight, FileText, Home, LayoutDashboard, LoaderCircle, LogOut, Menu, Printer, ShieldCheck, ShoppingBag, UserRound, X } from "lucide-react";
+import { CalendarDays, ChevronRight, FileText, Home, LayoutDashboard, LoaderCircle, LogOut, Menu, Monitor, Printer, ShieldCheck, ShoppingBag, UserRound, X } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import { useI18n } from "@/i18n";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
@@ -16,6 +17,7 @@ type NavItem = { href: string; label: Label; icon: typeof LayoutDashboard };
 const mainLinks: NavItem[] = [
     { href: "/account", label: { th: "ภาพรวม", en: "Overview" }, icon: LayoutDashboard },
     { href: "/account/bookings", label: { th: "การจองของฉัน", en: "My bookings" }, icon: CalendarDays },
+    { href: "/account/koko-studio", label: { th: "KOKO Studio", en: "KOKO Studio" }, icon: Monitor },
 ];
 const threeDLinks: NavItem[] = [
     { href: "/account/3d-printing", label: { th: "ภาพรวม 3D", en: "3D overview" }, icon: Printer },
@@ -82,7 +84,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
 
     const text = (label: Label) => label[locale];
     const isActive = (href: string) => pathname === href || (href !== "/account" && href !== "/account/3d-printing" && pathname.startsWith(`${href}/`));
-    const pageTitle = pathname.startsWith("/account/3d-printing") ? "KOKO 3D" : pathname === "/account/bookings" ? text({ th: "การจองของฉัน", en: "My bookings" }) : pathname === "/account/profile" ? text({ th: "โปรไฟล์", en: "Profile" }) : pathname === "/account/security" ? text({ th: "ความปลอดภัย", en: "Security" }) : text({ th: "ภาพรวม", en: "Overview" });
+    const pageTitle = pathname.startsWith("/account/3d-printing") ? "KOKO 3D" : pathname === "/account/bookings" ? text({ th: "การจองของฉัน", en: "My bookings" }) : pathname === "/account/profile" ? text({ th: "โปรไฟล์", en: "Profile" }) : pathname === "/account/security" ? text({ th: "ความปลอดภัย", en: "Security" }) : pathname.startsWith("/account/koko-studio") ? "KOKO Studio" : text({ th: "ภาพรวม", en: "Overview" });
 
     const renderLink = (item: NavItem, mobile = false) => {
         const active = isActive(item.href);
@@ -107,7 +109,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
 
     return <div data-account-shell className="min-h-screen bg-[#F8F8FB] text-[#111116]"><style jsx global>{`[data-account-shell] main.bg-slate-50 > header{display:none}[data-account-shell] main.bg-slate-50{background:#F8F8FB;min-height:calc(100vh - 72px)}`}</style>
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-[264px] flex-col border-r border-[#E9E9EF] bg-white px-4 py-6 lg:flex">
-            <Link href="/account" className="mb-8 flex items-center gap-3 px-2"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={44} height={44} className="h-10 w-10 rounded-full object-cover" priority /><span><b className="block text-base tracking-tight">KOKO Memory</b><small className="text-[10px] uppercase tracking-[.2em] text-slate-400">{locale === "th" ? "บัญชีของฉัน" : "My account"}</small></span></Link>
+            <Link href="/account" className="mb-8 flex items-center gap-3 px-2"><Image src={brandLogo} alt="KOKO Memory" width={44} height={44} className="h-10 w-10 rounded-full object-cover" priority /><span><b className="block text-base tracking-tight">KOKO Memory</b><small className="text-[10px] uppercase tracking-[.2em] text-slate-400">{locale === "th" ? "บัญชีของฉัน" : "My account"}</small></span></Link>
             {navigation()}
             <div className="mt-auto">{secondary()}</div>
         </aside>
@@ -117,7 +119,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
             </header>
             <div>{breadcrumb(pathname, locale)}{children}</div>
         </div>
-        {open && <div className="fixed inset-0 z-[60] bg-slate-950/35 lg:hidden" onClick={() => setOpen(false)}><aside id="account-mobile-menu" ref={menuRef} role="dialog" aria-modal="true" aria-label={locale === "th" ? "เมนูบัญชี" : "Account menu"} className="flex h-dvh w-[min(320px,88vw)] flex-col bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="mb-8 flex shrink-0 items-center justify-between"><Link href="/account" onClick={() => setOpen(false)} className="flex items-center gap-3"><Image src="/logo/logo.jpg" alt="KOKO Memory" width={38} height={38} className="h-9 w-9 rounded-full object-cover" /><b>KOKO Memory</b></Link><button type="button" onClick={() => setOpen(false)} aria-label={locale === "th" ? "ปิดเมนู" : "Close menu"} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><X size={21} /></button></div>{navigation(true)}<div className="mt-auto shrink-0">{secondary(true)}</div></aside></div>}
+        {open && <div className="fixed inset-0 z-[60] bg-slate-950/35 lg:hidden" onClick={() => setOpen(false)}><aside id="account-mobile-menu" ref={menuRef} role="dialog" aria-modal="true" aria-label={locale === "th" ? "เมนูบัญชี" : "Account menu"} className="flex h-dvh w-[min(320px,88vw)] flex-col bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="mb-8 flex shrink-0 items-center justify-between"><Link href="/account" onClick={() => setOpen(false)} className="flex items-center gap-3"><Image src={brandLogo} alt="KOKO Memory" width={38} height={38} className="h-9 w-9 rounded-full object-cover" /><b>KOKO Memory</b></Link><button type="button" onClick={() => setOpen(false)} aria-label={locale === "th" ? "ปิดเมนู" : "Close menu"} className="rounded-xl p-2 text-slate-500 hover:bg-slate-50"><X size={21} /></button></div>{navigation(true)}<div className="mt-auto shrink-0">{secondary(true)}</div></aside></div>}
     </div>;
 }
 

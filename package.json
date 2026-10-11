@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:studio": "node --experimental-strip-types --test tests/studio/*.test.ts",
+    "studio:migrate": "node --env-file=.env.studio.local --experimental-strip-types scripts/studio-migrate.ts",
+    "studio:dev": "node scripts/studio-start-local.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1114.0",

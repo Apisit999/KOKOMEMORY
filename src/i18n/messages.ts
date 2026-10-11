@@ -9,7 +9,7 @@ export const messages = {
     th: {
         common: {
             threeD: "3D Printing", overview: "ภาพรวม", quotes: "ใบเสนอราคาของฉัน", orders: "งาน 3D ของฉัน", security: "ความปลอดภัย", openMenu: "เปิดเมนู",
-            home: "หน้าแรก", portfolio: "ผลงาน", services: "บริการ", packages: "แพ็กเกจ",
+            home: "หน้าแรก", portfolio: "ผลงาน", services: "บริการ", allServices: "บริการทั้งหมด", photoboothRental: "บริการเช่า Photobooth", software: "ซอฟต์แวร์", kokoStudio: "KOKO Studio", packages: "แพ็กเกจ",
             about: "เกี่ยวกับเรา", contact: "ติดต่อ", search: "ค้นหารูป", account: "บัญชี",
             myAccount: "บัญชีของฉัน", profile: "โปรไฟล์", bookings: "การจองของฉัน",
             accountSettings: "ตั้งค่าบัญชี", login: "เข้าสู่ระบบ", register: "สมัครสมาชิก",
@@ -46,7 +46,7 @@ export const messages = {
     en: {
         common: {
             threeD: "3D Printing", overview: "Overview", quotes: "My quotes", orders: "My 3D orders", security: "Security", openMenu: "Open menu",
-            home: "Home", portfolio: "Portfolio", services: "Services", packages: "Packages",
+            home: "Home", portfolio: "Portfolio", services: "Services", allServices: "All services", photoboothRental: "Photobooth rental", software: "Software", kokoStudio: "KOKO Studio", packages: "Packages",
             about: "About us", contact: "Contact", search: "Search photos", account: "Account",
             myAccount: "My account", profile: "Profile", bookings: "My bookings",
             accountSettings: "Account settings", login: "Log in", register: "Register",

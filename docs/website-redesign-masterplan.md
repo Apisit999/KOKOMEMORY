@@ -199,3 +199,12 @@ Footer กลาง: บริการทั้งหมด ช่องทา�
 ตรวจล่าสุด: Playwright หน้า `/packages` แสดง title เฉพาะหน้าและไม่มี console warning/error; ESLint และ `npm run build` ผ่าน ครบ 64 routes
 
 งานตรวจต่อ: ปรับ about/contact และรายละเอียด portfolio/3D ให้ใช้ design system ร่วมกัน ตรวจมือถือหน้า packages/3D/portfolio และลอง flow เลือกแพ็กเกจ → login → กลับมายังรายการที่เลือกด้วยบัญชีทดสอบ
+
+## ความคืบหน้าต่อ — 11 ตุลาคม 2026
+
+- หน้า Contact ใช้โทน charcoal/lime และการ์ดช่องทางติดต่อร่วมกับ KOKO Studio พร้อม metadata เฉพาะหน้า
+- หน้า Portfolio detail กลับมาใช้ Navbar/Footer กลางและสีของ Studio; หน้า 3D detail ใช้ palette เดียวกัน
+- Playwright บน production build ที่ viewport 390px: About, Contact, Portfolio detail และ Packages ไม่มี horizontal overflow; Portfolio detail แสดง Navbar/Footer ครบ
+- เลือกแพ็กเกจ Photobooth S แล้วไป `/account/login?redirect=%2Fbooking%2Fpackage%3Fpackage%3Dphotobooth-s`; หน้าล็อกอินอ่าน redirect นี้และหน้า package อ่านค่า package จาก URL
+- ESLint ผ่าน 0 errors (51 warnings เดิม); production build ผ่านโดยไม่มี CSS parser warning หลังแก้ selector
+- ภาพ Contact มือถืออยู่ที่ `output/playwright/contact-mobile.png`; ยังไม่มีสินค้าในหน้ารวม 3D สำหรับตรวจ detail ที่มีข้อมูล และยังไม่ได้ทดสอบ login/return ด้วยบัญชี staging

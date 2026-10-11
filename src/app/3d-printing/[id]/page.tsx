@@ -15,6 +15,7 @@ import {
     Weight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import "@/components/studio/studio.css";
 
 type ThreeDProduct = {
     id: string;
@@ -117,7 +118,7 @@ export default function ThreeDProductDetailPage() {
 
     if (loading) {
         return (
-            <main className="flex min-h-screen items-center justify-center bg-[#fffafb]">
+            <main className="koko-studio three-d-detail flex min-h-screen items-center justify-center">
                 <div className="text-sm font-semibold text-slate-500">
                     กำลังโหลด Product...
                 </div>
@@ -127,7 +128,7 @@ export default function ThreeDProductDetailPage() {
 
     if (!product) {
         return (
-            <main className="min-h-screen bg-[#fffafb] px-5 py-24">
+            <main className="koko-studio three-d-detail min-h-screen px-5 py-24">
                 <div className="mx-auto max-w-3xl text-center">
 
                     <Box
@@ -156,7 +157,7 @@ export default function ThreeDProductDetailPage() {
     return (
         <>
             <Navbar />
-        <main className="min-h-screen bg-[#fffafb]">
+        <main className="koko-studio three-d-detail min-h-screen">
 
             {/* =================================================
                 TOP

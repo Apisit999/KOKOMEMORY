@@ -77,3 +77,69 @@
 /* Keep the rotated hero orbit inside the collage on narrow viewports. */
 .studio-collage{overflow-x:clip}
 
+/* Free plan card uses a light surface, so it needs its own dark text palette. */
+.studio-free-plan{color:#20211d}
+.studio-free-plan .studio-eyebrow{color:#46532f}
+.studio-free-plan h2{color:#20211d}
+.studio-free-plan li{color:#303329}
+.studio-free-plan li svg,.studio-free-plan-note-title svg{color:#526b23;flex:none}
+.studio-free-plan-note{border-color:#66743f!important}
+.studio-free-plan-note-copy{color:#414638}
+
+
+/* Contact uses the shared KOKO Studio palette and spacing. */
+.contact-page{min-height:100vh;padding-top:105px;padding-bottom:1px}
+.contact-hero{display:grid;grid-template-columns:1fr .8fr;align-items:center;gap:50px;padding-block:65px 75px}
+.contact-hero h1{font-size:clamp(42px,6vw,76px);font-weight:800;line-height:1.24;letter-spacing:-2.5px;margin-top:23px}
+.contact-hero h1 span{color:#d5ee85}
+.contact-hero-art{min-height:360px;border-radius:10px;background:linear-gradient(135deg,#24262088,#14151633),url('/about/about2.png') center 46%/cover;display:flex;align-items:flex-end;padding:26px;box-shadow:0 22px 70px #0004}
+.contact-hero-art span{padding:12px 16px;background:#d5ee85;color:#20231a;font-size:12px;font-weight:800;letter-spacing:2px;line-height:1.7;transform:rotate(-3deg)}
+.contact-hero-actions{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:26px}
+.contact-channels{padding-block:25px 80px}
+.contact-channels .about-section-heading,.contact-next{display:flex;align-items:end;justify-content:space-between;gap:32px}
+.contact-channels .about-section-heading>p,.contact-next>div>p:not(.studio-eyebrow){max-width:470px;color:#a9aaa3;font-size:13px;line-height:1.9}
+.contact-channel-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
+.contact-channel{display:flex;flex-direction:column;min-width:0;padding:25px;background:#20211f;border:1px solid #383a35;border-radius:9px;transition:border-color .2s,transform .2s}
+.contact-channel:hover{border-color:#d5ee85;transform:translateY(-3px)}
+.contact-channel-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:#d5ee85;color:#20231a}
+.contact-channel-label{margin-top:20px;font-size:12px;color:#a6a79d}
+.contact-channel strong{margin-top:6px;font-size:17px;overflow-wrap:anywhere}
+.contact-channel-note{min-height:42px;margin-top:8px;color:#b5b6ad;font-size:12px;line-height:1.7}
+.contact-channel-action{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:15px;border-top:1px solid #3a3b36;color:#d5ee85;font-size:12px;font-weight:700}
+.contact-next{padding-block:38px 78px;border-top:1px solid #393a35}
+.contact-next h2{margin-top:12px}
+.contact-next-links{display:grid;min-width:min(340px,100%)}
+.contact-next-links a{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #393a35;font-size:13px}
+.contact-next-links a:hover{color:#d5ee85}
+@media(max-width:800px){.contact-page{padding-top:85px}.contact-hero{grid-template-columns:1fr;gap:28px;padding-block:45px 55px}.contact-hero h1{font-size:clamp(40px,10vw,62px);letter-spacing:-1.5px}.contact-hero-art{min-height:280px}.contact-channels{padding-bottom:55px}.contact-channels .about-section-heading,.contact-next{align-items:start;flex-direction:column;gap:15px}.contact-channel-grid{grid-template-columns:1fr}.contact-channel-note{min-height:0}.contact-next{padding-block:30px 55px}.contact-next-links{width:100%}}
+
+/* Product details share the charcoal, cream and lime studio palette. */
+.three-d-detail{background:#141516!important;color:#f4f0e7!important}
+.three-d-detail>section:nth-of-type(2){background:#1b1c1a!important;color:#f4f0e7}
+.three-d-detail>section:nth-of-type(2) .bg-white{background:#20211f!important;border-color:#383a35!important;color:#f4f0e7}
+.three-d-detail>section:nth-of-type(2) .bg-slate-900{background:#eee7d9!important;color:#20211d!important}
+.three-d-detail>section:nth-of-type(2) .text-slate-900,.three-d-detail>section:nth-of-type(2) .text-slate-800{color:#f4f0e7!important}
+.three-d-detail>section:nth-of-type(2) .text-slate-500,.three-d-detail>section:nth-of-type(2) .text-slate-400{color:#b5b6ad!important}
+.three-d-detail>section:nth-of-type(2) .bg-pink-50,.three-d-detail>section:nth-of-type(2) .bg-pink-100{background:#d5ee85!important;color:#20231a!important}
+.three-d-detail>section:nth-of-type(2) .text-pink-500,.three-d-detail>section:nth-of-type(2) .text-pink-600{color:#526b23!important}
+.three-d-detail>section:nth-of-type(2) .border-slate-100,.three-d-detail>section:nth-of-type(2) .border-slate-200{border-color:#383a35!important}
+.three-d-detail>section:nth-of-type(3){background:#eee7d9!important;color:#20211d}
+.three-d-detail>section:nth-of-type(3) h2,.three-d-detail>section:nth-of-type(3) p{color:#20211d!important}
+.three-d-detail>section:nth-of-type(3) a{background:#d5ee85!important;color:#20231a!important}
+.three-d-detail .bg-pink-500{background:#d5ee85!important;color:#20231a!important}
+
+/* Portfolio details share the public KOKO Studio shell and palette. */
+.portfolio-detail-main{background:#141516!important;color:#f4f0e7}
+.portfolio-detail-main>section:first-of-type{background:#141516!important}
+.portfolio-detail-main>section:first-of-type .text-pink-300{color:#d5ee85!important}
+.portfolio-detail-main .text-pink-500{color:#71863a!important}
+.portfolio-detail-main .bg-gradient-to-br{background:#eee7d9!important}
+.portfolio-detail-main>section:last-of-type h2,.portfolio-detail-main>section:last-of-type p{color:#20211d!important}
+.portfolio-detail-main>section:last-of-type .text-pink-100,.portfolio-detail-main>section:last-of-type .text-pink-50{color:#52564a!important}
+.portfolio-detail-main>section:last-of-type a{background:#d5ee85!important;color:#20231a!important}
+.portfolio-detail-main a:focus-visible,.portfolio-detail-main button:focus-visible{outline:3px solid #d5ee85;outline-offset:4px}
+.three-d-detail>section:first-of-type{background:#141516!important;border-color:#383a35!important;color:#f4f0e7}
+.three-d-detail>section:first-of-type a{color:#d5ee85!important}
+.portfolio-detail-main .text-slate-900,.portfolio-detail-main .text-slate-800{color:#f4f0e7!important}
+.portfolio-detail-main .text-slate-500,.portfolio-detail-main .text-slate-400{color:#b5b6ad!important}
+.portfolio-detail-main>section:last-of-type .text-white{color:#20211d!important}

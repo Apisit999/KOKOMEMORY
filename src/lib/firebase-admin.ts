@@ -34,6 +34,10 @@ const privateKey = (
     "\n"
 );
 
+// Emulator credentials are unnecessary. Both services and a demo project are required
+// so local tests cannot silently target a real customer's Firebase project.
+const usingEmulators = Boolean(process.env.FIREBASE_AUTH_EMULATOR_HOST && process.env.FIRESTORE_EMULATOR_HOST && projectId?.startsWith("demo-"));
+
 
 /* ============================================================
    Validate Environment
@@ -45,13 +49,13 @@ if (!projectId) {
     );
 }
 
-if (!clientEmail) {
+if (!usingEmulators && !clientEmail) {
     throw new Error(
         "Missing FIREBASE_CLIENT_EMAIL"
     );
 }
 
-if (!privateKey) {
+if (!usingEmulators && !privateKey) {
     throw new Error(
         "Missing FIREBASE_PRIVATE_KEY"
     );
@@ -65,7 +69,7 @@ if (!privateKey) {
 const firebaseApp =
     getApps().length > 0
         ? getApps()[0]
-        : initializeApp({
+        : usingEmulators ? initializeApp({ projectId }) : initializeApp({
               credential: cert({
                   projectId,
                   clientEmail,

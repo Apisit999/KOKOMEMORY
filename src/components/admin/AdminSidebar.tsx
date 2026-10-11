@@ -150,6 +150,7 @@ function SettingsIcon() {
 }
 
 const menuItems: MenuItem[] = [
+    { label: "KOKO Studio", href: "/admin/koko-studio", icon: <PrinterIcon /> },
     {
         label: "แดชบอร์ด",
         href: "/admin/dashboard",

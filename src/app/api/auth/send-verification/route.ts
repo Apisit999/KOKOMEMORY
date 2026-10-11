@@ -83,6 +83,12 @@ export async function POST(request: Request) {
             });
         }
 
+        // Local Auth Emulator accounts are disposable and cannot deliver mail.
+        // This guard is development-only and requires the emulator host.
+        if (process.env.NODE_ENV === "development" && process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+            return NextResponse.json({ success: true, emulator: true, message: "Email verification sending skipped in local emulator" });
+        }
+
         // ============================================================
         // Check Resend API Key
         // ============================================================

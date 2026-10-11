@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import brandLogo from "../../../public/logo/logo.jpg";
 import Link from "next/link";
 import {
     Phone,
@@ -35,7 +36,7 @@ export default function Footer() {
                             <div className="relative h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-full">
 
                                 <Image
-                                    src="/logo/logo.jpg"
+                                    src={brandLogo}
                                     alt="KOKO Memory"
                                     fill
                                     priority

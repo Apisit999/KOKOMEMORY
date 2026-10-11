@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import brandLogo from "../../../../public/logo/logo.jpg";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -509,7 +510,7 @@ export default function RegisterPage() {
 
                         <div className="relative z-40 flex items-center justify-between">
 
-                            <Image src="/logo/logo.jpg" alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
+                            <Image src={brandLogo} alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
 
                             <span className="hidden rounded-full border border-white/30 bg-[#7A1642]/20 px-4 py-2 text-[9px] font-medium tracking-[0.18em] text-white backdrop-blur-md sm:block">
                                 PHOTOBOOTH & EVENT

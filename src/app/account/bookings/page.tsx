@@ -24,6 +24,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import brandLogo from "../../../../public/logo/logo.jpg";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -588,7 +589,7 @@ export default function MyBookingsPage() {
 
                     <div className="min-w-0">
 
-                        <Image src="/logo/logo.jpg" alt="KOKO Memory" width={34} height={34} className="h-8 w-8 rounded-full object-cover" />
+                        <Image src={brandLogo} alt="KOKO Memory" width={34} height={34} className="h-8 w-8 rounded-full object-cover" />
 
                         <h1 className="truncate text-lg font-black text-slate-900 sm:text-xl">
                             การจองของฉัน

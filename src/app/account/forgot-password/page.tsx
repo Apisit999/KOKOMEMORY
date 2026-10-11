@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import brandLogo from "../../../../public/logo/logo.jpg";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -278,7 +279,7 @@ export default function ForgotPasswordPage() {
 
                         <div className="relative z-30 flex items-center justify-between px-5 pt-5 sm:px-8 sm:pt-7 lg:px-9 lg:pt-8">
 
-                            <Image src="/logo/logo.jpg" alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
+                            <Image src={brandLogo} alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
 
                             <span className="rounded-full border border-white/25 bg-white/10 px-2.5 py-1.5 text-[7px] font-semibold tracking-[0.12em] text-white/90 backdrop-blur-md sm:px-3.5 sm:text-[8px] lg:px-4 lg:py-2 lg:text-[9px]">
                                 PHOTOBOOTH & EVENT

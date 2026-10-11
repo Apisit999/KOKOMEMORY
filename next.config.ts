@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.STUDIO_ISOLATED_BUILD === "true" ? ".next-studio-local" : ".next",
   images: {
     remotePatterns: [
       {

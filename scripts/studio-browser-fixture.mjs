@@ -1,0 +1,17 @@
+import { randomUUID } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+import dotenv from "dotenv";
+const config = dotenv.config({ path: ".env.studio.local", quiet: true }).parsed;
+if (config?.GCLOUD_PROJECT !== "demo-kokomemory-local" || config.STUDIO_ENV !== "local") throw new Error("Demo local environment required");
+const email = `browser-${randomUUID()}@studio-test.invalid`; const password = randomUUID();
+const auth = await fetch("http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-local-api-key", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password, returnSecureToken: true }) });
+if (!auth.ok) throw new Error("Emulator account setup failed");
+const user = await auth.json();
+const headers = { "content-type": "application/json" }; const input = { deviceId: randomUUID(), productId: "koko-photobooth" };
+const response = await fetch("http://localhost:3040/v1/desktop/licenses/free/claim", { method: "POST", headers, body: JSON.stringify(input) });
+if (!response.ok) throw new Error("Local free claim failed"); const issued = await response.json();
+const linking = await fetch("http://localhost:3040/v1/desktop/device-authorizations", { method: "POST", headers, body: JSON.stringify({ ...input, ...issued, deviceName: "Browser test booth" }) });
+if (!linking.ok) throw new Error("Local device authorization failed"); const link = await linking.json();
+await mkdir("output/studio", { recursive: true });
+await writeFile("output/studio/browser-fixture.json", JSON.stringify({ email, password, userCode: link.userCode, authorizationId: link.authorizationId, deviceCode: link.deviceCode, expiresAt: link.expiresAt, uid: user.localId }), { mode: 0o600 });
+console.log("Created local demo browser fixture in ignored output directory; credentials are not printed.");
