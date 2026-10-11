@@ -630,7 +630,7 @@ export default function ForgotPasswordPage() {
                 }
 
                 .koko-frame-footer strong {
-                    font-family: Georgia, "Times New Roman", serif;
+                    font-family: var(--font-koko-sans);
                     font-size: 9px;
                     letter-spacing: 0.08em;
                 }
@@ -686,7 +686,7 @@ export default function ForgotPasswordPage() {
                     box-shadow: 0 15px 25px -14px rgba(55, 15, 35, 0.55);
                     color: #715664;
                     text-align: center;
-                    font-family: Georgia, "Times New Roman", serif;
+                    font-family: var(--font-koko-sans);
                     font-size: 6px;
                 }
 

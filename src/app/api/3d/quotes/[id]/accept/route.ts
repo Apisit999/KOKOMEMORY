@@ -42,14 +42,20 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
                 totalPrice: total,
                 material: String(data.material || ""),
                 color: String(data.color || ""),
-                notes: String(data.customerNote || ""),
+                notes: [
+                    data.useCase ? `การใช้งาน: ${data.useCase}` : "",
+                    data.finish ? `ผิวงาน: ${data.finish}` : "",
+                    data.colorDetails ? `รายละเอียดสี: ${data.colorDetails}` : "",
+                    data.dimensionsMm ? `ขนาดโดยประมาณ (มม.): ${[data.dimensionsMm.x, data.dimensionsMm.y, data.dimensionsMm.z].join(" × ")}` : "",
+                    data.customerNote ? `หมายเหตุลูกค้า: ${data.customerNote}` : "",
+                ].filter(Boolean).join("\n"),
             };
             tx.create(orderRef, {
                 orderNumber,
                 userId: user.uid,
                 quoteId: id,
                 source: "custom_quote",
-                customer: { name: "", phone: "", email: user.email || "" },
+                customer: { name: String(data.contactName || ""), phone: String(data.contactPhone || ""), email: user.email || "", ...(data.companyName ? { companyName: String(data.companyName) } : {}), ...(data.taxId ? { taxId: String(data.taxId) } : {}) },
                 items: [item],
                 subtotal,
                 discount,

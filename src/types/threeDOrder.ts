@@ -46,6 +46,8 @@ export type ThreeDOrderCustomer = {
     phone: string;
     email?: string;
     line?: string;
+    companyName?: string;
+    taxId?: string;
 };
 
 export type ThreeDShippingAddress = {
