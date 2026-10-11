@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { Mail, ArrowUpRight, CheckCircle2, LoaderCircle } from "lucide-react";
 import { useI18n } from "@/i18n";
+import { packages } from "@/data/booking-packages";
 
 const options = [
   ["rental", "เช่า Photobooth", "Photobooth rental"],
@@ -18,9 +19,11 @@ export default function EnquiryForm() {
   const en = locale === "en";
   const initial = params.get("service") ?? "other";
   const [service, setService] = useState(options.some(([id]) => id === initial) ? initial : "other");
+  const selectedPackage = packages.find((item) => item.id === params.get("package"));
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
-  const [details, setDetails] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [details, setDetails] = useState(selectedPackage ? (en ? `I'm interested in ${selectedPackage.title}. Please check availability and send me a quote.` : `สนใจ${selectedPackage.title} กรุณาตรวจสอบวันว่างและเสนอราคา`) : "");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [reference, setReference] = useState("");
   const words = en ? { eyebrow: "TELL US WHAT YOU HAVE IN MIND", title: "Let’s talk about your project.", intro: "Share a few details and our team will follow up with you.", name: "Your name", contact: "Phone or email", service: "Service", details: "What do you need? Add an event date, equipment or project details if relevant.", send: "Send enquiry", privacy: "We’ll use your details to respond to this enquiry.", sent: "Your enquiry has been received.", reference: "Reference", error: "We couldn’t send your enquiry. Please try again.", sending: "Sending…" } : { eyebrow: "เล่าให้เราฟังว่ากำลังมองหาอะไร", title: "มาคุยเรื่องงานของคุณ", intro: "ฝากรายละเอียดไว้ แล้วทีมงานจะติดต่อกลับ", name: "ชื่อของคุณ", contact: "เบอร์โทรหรืออีเมล", service: "บริการที่สนใจ", details: "ต้องการให้เราช่วยเรื่องอะไร? ระบุวันงาน อุปกรณ์ หรือรายละเอียดโปรเจกต์ได้", send: "ส่งคำขอให้ทีมงาน", privacy: "เราใช้ข้อมูลนี้เพื่อติดต่อกลับเกี่ยวกับคำขอของคุณ", sent: "รับคำขอของคุณแล้ว ทีมงานจะติดต่อกลับ", reference: "เลขอ้างอิง", error: "ส่งคำขอไม่สำเร็จ กรุณาลองอีกครั้ง", sending: "กำลังส่ง…" };
@@ -28,15 +31,16 @@ export default function EnquiryForm() {
     event.preventDefault();
     setState("sending"); setReference("");
     try {
-      const response = await fetch("/api/enquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, contact, service, details, website: (event.currentTarget.elements.namedItem("website") as HTMLInputElement | null)?.value ?? "" }) });
+      const enquiryDetails = [eventDate ? `${en ? "Event date" : "วันที่จัดงาน"}: ${eventDate}` : "", details].filter(Boolean).join("\n");
+      const response = await fetch("/api/enquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, contact, service, details: enquiryDetails, website: (event.currentTarget.elements.namedItem("website") as HTMLInputElement | null)?.value ?? "" }) });
       const result = await response.json();
       if (!response.ok) throw new Error("SUBMIT_FAILED");
-      setReference(result.reference || ""); setState("sent"); setName(""); setContact(""); setDetails("");
+      setReference(result.reference || ""); setState("sent"); setName(""); setContact(""); setEventDate(""); setDetails("");
     } catch { setState("error"); }
   }
   return <section className="studio-enquiry studio-wrap"><div><p className="studio-eyebrow">{words.eyebrow}</p><h2>{words.title}</h2><p>{words.intro}</p><a href="mailto:kokomemory@gmail.com">kokomemory@gmail.com <ArrowUpRight size={15} /></a></div><form onSubmit={submit} aria-busy={state === "sending"}>
     {state === "sent" && <p role="status" className="studio-form-success"><CheckCircle2 size={18} />{words.sent}{reference && <> · {words.reference}: {reference.slice(0, 8).toUpperCase()}</>}</p>}
     {state === "error" && <p role="alert" className="studio-form-error">{words.error}</p>}
     <label className="studio-honeypot" aria-hidden="true" tabIndex={-1}>Website<input name="website" autoComplete="off" tabIndex={-1} /></label>
-    <label>{words.name}<input required maxLength={100} autoComplete="name" value={name} onChange={e => setName(e.target.value)} /></label><label>{words.contact}<input required maxLength={160} autoComplete="off" value={contact} onChange={e => setContact(e.target.value)} /></label><label>{words.service}<select value={service} onChange={e => setService(e.target.value)}>{options.map(([id, th, english]) => <option key={id} value={id}>{en ? english : th}</option>)}</select></label><label>{words.details}<textarea required minLength={10} maxLength={3000} rows={5} value={details} onChange={e => setDetails(e.target.value)} /></label><button className="studio-button" type="submit" disabled={state === "sending"}>{state === "sending" ? <LoaderCircle size={17} className="animate-spin" /> : <Mail size={17} />}{state === "sending" ? words.sending : words.send}<ArrowUpRight size={17} /></button><small>{words.privacy}</small></form></section>;
+    <label>{words.name}<input required maxLength={100} autoComplete="name" value={name} onChange={e => setName(e.target.value)} /></label><label>{words.contact}<input required maxLength={160} autoComplete="off" value={contact} onChange={e => setContact(e.target.value)} /></label><label>{words.service}<select value={service} onChange={e => setService(e.target.value)}>{options.map(([id, th, english]) => <option key={id} value={id}>{en ? english : th}</option>)}</select></label><label>{en ? "Event date (optional)" : "วันที่จัดงาน (ไม่บังคับ)"}<input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} /></label><label>{words.details}<textarea required minLength={10} maxLength={2970} rows={5} value={details} onChange={e => setDetails(e.target.value)} /></label><button className="studio-button" type="submit" disabled={state === "sending"}>{state === "sending" ? <LoaderCircle size={17} className="animate-spin" /> : <Mail size={17} />}{state === "sending" ? words.sending : words.send}<ArrowUpRight size={17} /></button><small>{words.privacy}</small></form></section>;
 }

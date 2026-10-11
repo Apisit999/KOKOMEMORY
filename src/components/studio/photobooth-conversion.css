@@ -1,0 +1,7 @@
+.rental-inquiry{display:flex;align-items:center;justify-content:space-between;gap:32px;margin-block:20px 70px;padding:34px;border:1px solid #45463e;border-radius:12px;background:linear-gradient(120deg,#22231f,#1a1b19)}
+.rental-inquiry h2{margin-top:10px}
+.rental-inquiry p:not(.studio-eyebrow){max-width:620px;margin-top:10px;color:#b5b6ad;font-size:14px;line-height:1.8}
+.rental-inquiry .studio-actions{flex:none;margin:0}
+.rental-inquiry .studio-text-link{white-space:nowrap}
+.rental-card>a.rental-ask-link{justify-content:flex-start;gap:8px;border:0;padding-top:10px;color:#536044;font-size:12px}
+@media(max-width:700px){.rental-inquiry{align-items:flex-start;flex-direction:column;margin-bottom:45px;padding:24px}.rental-inquiry .studio-actions{align-items:flex-start}}

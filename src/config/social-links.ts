@@ -4,3 +4,7 @@ export const socialLinks = {
     instagram:
         "https://www.instagram.com/photobooth.koko?igsh=MWV0dW1nejZ1eG0zbg==&igsi=MWV0dW1nejZ1eG0zbg==",
 } as const;
+
+export function lineMessageUrl(message: string) {
+    return `https://line.me/R/oaMessage/%40024ppzhh/?${encodeURIComponent(message)}`;
+}
