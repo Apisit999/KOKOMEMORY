@@ -13,6 +13,7 @@ import {
     setDoc,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
+import { getAuthRedirectTarget } from "@/lib/auth-redirect";
 import {
     getGoogleAuthErrorCode,
     signInWithGoogle,
@@ -25,18 +26,7 @@ export default function LoginPage() {
 
     const [email, setEmail] = useState("");
 
-    const redirectTarget =
-        typeof window !== "undefined"
-            ? (() => {
-                  const value = new URLSearchParams(
-                      window.location.search,
-                  ).get("redirect");
-
-                  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
-                      ? value
-                      : "/account";
-              })()
-            : "/account";
+    const [redirectTarget, setRedirectTarget] = useState("/account");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
 
@@ -51,6 +41,7 @@ export default function LoginPage() {
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
+        setRedirectTarget(getAuthRedirectTarget(window.location.search));
 
         if (params.get("registered") !== "1") return;
 
@@ -60,10 +51,14 @@ export default function LoginPage() {
         setRegistrationEmail(params.get("email") || "");
         setRegistrationNotice(true);
 
+        params.delete("registered");
+        params.delete("provider");
+        params.delete("email");
+
         window.history.replaceState(
             {},
             "",
-            `${window.location.pathname}${window.location.hash}`,
+            `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash}`,
         );
 
         const timer = window.setTimeout(() => {
@@ -560,7 +555,7 @@ export default function LoginPage() {
 
                                 <div className="mb-[26px] flex items-center justify-end text-[13px] sm:text-[13.5px]">
                                     <Link
-                                        href="/account/forgot-password"
+                                        href={`/account/forgot-password?redirect=${encodeURIComponent(redirectTarget)}`}
                                         className="text-[#EA4E80] hover:underline"
                                     >
                                         ลืมรหัสผ่าน?

@@ -45,7 +45,10 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
     useEffect(() => onAuthStateChanged(auth, (current) => {
         setUser(current);
         setAuthReady(true);
-        if (!current && !isPublicPage) router.replace(`/account/login?redirect=${encodeURIComponent(pathname)}`);
+        if (!current && !isPublicPage) {
+            const redirectTarget = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+            router.replace(`/account/login?redirect=${encodeURIComponent(redirectTarget)}`);
+        }
     }), [isPublicPage, pathname, router]);
 
     useEffect(() => {

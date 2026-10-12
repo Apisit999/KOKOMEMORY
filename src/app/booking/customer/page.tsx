@@ -347,7 +347,10 @@ function ProvinceCombobox({
                     className="h-full w-full bg-transparent px-3 pr-4 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                     autoComplete="off"
                     aria-label={translate("ค้นหาจังหวัด")}
+                    role="combobox"
                     aria-expanded={open}
+                    aria-controls="province-options"
+                    aria-autocomplete="list"
                 />
 
             </div>
@@ -390,7 +393,7 @@ function ProvinceCombobox({
 
                     {/* List */}
 
-                    <div className="max-h-72 overflow-y-auto overscroll-contain p-2">
+                    <div id="province-options" role="listbox" className="max-h-72 overflow-y-auto overscroll-contain p-2">
 
                         {filteredProvinces.length > 0 ? (
 
@@ -400,6 +403,8 @@ function ProvinceCombobox({
                                     <button
                                         key={province}
                                         type="button"
+                                        role="option"
+                                        aria-selected={value === province}
                                         onClick={() =>
                                             selectProvince(
                                                 province
@@ -930,7 +935,9 @@ function ThaiAddressCombobox({
                     onKeyDown={handleKeyDown}
                     className="h-full w-full bg-transparent px-3 pr-4 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                     aria-label={`${translate("ค้นหา")}${displayAreaName}`}
+                    role="combobox"
                     aria-expanded={open}
+                    aria-controls={`area-options-${level}`}
                     aria-autocomplete="list"
                 />
             </div>
@@ -993,7 +1000,7 @@ function ThaiAddressCombobox({
                     ------------------------------------------------ */}
 
                     {!loading && (
-                        <div className="max-h-72 overflow-y-auto overscroll-contain p-2">
+                        <div id={`area-options-${level}`} role="listbox" className="max-h-72 overflow-y-auto overscroll-contain p-2">
                             {filteredItems.length > 0 ? (
                                 filteredItems.map(
                                     (item, index) => {
@@ -1008,6 +1015,8 @@ function ThaiAddressCombobox({
                                             <button
                                                 key={item}
                                                 type="button"
+                                                role="option"
+                                                aria-selected={selected}
                                                 onMouseEnter={() =>
                                                     setHighlightedIndex(
                                                         index
@@ -1553,6 +1562,7 @@ function CustomerContent() {
         form.province,
         form.district,
         form.subdistrict,
+        form.postalCode,
     ]);
 
     const validateForm = () => {

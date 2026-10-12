@@ -20,7 +20,6 @@ import {
 
 import {
     archiveThreeDOrder,
-    deleteThreeDOrder,
     restoreThreeDOrder,
     getThreeDOrder,
     updateThreeDOrder,
@@ -579,36 +578,6 @@ export default function ThreeDOrderDetailPage({
             );
         } finally {
             setSaving(false);
-        }
-    }
-
-    async function handleDelete() {
-        if (!order || !orderId) return;
-
-        const confirmed = window.confirm(
-            `ต้องการลบ Order ${order.orderNumber} ใช่หรือไม่?\n\nการลบ Order ไม่สามารถย้อนกลับได้`
-        );
-
-        if (!confirmed) {
-            return;
-        }
-
-        setDeleting(true);
-        setError("");
-
-        try {
-            await deleteThreeDOrder(orderId);
-
-            window.location.href =
-                "/admin/3d-printing/orders";
-        } catch (cause) {
-            setError(
-                cause instanceof Error
-                    ? cause.message
-                    : "ไม่สามารถลบ Order ได้"
-            );
-
-            setDeleting(false);
         }
     }
 

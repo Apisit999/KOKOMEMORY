@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import brandLogo from "../../../../public/logo/logo.jpg";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getAuthRedirectTarget } from "@/lib/auth-redirect";
 import {
     ArrowLeft,
     Loader2,
@@ -19,6 +20,13 @@ export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [sent, setSent] = useState(false);
+    const [redirectTarget, setRedirectTarget] = useState("/account");
+
+    useEffect(() => {
+        setRedirectTarget(getAuthRedirectTarget(window.location.search));
+    }, []);
+
+    const loginHref = `/account/login?redirect=${encodeURIComponent(redirectTarget)}`;
 
 
     async function handleSubmit(
@@ -222,7 +230,7 @@ export default function ForgotPasswordPage() {
                             type="button"
                             onClick={() =>
                                 router.replace(
-                                    "/account/login",
+                                    loginHref,
                                 )
                             }
                             className="mt-5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-br from-[#FF6C99] to-[#EA4E80] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_25px_-10px_rgba(234,78,128,0.55)] transition hover:-translate-y-px active:translate-y-0"
@@ -394,7 +402,7 @@ export default function ForgotPasswordPage() {
                         <div className="mx-auto w-full max-w-[390px] px-5 py-8 sm:px-9 sm:py-10 lg:px-12 lg:py-12 xl:px-14">
 
                             <Link
-                                href="/account/login"
+                                href={loginHref}
                                 className="mb-6 inline-flex min-h-[34px] items-center gap-2 text-[12px] font-medium text-[#8C6B79] transition hover:text-[#EA4E80] sm:mb-8 sm:text-[13px]"
                             >
                                 <ArrowLeft size={15} />
@@ -507,7 +515,7 @@ export default function ForgotPasswordPage() {
                                 จำรหัสผ่านได้แล้ว?{" "}
 
                                 <Link
-                                    href="/account/login"
+                                    href={loginHref}
                                     className="font-semibold text-[#EA4E80] hover:underline"
                                 >
                                     เข้าสู่ระบบ

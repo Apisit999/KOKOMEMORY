@@ -9,13 +9,11 @@ import {
 } from "react";
 import {
     AlertCircle,
-    ArchiveX,
     ArrowLeft,
     ArrowRight,
     Box,
     CheckCircle2,
     ClipboardList,
-    Loader2,
     Plus,
     RefreshCw,
     ShoppingCart,
@@ -35,9 +33,6 @@ export default function ThreeDPrintingDashboardPage() {
     const [products, setProducts] =
         useState<ThreeDProduct[]>([]);
 
-    const [loading, setLoading] =
-        useState(true);
-
     const [refreshing, setRefreshing] =
         useState(false);
 
@@ -49,8 +44,6 @@ export default function ThreeDPrintingDashboardPage() {
             try {
                 if (refresh) {
                     setRefreshing(true);
-                } else {
-                    setLoading(true);
                 }
 
                 setError("");
@@ -66,7 +59,6 @@ export default function ThreeDPrintingDashboardPage() {
                         : "ไม่สามารถโหลดข้อมูล 3D Printing ได้"
                 );
             } finally {
-                setLoading(false);
                 setRefreshing(false);
             }
         },
@@ -223,7 +215,6 @@ export default function ThreeDPrintingDashboardPage() {
 
                 <ManagementCard
                     href="/admin/3d-printing/orders"
-                    type="orders"
                     title="จัดการ Orders"
                     description="จัดการคำสั่งซื้อ 3D Printing ตั้งแต่สร้าง Order ไปจนถึงปิดงาน"
                     items={[
@@ -373,14 +364,12 @@ export default function ThreeDPrintingDashboardPage() {
 
 function ManagementCard({
     href,
-    type,
     title,
     description,
     items,
     action,
 }: {
     href: string;
-    type: "orders";
     title: string;
     description: string;
     items: string[];

@@ -355,6 +355,17 @@ export default function R2UploadTestPage() {
                                 {uploadedKey}
                             </p>
 
+                            {uploadedUrl && (
+                                <a
+                                    href={uploadedUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-3 inline-block break-all text-sm font-semibold text-pink-600 underline"
+                                >
+                                    Open uploaded file
+                                </a>
+                            )}
+
                         </div>
 
                     )}

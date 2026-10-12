@@ -1,7 +1,6 @@
 import {
     Camera,
     Heart,
-    Building2,
     Cake,
     GraduationCap,
     Sparkles,

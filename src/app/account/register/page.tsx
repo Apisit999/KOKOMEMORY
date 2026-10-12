@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import brandLogo from "../../../../public/logo/logo.jpg";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 
 import { auth, db } from "@/lib/firebase";
+import { getAuthRedirectTarget } from "@/lib/auth-redirect";
 import {
     getGoogleAuthErrorCode,
     signInWithGoogle,
@@ -38,18 +39,7 @@ export default function RegisterPage() {
 
     const [name, setName] = useState("");
 
-    const redirectTarget =
-        typeof window !== "undefined"
-            ? (() => {
-                  const value = new URLSearchParams(
-                      window.location.search,
-                  ).get("redirect");
-
-                  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
-                      ? value
-                      : "/account";
-              })()
-            : "/account";
+    const [redirectTarget, setRedirectTarget] = useState("/account");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] =
@@ -69,6 +59,10 @@ export default function RegisterPage() {
 
     const [error, setError] =
         useState("");
+
+    useEffect(() => {
+        setRedirectTarget(getAuthRedirectTarget(window.location.search));
+    }, []);
 
 
     /* ============================================================

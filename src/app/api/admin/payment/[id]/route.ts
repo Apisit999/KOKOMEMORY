@@ -405,11 +405,6 @@ export async function PATCH(
                             booking,
                         );
 
-                    const nestedBookingPayment =
-                        getNestedObject(
-                            booking.payment,
-                        );
-
                     const now =
                         FieldValue.serverTimestamp();
 

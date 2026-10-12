@@ -6,6 +6,7 @@ import {
     FormEvent,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
 
@@ -106,6 +107,7 @@ export default function NewAdminPortfolioPage() {
 
     const [images, setImages] =
         useState<ImageItem[]>([]);
+    const previewUrls = useRef(new Set<string>());
 
 
     /* -------------------------------------------------------
@@ -152,14 +154,13 @@ export default function NewAdminPortfolioPage() {
     ===================================================== */
 
     useEffect(() => {
+        const urls = previewUrls.current;
+
         return () => {
-            images.forEach(
-                (image) => {
-                    URL.revokeObjectURL(
-                        image.preview
-                    );
-                }
-            );
+            urls.forEach((url) => {
+                URL.revokeObjectURL(url);
+            });
+            urls.clear();
         };
     }, []);
 
@@ -338,6 +339,10 @@ export default function NewAdminPortfolioPage() {
                 })
             );
 
+        newImages.forEach((image) => {
+            previewUrls.current.add(image.preview);
+        });
+
         setImages(
             (current) => [
                 ...current,
@@ -452,6 +457,7 @@ export default function NewAdminPortfolioPage() {
                 );
 
             if (target) {
+                previewUrls.current.delete(target.preview);
                 URL.revokeObjectURL(
                     target.preview
                 );

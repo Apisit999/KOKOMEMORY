@@ -7,7 +7,6 @@ import { requireAdminApi } from "@/lib/require-admin-api";
 import type {
     ThreeDOrder,
     ThreeDOrderCustomer,
-    ThreeDOrderInput,
     ThreeDOrderItem,
     ThreeDOrderPaymentMethod,
     ThreeDOrderStatus,
@@ -684,12 +683,6 @@ export async function PATCH(
          * ถ้าแก้เฉพาะ Status / Payment
          * เราจะไม่บังคับให้ส่ง Customer / Items
          */
-        const hasFinancialFields =
-            body.items !== undefined ||
-            body.discount !== undefined ||
-            body.shippingFee !== undefined ||
-            body.paidAmount !== undefined;
-
         const hasCustomer =
             body.customer !== undefined;
 

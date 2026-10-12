@@ -414,50 +414,6 @@ function getStatusDotClass(
 
 
 /* ============================================================
-   CREATED AT
-============================================================ */
-
-function getCreatedAtMillis(
-    value?: Booking["createdAt"]
-) {
-    if (!value) {
-        return 0;
-    }
-
-    if (
-        typeof value === "object" &&
-        value !== null &&
-        "toMillis" in value &&
-        typeof value.toMillis ===
-            "function"
-    ) {
-        return value.toMillis();
-    }
-
-    if (
-        value instanceof Date
-    ) {
-        return value.getTime();
-    }
-
-    if (
-        typeof value === "string"
-    ) {
-        const time =
-            new Date(value).getTime();
-
-        return Number.isNaN(
-            time
-        )
-            ? 0
-            : time;
-    }
-
-    return 0;
-}
-
-
-/* ============================================================
    MAIN
 ============================================================ */
 

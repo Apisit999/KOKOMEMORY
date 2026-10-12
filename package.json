@@ -7,6 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "test:auth": "node --experimental-strip-types --test tests/auth/*.test.ts",
     "test:studio": "node --experimental-strip-types --test tests/studio/*.test.ts",
     "studio:migrate": "node --env-file=.env.studio.local --experimental-strip-types scripts/studio-migrate.ts",
     "studio:dev": "node scripts/studio-start-local.mjs"

@@ -23,6 +23,7 @@
  */
 
 import {
+    useCallback,
     useEffect,
     useMemo,
     useState,
@@ -626,7 +627,7 @@ export default function GalleryGrid() {
        CLOSE
     ======================================================== */
 
-    const closePortfolio = () => {
+    const closePortfolio = useCallback(() => {
 
         setSelectedPortfolio(null);
 
@@ -635,7 +636,7 @@ export default function GalleryGrid() {
         document.body.style.overflow =
             "";
 
-    };
+    }, []);
 
 
     /* ========================================================
@@ -658,7 +659,7 @@ export default function GalleryGrid() {
        NEXT
     ======================================================== */
 
-    const nextImage = () => {
+    const nextImage = useCallback(() => {
 
         if (!selectedPortfolio) return;
 
@@ -671,14 +672,14 @@ export default function GalleryGrid() {
                 selectedPortfolio.images.length
         );
 
-    };
+    }, [selectedPortfolio]);
 
 
     /* ========================================================
        PREVIOUS
     ======================================================== */
 
-    const previousImage = () => {
+    const previousImage = useCallback(() => {
 
         if (!selectedPortfolio) return;
 
@@ -693,7 +694,7 @@ export default function GalleryGrid() {
                 selectedPortfolio.images.length
         );
 
-    };
+    }, [selectedPortfolio]);
 
 
     /* ========================================================
@@ -755,6 +756,9 @@ export default function GalleryGrid() {
 
     }, [
         selectedPortfolio,
+        closePortfolio,
+        nextImage,
+        previousImage,
     ]);
 
 

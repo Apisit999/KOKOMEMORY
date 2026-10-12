@@ -425,9 +425,6 @@ function ReviewBookingContent() {
     const packageCategory =
         sharedPackage?.category || "";
 
-    const packageGroup =
-        sharedPackage?.group || "";
-
     const packageFeatures =
         sharedPackage?.features || [];
 

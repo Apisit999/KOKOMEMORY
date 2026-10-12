@@ -13,11 +13,9 @@ import {
     AlertCircle,
     CheckCircle2,
     ChevronRight,
-    Clock3,
     ExternalLink,
     FileImage,
     Loader2,
-    ShieldCheck,
     X,
     ZoomIn,
 } from "lucide-react";
@@ -296,81 +294,6 @@ function getStatusLabel(status?: string) {
             normalizeStatus(status)
         ] || "ไม่ระบุสถานะ"
     );
-}
-
-function getPaymentStatusTone(status?: string) {
-    switch (normalizeStatus(status)) {
-        case "verified":
-        case "paid":
-            return "success";
-
-        case "rejected":
-            return "danger";
-
-        case "submitted":
-        case "pending":
-        case "pending_verification":
-        case "payment_submitted":
-            return "warning";
-
-        default:
-            return "neutral";
-    }
-}
-
-function getPaymentStatusIcon(status?: string) {
-    const tone =
-        getPaymentStatusTone(status);
-
-    if (tone === "success") {
-        return (
-            <CheckCircle2
-                size={15}
-                strokeWidth={2.5}
-            />
-        );
-    }
-
-    if (tone === "danger") {
-        return (
-            <AlertCircle
-                size={15}
-                strokeWidth={2.5}
-            />
-        );
-    }
-
-    if (tone === "warning") {
-        return (
-            <Clock3
-                size={15}
-                strokeWidth={2.5}
-            />
-        );
-    }
-
-    return (
-        <ShieldCheck
-            size={15}
-            strokeWidth={2.5}
-        />
-    );
-}
-
-function getInitials(value?: string) {
-    const text =
-        String(value || "KOKO")
-            .trim();
-
-    if (!text) return "K";
-
-    return text
-        .split(/\\s+/)
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part.charAt(0))
-        .join("")
-        .toUpperCase();
 }
 
 function InfoItem({
@@ -1500,17 +1423,6 @@ export default function AdminBookingDetailPage() {
     const hasPaymentProof = Boolean(paymentProofUrl);
 
     const canVerifyPayment =
-        hasPaymentProof &&
-        (
-            normalizedPaymentStatus ===
-                "submitted" ||
-            normalizedPaymentStatus ===
-                "pending" ||
-            normalizedPaymentStatus ===
-                "pending_verification"
-        );
-
-    const canRejectPayment =
         hasPaymentProof &&
         (
             normalizedPaymentStatus ===
