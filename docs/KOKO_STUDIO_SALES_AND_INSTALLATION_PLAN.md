@@ -37,3 +37,15 @@ flow ขาย: เลือกแพ็กเกจ → server สร้าง�
 - แพ็กเกจ/ราคา/provider เมื่อพร้อมขาย
 
 ไม่มี production deploy, เปลี่ยน DNS, เปิดรับเงินจริง หรือเผยแพร่ installer ในงานรอบนี้
+
+## บันทึกส่งต่องานสำหรับรอบถัดไป
+
+สถานะ ณ 11 ตุลาคม 2026: เว็บ KOKO Studio และ License API สำหรับ Free พร้อมใน workspace; build ผ่านและ lint ไม่มี error (51 warnings เดิม) การซื้อแพ็กเกจและการเผยแพร่ตัวติดตั้งยังปิดอยู่ ยังไม่มีการ deploy production
+
+เริ่มรอบถัดไปด้วย:
+1. ตรวจสถานะ Desktop integration ใน `D:\pKOKO` โดยเน้นหน้า/IPC สำหรับเชื่อมบัญชีกับ device authorization ของเว็บ
+2. ตรวจความพร้อม Local Emulator และรัน migration/tests ตาม runbook โดยใช้ demo Firebase project เท่านั้น
+3. สรุปสิ่งที่ต้องขอจากเจ้าของก่อน staging: Node hosting + HTTPS origin, Firebase/R2 staging, signing key และเครื่องหรือ VM สำหรับทดสอบ installer
+4. ทดสอบ flow Desktop ↔ เว็บบน staging เมื่อ environment พร้อม แล้วเก็บหลักฐาน installer/checksum และ lifecycle ก่อนพิจารณาเปิด download
+
+ข้อจำกัดที่ทราบ: Auth Emulator เคยหยุดเพราะ Java ไม่พร้อมใน PATH; runbook มีแนวทาง Java portable ใน `.local-tools`. Desktop 0.1.27 ยังไม่มี account-linking UI/IPC; หน้าจออนุมัติในเว็บอย่างเดียวจึงยังไม่ครบ end-to-end. ห้ามเปิด paid purchase หรือเผยแพร่ installer จนกว่า release gates ในแผนนี้ผ่าน

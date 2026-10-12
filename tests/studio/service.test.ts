@@ -109,15 +109,17 @@ test("previous key remains accepted during rotation; unknown keys fail closed", 
   const unknown = new EntitlementSigner("next-key", nextPair.privateKey.export({ type: "pkcs8", format: "pem" }).toString());
   assert.throws(() => unknown.verify(issued.entitlement, f.input.deviceId, f.now()), /invalid_entitlement/);
 });
-test("HTTP denies anonymous/admin/cross-origin/oversized requests; purchase and dev issuance stay closed", async () => {
+test("HTTP enforces the configured browser origin and denies anonymous/admin/cross-origin/oversized requests", async () => {
   const f = await fixture();
-  const handler = createStudioHandler({ enabled: true, origin: "http://localhost:3040", service: async () => f.service, clientAddress: () => "test", authenticate: async request => { const token = request.headers.get("authorization"); if (token !== "Bearer alice" && token !== "Bearer admin") throw new Error(); return { uid: token.slice(7), admin: token === "Bearer admin" }; } });
-  const request = (path: string, options: RequestInit = {}) => handler(new Request(`http://localhost:3040/${path}`, options), path);
+  const handler = createStudioHandler({ enabled: true, origin: "http://127.0.0.1:3040", service: async () => f.service, clientAddress: () => "test", authenticate: async request => { const token = request.headers.get("authorization"); if (token !== "Bearer alice" && token !== "Bearer admin") throw new Error(); return { uid: token.slice(7), admin: token === "Bearer admin" }; } });
+  const request = (path: string, options: RequestInit = {}) => handler(new Request(`http://127.0.0.1:3040/${path}`, options), path);
   assert.equal((await request("account/licenses")).status, 401);
-  assert.equal((await request("account/licenses", { headers: { authorization: "Bearer alice" } })).status, 200);
+  assert.equal((await request("account/licenses", { headers: { authorization: "Bearer alice", origin: "http://127.0.0.1:3040" } })).status, 200);
   assert.equal((await request("admin/licenses", { headers: { authorization: "Bearer alice" } })).status, 403);
   assert.equal((await request("admin/licenses", { headers: { authorization: "Bearer admin" } })).status, 200);
-  assert.equal((await request("account/licenses", { headers: { origin: "https://attacker.invalid", authorization: "Bearer alice" } })).status, 403);
+  const deniedOrigin = await request("account/licenses", { headers: { origin: "https://attacker.invalid", authorization: "Bearer alice" } });
+  assert.equal(deniedOrigin.status, 403);
+  assert.equal((await deniedOrigin.json()).code, "origin_denied");
   assert.equal((await request("purchase", { method: "POST", headers: { authorization: "Bearer alice" } })).status, 503);
   assert.equal((await request("desktop/dev/issue", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })).status, 404);
   assert.equal((await request("desktop/licenses/free/claim", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ value: "x".repeat(25000) }) })).status, 413);

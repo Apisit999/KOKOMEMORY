@@ -23,6 +23,7 @@ const softwareItems = [
 ] as const;
 
 const otherNavItems = [
+    { title: "common.home", href: "/" },
     { title: "common.portfolio", href: "/gallery/portfolio" },
     { title: "common.about", href: "/about" },
     { title: "common.contact", href: "/contact" },
