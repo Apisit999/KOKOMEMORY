@@ -46,3 +46,11 @@ Docker build บน VPS ผ่าน compile, TypeScript และสร้า�
 - `.env.staging` เก็บ secret ในเครื่องและบน VPS; ห้าม commit หรือคัดลอกค่า secret ลง issue/log/document
 - มีโฟลเดอร์ `/opt/koko-studio-staging/releases/4b546d2-20261013` ค้างจากการส่ง tar รอบแรกที่เสียรูป; release ที่ใช้งานจริงคือ `4b546d2-20261013b` อย่าใช้โฟลเดอร์แรก
 - staging ใช้ Firebase project `koko-studio-staging-6931c` และ hostname `studio-staging.kokomemory.com`; production process ที่ตรวจคือ PM2 `kokomemory`
+
+## ผลทดสอบและ dependency รอบ 13 ต.ค. 2026
+
+- Auth suite ผ่าน 4/4 เมื่อใช้ Auth emulator แยก; Studio unit suite ผ่าน 14/14 และ Studio emulator integration ผ่าน 3/3 (รวม 21 tests ไม่มีกรณีข้าม)
+- `npm run build` ผ่านด้วย Next.js 16.4.0; `npm exec -- tsc --noEmit` ผ่าน; `npm run lint` ผ่านโดยมี 57 warnings (รูปภาพ `<img>` และ React Hooks เดิม)
+- ย้าย `shadcn` ซึ่งใช้สำหรับ CSS/build ไป `devDependencies` และกำหนด `@grpc/grpc-js` 1.14.6 เพื่อแก้ critical advisory ของ proxy-addr; `npm audit --omit=dev` เหลือ 0 vulnerabilities; full audit เหลือ 8 high ใน dependency ของเครื่องมือพัฒนา ไม่มี critical และไม่ใช้ `--force`
+- Docker runner ทำ `npm prune --omit=dev`; production-only local install เริ่มได้และ `/koko-studio` ตอบ HTTP 200; ยังไม่ได้ build Docker image เพราะเครื่องนี้ไม่มี Docker CLI
+- ESLint config ปรับตาม flat-config ของ Next 16; warnings ของ React hooks แสดงไว้เพื่อให้ตรวจแก้แยกงานภายหลัง
