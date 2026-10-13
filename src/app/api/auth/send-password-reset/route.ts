@@ -2,10 +2,6 @@ import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
 import { Resend } from "resend";
 
-const resend = new Resend(
-    process.env.RESEND_API_KEY,
-);
-
 const FROM_EMAIL =
     process.env.RESEND_FROM_EMAIL ||
     "KOKO Memory <onboarding@resend.dev>";
@@ -38,6 +34,8 @@ export async function POST(
                 },
             );
         }
+
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
 
         /* ========================================================

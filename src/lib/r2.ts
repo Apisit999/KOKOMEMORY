@@ -31,39 +31,36 @@ function requiredEnv(name: string) {
     return value;
 }
 
-const accountId = requiredEnv("R2_ACCOUNT_ID");
-const accessKeyId = requiredEnv("R2_ACCESS_KEY_ID");
-const secretAccessKey = requiredEnv(
-    "R2_SECRET_ACCESS_KEY"
-);
+let client: S3Client | undefined;
 
-if (!/^[a-f0-9]{32}$/i.test(accountId)) {
-    throw new Error(
-        "Invalid R2_ACCOUNT_ID"
-    );
+function getR2Client() {
+    if (client) return client;
+
+    const accountId = requiredEnv("R2_ACCOUNT_ID");
+    const accessKeyId = requiredEnv("R2_ACCESS_KEY_ID");
+    const secretAccessKey = requiredEnv("R2_SECRET_ACCESS_KEY");
+
+    if (!/^[a-f0-9]{32}$/i.test(accountId)) {
+        throw new Error("Invalid R2_ACCOUNT_ID");
+    }
+
+    client = new S3Client({
+        region: "auto",
+        endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+        forcePathStyle: true,
+        credentials: { accessKeyId, secretAccessKey },
+    });
+
+    return client;
 }
 
-/* =========================================================
-   R2 Endpoint
-========================================================= */
-
-const endpoint =
-    `https://${accountId}.r2.cloudflarestorage.com`;
-
-/* =========================================================
-   R2 Client
-========================================================= */
-
-export const r2 = new S3Client({
-    region: "auto",
-
-    endpoint,
-
-    forcePathStyle: true,
-
-    credentials: {
-        accessKeyId,
-        secretAccessKey,
+// Keep private R2 credentials out of the build process. The client is created on first use
+// inside a server request, when the deployment's runtime environment is available.
+export const r2 = new Proxy({} as S3Client, {
+    get(_target, property) {
+        const service = getR2Client();
+        const value = Reflect.get(service, property, service);
+        return typeof value === "function" ? value.bind(service) : value;
     },
 });
 
@@ -71,17 +68,13 @@ export const r2 = new S3Client({
    Bucket
 ========================================================= */
 
-export const R2_BUCKET_NAME = requiredEnv(
-    "R2_BUCKET_NAME"
-);
+export const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME ?? "";
 
 /* =========================================================
    Public URL
 ========================================================= */
 
-export const R2_PUBLIC_URL = requiredEnv(
-    "R2_PUBLIC_URL"
-).replace(/\/$/, "");
+export const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL ?? "").replace(/\/$/, "");
 
 /* =========================================================
    Helpers
@@ -90,11 +83,7 @@ export const R2_PUBLIC_URL = requiredEnv(
 export function getR2PublicUrl(
     key: string
 ) {
-    if (!R2_PUBLIC_URL) {
-        throw new Error(
-            "Missing R2_PUBLIC_URL"
-        );
-    }
+    if (!R2_PUBLIC_URL) throw new Error("Missing R2_PUBLIC_URL");
 
     return `${R2_PUBLIC_URL}/${key}`;
 }
