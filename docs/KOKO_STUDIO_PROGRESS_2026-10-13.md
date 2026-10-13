@@ -54,3 +54,11 @@ Docker build บน VPS ผ่าน compile, TypeScript และสร้า�
 - ย้าย `shadcn` ซึ่งใช้สำหรับ CSS/build ไป `devDependencies` และกำหนด `@grpc/grpc-js` 1.14.6 เพื่อแก้ critical advisory ของ proxy-addr; `npm audit --omit=dev` เหลือ 0 vulnerabilities; full audit เหลือ 8 high ใน dependency ของเครื่องมือพัฒนา ไม่มี critical และไม่ใช้ `--force`
 - Docker runner ทำ `npm prune --omit=dev`; production-only local install เริ่มได้และ `/koko-studio` ตอบ HTTP 200; ยังไม่ได้ build Docker image เพราะเครื่องนี้ไม่มี Docker CLI
 - ESLint config ปรับตาม flat-config ของ Next 16; warnings ของ React hooks แสดงไว้เพื่อให้ตรวจแก้แยกงานภายหลัง
+
+## ตรวจ staging และ Desktop account linking ต่อ
+
+- Read-only browser check ที่ `studio-staging.kokomemory.com` ผ่าน HTTPS; หน้า KOKO Studio แสดงว่า installer ยังไม่พร้อมเผยแพร่ตามสถานะ release
+- ลิงก์เริ่มใช้งาน Free พาไปหน้า login พร้อม `redirect=/account/koko-studio`; หน้า registration และลิงก์กลับ login รักษา redirect ไว้; registration notice แสดงสำเร็จและลบเฉพาะ `registered` โดยยังคง redirect
+- Browser console ไม่มี error/warning; `/api/studio/health` และ `/api/studio/readiness` ตอบ HTTP 200
+- Desktop `test:license-runtime` ผ่าน 7/7 และ `typecheck` ผ่าน โดยทดสอบ account-linking origin allowlist และ signed-entitlement verification; ทำงานแบบ read-only ต่อ source tree และใช้ temp directory สำหรับ test
+- ยังไม่ได้ submit registration, login, email verification หรือเชื่อมบัญชีจริง; ต้องใช้บัญชีทดสอบที่เจ้าของเตรียมไว้ก่อนทดสอบ end-to-end กับ Firebase staging
