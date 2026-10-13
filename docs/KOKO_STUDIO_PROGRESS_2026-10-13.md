@@ -62,3 +62,11 @@ Docker build บน VPS ผ่าน compile, TypeScript และสร้า�
 - Browser console ไม่มี error/warning; `/api/studio/health` และ `/api/studio/readiness` ตอบ HTTP 200
 - Desktop `test:license-runtime` ผ่าน 7/7 และ `typecheck` ผ่าน โดยทดสอบ account-linking origin allowlist และ signed-entitlement verification; ทำงานแบบ read-only ต่อ source tree และใช้ temp directory สำหรับ test
 - ยังไม่ได้ submit registration, login, email verification หรือเชื่อมบัญชีจริง; ต้องใช้บัญชีทดสอบที่เจ้าของเตรียมไว้ก่อนทดสอบ end-to-end กับ Firebase staging
+
+## Google sign-in profile write fix
+
+- จากโค้ด Google sign-in เขียน `displayName` และ `photoURL` ลง `users/{uid}` แต่ Firestore Rules เดิมไม่อนุญาตสองฟิลด์นี้ จึงปฏิเสธการบันทึก profile หลัง Auth สำเร็จและ UI แสดงข้อความล้มเหลวทั่วไป
+- อนุญาตเฉพาะ `displayName` และ `photoURL` เพิ่ม พร้อมตรวจชนิด/ความยาว และเพิ่ม emulator regression test ที่ยืนยันว่า profile เขียน/อัปเดตได้ แต่ `isAdmin` ยังถูกปฏิเสธ
+- `npm run test:auth` ผ่าน 5/5 เมื่อรัน Auth + Firestore emulators; `npm exec -- tsc --noEmit` ผ่าน
+- ยัง publish rules ไม่สำเร็จ: staging service account อ่าน release ได้ แต่ไม่มีสิทธิ์ Rules API/Service Usage ที่ต้องใช้ deploy; ทั้ง Firebase CLI และ Rules API ปฏิเสธด้วย 403 และไม่มีการเปลี่ยน release บน staging
+- หลังผู้ดูแล Firebase login CLI ด้วยบัญชีที่มีสิทธิ์ ให้รัน `firebase deploy --only firestore:rules --project koko-studio-staging-6931c` จาก repo นี้ แล้วลอง Google sign-in ซ้ำ
