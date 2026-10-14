@@ -18,6 +18,16 @@ async function child(desktopRoot, directory, boundary) {
     });
     queue.update(job.id, 'printing');
     process.send({ jobId: job.id });
+  } else if (boundary.startsWith('after-video-')) {
+    const { VideoStore } = require(path.join(desktopRoot, 'src/main/services/video-store.ts'));
+    const { CaptureSessionStore } = require(path.join(desktopRoot, 'src/main/services/capture-session-store.ts'));
+    const videos = new VideoStore(path.join(directory, 'media')); videos.configure();
+    const sessions = new CaptureSessionStore(path.join(directory, 'app-data'));
+    const session = sessions.start(null, null);
+    const bytes = Buffer.from([0x1a, 0x45, 0xdf, 0xa3, 1, 2, 3, 4]);
+    const video = await videos.saveWebm(bytes, 640, 480, 5000, null, session.id);
+    if (boundary !== 'after-video-before-session') sessions.addVideo(session.id, video.id);
+    process.send({ sessionId: session.id, videoId: video.id });
   } else {
     const { PhotoStore } = require(path.join(desktopRoot, 'src/main/services/photo-store.ts'));
     const { CaptureSessionStore } = require(path.join(desktopRoot, 'src/main/services/capture-session-store.ts'));
@@ -25,7 +35,7 @@ async function child(desktopRoot, directory, boundary) {
     photos.configure();
     const sessions = new CaptureSessionStore(path.join(directory, 'app-data'));
     const session = sessions.start(null, null);
-    const photo = await photos.saveJpeg(fixtureBytes, 1, 1);
+    const photo = await photos.saveJpeg(fixtureBytes, 1, 1, null, { sessionId: session.id, kind: 'photo' });
     if (boundary !== 'after-photo-before-session') sessions.addPhoto(session.id, photo.id);
     if (boundary === 'after-session-review') sessions.finish(session.id, 'review');
     process.send({ sessionId: session.id, photoId: photo.id });
@@ -77,8 +87,9 @@ async function main() {
   const { PhotoStore } = require(path.join(desktopRoot, 'src/main/services/photo-store.ts'));
   const { CaptureSessionStore } = require(path.join(desktopRoot, 'src/main/services/capture-session-store.ts'));
   const { PrintQueueStore } = require(path.join(desktopRoot, 'src/main/services/print-queue.ts'));
+  const { VideoStore } = require(path.join(desktopRoot, 'src/main/services/video-store.ts'));
   const results = [];
-  for (const boundary of ['after-photo-before-session', 'after-session-link', 'after-session-review', 'print-submission-interrupted']) {
+  for (const boundary of ['after-photo-before-session', 'after-session-link', 'after-session-review', 'after-video-before-session', 'after-video-session-link', 'print-submission-interrupted']) {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'koko-reliability-check-'));
     try {
       const checkpoint = await stopAtBoundary(desktopRoot, directory, boundary);
@@ -89,15 +100,27 @@ async function main() {
         results.push({ boundary, recoveredStatus: job.status, eligibleForAutomaticDrain,
           passed: !eligibleForAutomaticDrain,
           requirement: 'An uncertain submission must require review, not become eligible for automatic replay.' });
+      } else if (boundary.startsWith('after-video-')) {
+        const videos = new VideoStore(path.join(directory, 'media'));
+        const sessions = new CaptureSessionStore(path.join(directory, 'app-data'));
+        const recovery = sessions.recoverCaptureVideos(videos.captureAssociations());
+        const saved = videos.read(checkpoint.videoId);
+        const session = sessions.get(checkpoint.sessionId);
+        const bytesPreserved = saved.bytes[0] === 0x1a && saved.bytes[1] === 0x45 && saved.bytes[2] === 0xdf && saved.bytes[3] === 0xa3;
+        const linkedToSession = (session?.videoIds ?? []).includes(checkpoint.videoId);
+        results.push({ boundary, bytesPreserved, linkedToSession, recoveredStatus: session?.status, recovery,
+          passed: bytesPreserved && linkedToSession,
+          requirement: 'Committed WebM media must remain readable and recover its original session association.' });
       } else {
         const photos = new PhotoStore(path.join(directory, 'media'));
         const sessions = new CaptureSessionStore(path.join(directory, 'app-data'));
+        const recovery = sessions.recoverCapturePhotos(photos.captureAssociations());
         const saved = photos.readPhoto(checkpoint.photoId);
         const session = sessions.get(checkpoint.sessionId);
         assert.ok(session, 'Session record must survive restart');
         const bytesPreserved = Buffer.from(saved.bytes).equals(fixtureBytes);
         const linkedToSession = session.photoIds.includes(checkpoint.photoId);
-        results.push({ boundary, bytesPreserved, linkedToSession, recoveredStatus: session.status,
+        results.push({ boundary, bytesPreserved, linkedToSession, recoveredStatus: session.status, recovery,
           passed: bytesPreserved && linkedToSession,
           requirement: 'Committed media must remain readable and recover its original session association.' });
       }
