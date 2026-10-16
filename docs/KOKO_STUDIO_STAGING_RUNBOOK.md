@@ -1,4 +1,11 @@
 # KOKO Studio local and staging runbook
+
+## Staging environment validation (2026-10-16)
+
+Create the ignored root `.env.staging` from `deploy/hostinger/.env.staging.example` using newly issued server credentials. Never paste private keys or access keys into chat, source files, or a commit. On Linux, run `chmod 600 .env.staging`.
+
+Run `npm run studio:check-env` (or `npm.cmd run studio:check-env` in Windows PowerShell) before building or deploying. The check reports missing, duplicate, and malformed variables by name, verifies that the staging URLs and Firebase project IDs agree, and checks that the signing private key matches its trusted public key. It does not print secret values or verify that the credentials are active in Firebase or R2.
+
 Date: 2026-10-11. Production deploy and DNS changes are outside this delivery.
 
 ## Local isolated verification (Windows PowerShell)
