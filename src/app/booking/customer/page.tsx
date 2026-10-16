@@ -61,14 +61,22 @@
  * ============================================================
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+    Suspense,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { travelFees } from "@/data/booking-pricing";
 
 
 import {
     ArrowLeft,
     ArrowRight,
     CalendarDays,
+    Clock3,
     CheckCircle2,
     ExternalLink,
     Mail,
@@ -78,12 +86,18 @@ import {
     User,
 } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { provinces } from "@/data/thailand/provinces";
+import { getAreaLabel, getAreaSearchValues, getProvinceLabel, getProvinceSearchValues } from "@/data/thailand/localized-areas";
+import { useI18n } from "@/i18n";
+import {
+    getPackageById,
+    resolvePackageId,
+} from "@/data/booking-packages";
 
 import {
     Select,
@@ -148,54 +162,7 @@ const eventTypes = [
  * เพื่อให้ Admin แก้ราคาเองได้
 ============================================================ */
 
-const travelFees: Record<string, number> = {
 
-    "กรุงเทพมหานคร": 0,
-
-    "สมุทรปราการ": 500,
-
-    "นนทบุรี": 500,
-
-    "ปทุมธานี": 500,
-
-    "นครปฐม": 800,
-
-    "พระนครศรีอยุธยา": 1000,
-
-    "ชลบุรี": 1500,
-
-    "ฉะเชิงเทรา": 1500,
-
-    "นครนายก": 1500,
-
-    "สระบุรี": 1500,
-
-    "ราชบุรี": 1500,
-
-    "กาญจนบุรี": 2000,
-
-    "ระยอง": 2000,
-
-    "เพชรบุรี": 2500,
-
-    "ประจวบคีรีขันธ์": 3500,
-
-    "นครราชสีมา": 3000,
-
-    "ขอนแก่น": 4500,
-
-    "เชียงใหม่": 5000,
-
-    "เชียงราย": 6000,
-
-    "ภูเก็ต": 6000,
-
-    "สุราษฎร์ธานี": 6000,
-
-    "สงขลา": 7000,
-
-    "อื่น ๆ": 0,
-};
 
 /* ============================================================
    PACKAGE DATA
@@ -214,110 +181,7 @@ const travelFees: Record<string, number> = {
  * photobooth-m1
  * photobooth-l1
  * 360-2h
- * 360-3h
- * 360-4h
- *
- * ============================================================
- */
-
-const packages = {
-
-    /* --------------------------------------------------------
-       STARTER
-    -------------------------------------------------------- */
-
-    "photobooth-s": {
-        name: "แพ็กเกจ S",
-        category: "แพ็กเกจเริ่มต้น",
-        price: 7900,
-        hours: 2,
-    },
-
-    "photobooth-m": {
-        name: "แพ็กเกจ M",
-        category: "แพ็กเกจเริ่มต้น",
-        price: 8900,
-        hours: 3,
-    },
-
-    "photobooth-l": {
-        name: "แพ็กเกจ L",
-        category: "แพ็กเกจเริ่มต้น",
-        price: 9900,
-        hours: 4,
-    },
-
-    /* --------------------------------------------------------
-       STANDARD
-    -------------------------------------------------------- */
-
-    "photobooth-ss": {
-        name: "แพ็กเกจ SS",
-        category: "แพ็กเกจมาตรฐาน",
-        price: 11900,
-        hours: 2,
-    },
-
-    "photobooth-mm": {
-        name: "แพ็กเกจ MM",
-        category: "แพ็กเกจมาตรฐาน",
-        price: 13900,
-        hours: 3,
-    },
-
-    "photobooth-ll": {
-        name: "แพ็กเกจ LL",
-        category: "แพ็กเกจมาตรฐาน",
-        price: 15900,
-        hours: 4,
-    },
-
-    /* --------------------------------------------------------
-       PREMIUM
-    -------------------------------------------------------- */
-
-    "photobooth-s1": {
-        name: "แพ็กเกจ S1",
-        category: "แพ็กเกจพรีเมียม",
-        price: 12400,
-        hours: 2,
-    },
-
-    "photobooth-m1": {
-        name: "แพ็กเกจ M1",
-        category: "แพ็กเกจพรีเมียม",
-        price: 14400,
-        hours: 3,
-    },
-
-    "photobooth-l1": {
-        name: "แพ็กเกจ L1",
-        category: "แพ็กเกจพรีเมียม",
-        price: 16400,
-        hours: 4,
-    },
-
-    /* --------------------------------------------------------
-       360 PHOTOBOOTH
-    -------------------------------------------------------- */
-
-    "360-2h": {
-        name: "360 Photo Booth 2 ชั่วโมง",
-        category: "360 Photo Booth",
-        price: 5900,
-        hours: 2,
-    },
-
-    "360-3h": {
-        name: "360 Photo Booth 3 ชั่วโมง",
-        category: "360 Photo Booth",
-        price: 6590,
-        hours: 3,
-    },
-
-    "360-4h": {
-        name: "360 Photo Booth 4 ชั่วโมง",
-        category: "360 Photo Booth",
+ * 360-tegory: "360 Photo Booth",
         price: 7590,
         hours: 4,
     },
@@ -345,6 +209,7 @@ function ProvinceCombobox({
     onChange: (value: string) => void;
     error?: string;
 }) {
+    const { locale, translate } = useI18n();
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -401,11 +266,10 @@ function ProvinceCombobox({
             return provinces;
         }
 
-        return provinces.filter(
-            (province) =>
-                province
-                    .toLocaleLowerCase("th")
-                    .includes(keyword)
+        return provinces.filter((province) =>
+            getProvinceSearchValues(province).some((label) =>
+                label.toLocaleLowerCase("th").includes(keyword),
+            ),
         );
 
     }, [query]);
@@ -453,7 +317,7 @@ function ProvinceCombobox({
                     value={
                         open
                             ? query
-                            : value
+                            : getProvinceLabel(value, locale)
                     }
                     onFocus={() => {
                         setOpen(true);
@@ -478,12 +342,15 @@ function ProvinceCombobox({
                     placeholder={
                         value
                             ? value
-                            : "ค้นหาหรือเลือกจังหวัด..."
+                            : translate("ค้นหาหรือเลือกจังหวัด...")
                     }
                     className="h-full w-full bg-transparent px-3 pr-4 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                     autoComplete="off"
-                    aria-label="ค้นหาจังหวัด"
+                    aria-label={translate("ค้นหาจังหวัด")}
+                    role="combobox"
                     aria-expanded={open}
+                    aria-controls="province-options"
+                    aria-autocomplete="list"
                 />
 
             </div>
@@ -502,9 +369,9 @@ function ProvinceCombobox({
 
                         <p className="text-xs font-semibold text-slate-500">
 
-                            {query
-                                ? `พบ ${filteredProvinces.length} จังหวัด`
-                                : "ประเทศไทย · 77 จังหวัด"}
+                                {query
+                                ? `${translate("พบ")} ${filteredProvinces.length} ${translate("จังหวัด")}`
+                                : translate("ประเทศไทย · 77 จังหวัด")}
 
                         </p>
 
@@ -517,7 +384,7 @@ function ProvinceCombobox({
                                 }
                                 className="text-xs font-medium text-pink-500 hover:text-pink-600"
                             >
-                                ล้างการค้นหา
+                                {translate("ล้างการค้นหา")}
                             </button>
 
                         )}
@@ -526,7 +393,7 @@ function ProvinceCombobox({
 
                     {/* List */}
 
-                    <div className="max-h-72 overflow-y-auto overscroll-contain p-2">
+                    <div id="province-options" role="listbox" className="max-h-72 overflow-y-auto overscroll-contain p-2">
 
                         {filteredProvinces.length > 0 ? (
 
@@ -536,6 +403,8 @@ function ProvinceCombobox({
                                     <button
                                         key={province}
                                         type="button"
+                                        role="option"
+                                        aria-selected={value === province}
                                         onClick={() =>
                                             selectProvince(
                                                 province
@@ -561,7 +430,7 @@ function ProvinceCombobox({
                                         </span>
 
                                         <span>
-                                            {province}
+                                {getProvinceLabel(province, locale)}
                                         </span>
 
                                         {value ===
@@ -592,11 +461,11 @@ function ProvinceCombobox({
                                 </div>
 
                                 <p className="mt-3 font-semibold text-slate-700">
-                                    ไม่พบจังหวัด
+                                    {translate("ไม่พบจังหวัด")}
                                 </p>
 
                                 <p className="mt-1 text-xs text-slate-400">
-                                    ลองพิมพ์ชื่อจังหวัดใหม่อีกครั้ง
+                                    {translate("ลองพิมพ์ชื่อจังหวัดใหม่อีกครั้ง")}
                                 </p>
 
                             </div>
@@ -685,6 +554,7 @@ function ThaiAddressCombobox({
     error?: string;
     disabled?: boolean;
 }) {
+    const { locale, translate } = useI18n();
     /* ========================================================
        REF
        --------------------------------------------------------
@@ -873,11 +743,11 @@ function ThaiAddressCombobox({
         }
 
         return items.filter((item) =>
-            item
-                .toLocaleLowerCase("th")
-                .includes(keyword)
+            getAreaSearchValues(province, item, level).some((label) =>
+                label.toLocaleLowerCase("th").includes(keyword),
+            ),
         );
-    }, [items, query]);
+    }, [items, query, level, province]);
 
     /* ========================================================
        SELECT ITEM
@@ -988,20 +858,15 @@ function ThaiAddressCombobox({
     const isBangkok =
         province === "กรุงเทพมหานคร";
 
-    const areaName =
-        level === "district"
-            ? isBangkok
-                ? "เขต"
-                : "อำเภอ"
-            : isBangkok
-                ? "แขวง"
-                : "ตำบล";
+    const displayAreaName = level === "district"
+        ? translate(isBangkok ? "เขต" : "อำเภอ")
+        : translate(isBangkok ? "แขวง" : "ตำบล");
 
     const placeholder = disabled
         ? level === "district"
-            ? "กรุณาเลือกจังหวัดก่อน"
-            : "กรุณาเลือกเขต / อำเภอก่อน"
-        : `ค้นหาหรือเลือก${areaName}...`;
+            ? translate("กรุณาเลือกจังหวัดก่อน")
+            : translate("กรุณาเลือกเขต / อำเภอก่อน")
+            : `${translate("ค้นหาหรือเลือก")}${displayAreaName}...`;
 
     return (
         <div
@@ -1013,7 +878,7 @@ function ThaiAddressCombobox({
             ================================================= */}
 
             <Label>
-                {label}
+                {translate(label)}
 
                 <span className="ml-1 text-pink-500">
                     *
@@ -1040,13 +905,13 @@ function ThaiAddressCombobox({
                 />
 
                 <input
-                    value={open ? query : value}
+                    value={open ? query : (value ? getAreaLabel(province, value, level, locale) : "")}
                     disabled={disabled}
                     autoComplete="off"
                     spellCheck={false}
                     placeholder={
                         value
-                            ? value
+                            ? getAreaLabel(province, value, level, locale)
                             : placeholder
                     }
                     onFocus={() => {
@@ -1069,8 +934,10 @@ function ThaiAddressCombobox({
                     }}
                     onKeyDown={handleKeyDown}
                     className="h-full w-full bg-transparent px-3 pr-4 text-sm text-slate-800 outline-none placeholder:text-slate-400"
-                    aria-label={`ค้นหา${areaName}`}
+                    aria-label={`${translate("ค้นหา")}${displayAreaName}`}
+                    role="combobox"
                     aria-expanded={open}
+                    aria-controls={`area-options-${level}`}
                     aria-autocomplete="list"
                 />
             </div>
@@ -1088,15 +955,15 @@ function ThaiAddressCombobox({
                     <div className="flex items-center justify-between border-b bg-slate-50 px-4 py-3">
                         <div>
                             <p className="text-xs font-semibold text-slate-700">
-                                {areaName}
+                                {displayAreaName}
                             </p>
 
                             <p className="mt-0.5 text-[11px] text-slate-400">
                                 {loading
-                                    ? "กำลังโหลดข้อมูล..."
+                                    ? translate("กำลังโหลดข้อมูล...")
                                     : query
-                                        ? `พบ ${filteredItems.length} รายการ`
-                                        : `${items.length} รายการ`}
+                                        ? `${translate("พบ")} ${filteredItems.length} ${translate("รายการ")}`
+                                        : `${items.length} ${translate("รายการ")}`}
                             </p>
                         </div>
 
@@ -1109,13 +976,13 @@ function ThaiAddressCombobox({
                                 }}
                                 className="text-xs font-medium text-pink-500 hover:text-pink-600"
                             >
-                                ล้างการค้นหา
+                                {translate("ล้างการค้นหา")}
                             </button>
                         )}
                     </div>
 
                     {/* ------------------------------------------------
-                        Loading
+                        {translate("Loading")}
                     ------------------------------------------------ */}
 
                     {loading && (
@@ -1123,7 +990,7 @@ function ThaiAddressCombobox({
                             <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-pink-500" />
 
                             <p className="mt-3 text-sm text-slate-400">
-                                กำลังโหลดข้อมูลพื้นที่...
+                                {translate("กำลังโหลดข้อมูลพื้นที่...")}
                             </p>
                         </div>
                     )}
@@ -1133,7 +1000,7 @@ function ThaiAddressCombobox({
                     ------------------------------------------------ */}
 
                     {!loading && (
-                        <div className="max-h-72 overflow-y-auto overscroll-contain p-2">
+                        <div id={`area-options-${level}`} role="listbox" className="max-h-72 overflow-y-auto overscroll-contain p-2">
                             {filteredItems.length > 0 ? (
                                 filteredItems.map(
                                     (item, index) => {
@@ -1148,6 +1015,8 @@ function ThaiAddressCombobox({
                                             <button
                                                 key={item}
                                                 type="button"
+                                                role="option"
+                                                aria-selected={selected}
                                                 onMouseEnter={() =>
                                                     setHighlightedIndex(
                                                         index
@@ -1178,7 +1047,7 @@ function ThaiAddressCombobox({
                                                     </span>
 
                                                     <span className="truncate">
-                                                        {item}
+                                                        {getAreaLabel(province, item, level, locale)}
                                                     </span>
                                                 </div>
 
@@ -1202,11 +1071,11 @@ function ThaiAddressCombobox({
                                     </div>
 
                                     <p className="mt-3 font-semibold text-slate-700">
-                                        ไม่พบ{areaName}
+                                        {translate("ไม่พบ")}{displayAreaName}
                                     </p>
 
                                     <p className="mt-1 text-xs text-slate-400">
-                                        ลองพิมพ์ชื่อพื้นที่ใหม่อีกครั้ง
+                                        {translate("ลองพิมพ์ชื่อพื้นที่ใหม่อีกครั้ง")}
                                     </p>
                                 </div>
                             )}
@@ -1280,10 +1149,104 @@ function formatMoney(value: number) {
 }
 
 /* ============================================================
+   TIME HELPERS
+   ------------------------------------------------------------
+   ระยะเวลางานดึงจากแพ็กเกจโดยตรง
+   ลูกค้าเลือกเวลาเริ่มงาน และระบบคำนวณเวลาสิ้นสุดอัตโนมัติ
+============================================================ */
+
+function formatTimeFromMinutes(totalMinutes: number) {
+    const normalized =
+        ((totalMinutes % 1440) + 1440) % 1440;
+
+    const hours = Math.floor(normalized / 60);
+    const minutes = normalized % 60;
+
+    return `${String(hours).padStart(2, "0")}:${String(
+        minutes
+    ).padStart(2, "0")}`;
+}
+
+function timeToMinutes(value: string) {
+    const [hours, minutes] =
+        value.split(":").map(Number);
+
+    if (
+        !Number.isFinite(hours) ||
+        !Number.isFinite(minutes)
+    ) {
+        return null;
+    }
+
+    return hours * 60 + minutes;
+}
+
+function calculateEndTime(
+    startTime: string,
+    durationHours: number
+) {
+    const startMinutes =
+        timeToMinutes(startTime);
+
+    if (
+        startMinutes === null ||
+        !Number.isFinite(durationHours)
+    ) {
+        return "";
+    }
+
+    const endMinutes =
+        startMinutes + durationHours * 60;
+
+    if (endMinutes > 1440) {
+        return "";
+    }
+
+    return formatTimeFromMinutes(endMinutes);
+}
+
+function createStartTimeOptions(
+    durationHours: number
+) {
+    const durationMinutes =
+        durationHours * 60;
+
+    const latestStart =
+        1440 - durationMinutes;
+
+    const options: string[] = [];
+
+    for (
+        let minutes = 0;
+        minutes <= latestStart;
+        minutes += 30
+    ) {
+        options.push(
+            formatTimeFromMinutes(minutes)
+        );
+    }
+
+    return options;
+}
+
+function formatTimeRange(
+    startTime: string,
+    endTime: string
+) {
+    if (!startTime || !endTime) {
+        return "ยังไม่ได้เลือกเวลา";
+    }
+
+    return `${startTime} - ${endTime} น.`;
+}
+
+/* ============================================================
    MAIN COMPONENT
 ============================================================ */
 
-export default function CustomerPage() {
+function CustomerContent() {
+
+    const { translate } = useI18n();
 
     const router = useRouter();
 
@@ -1306,6 +1269,14 @@ export default function CustomerPage() {
         searchParams.get("date");
 
     /* ========================================================
+       BOOKING AUTH GUARD
+       --------------------------------------------------------
+       Guest       → Login
+       Unverified  → Security / Email Verification
+       Verified    → เข้า Step 3 ได้
+    ======================================================== */
+
+    /* ========================================================
        หา Package
        --------------------------------------------------------
        ใช้ Package ID จาก URL
@@ -1313,15 +1284,12 @@ export default function CustomerPage() {
 
     const selectedPackage = useMemo(() => {
 
-        if (!packageId) {
+        const resolvedPackageId =
+            resolvePackageId(packageId);
 
-            return null;
-
-        }
-
-        return packages[
-            packageId as keyof typeof packages
-        ] ?? null;
+        return getPackageById(
+            resolvedPackageId
+        );
 
     }, [packageId]);
 
@@ -1347,6 +1315,10 @@ export default function CustomerPage() {
 
         guestCount: "",
 
+        startTime: "",
+
+        endTime: "",
+
         /* สถานที่ */
 
         venue: "",
@@ -1368,6 +1340,29 @@ export default function CustomerPage() {
         note: "",
 
     });
+
+    useEffect(() => {
+        if (!searchParams.has("name") || !searchParams.has("phone")) return;
+
+        setForm({
+            fullName: searchParams.get("name") ?? "",
+            phone: searchParams.get("phone") ?? "",
+            lineId: searchParams.get("line") ?? "",
+            email: searchParams.get("email") ?? "",
+            eventType: searchParams.get("event") ?? "",
+            guestCount: searchParams.get("guests") ?? "",
+            startTime: searchParams.get("startTime") ?? "",
+            endTime: searchParams.get("endTime") ?? "",
+            venue: searchParams.get("venue") ?? "",
+            province: searchParams.get("province") ?? "",
+            district: searchParams.get("district") ?? "",
+            subdistrict: searchParams.get("subdistrict") ?? "",
+            address: searchParams.get("address") ?? "",
+            postalCode: searchParams.get("postalCode") ?? "",
+            googleMaps: searchParams.get("googleMaps") ?? "",
+            note: searchParams.get("note") ?? "",
+        });
+    }, [searchParams]);
 
     /* ========================================================
        FORM ERRORS
@@ -1426,6 +1421,17 @@ export default function CustomerPage() {
     const packagePrice =
         selectedPackage?.price ?? 0;
 
+    const serviceDuration =
+        selectedPackage?.hours ?? 0;
+
+    const startTimeOptions = useMemo(
+        () =>
+            createStartTimeOptions(
+                serviceDuration
+            ),
+        [serviceDuration]
+    );
+
     /* ========================================================
        TOTAL
        --------------------------------------------------------
@@ -1451,6 +1457,49 @@ export default function CustomerPage() {
        --------------------------------------------------------
        ตรวจสอบก่อนส่งไป Step 4
     ======================================================== */
+
+    /* ========================================================
+       AUTO END TIME
+       --------------------------------------------------------
+       เวลาสิ้นสุดคำนวณจาก:
+       เวลาเริ่มงาน + ระยะเวลาของแพ็กเกจ
+    ======================================================== */
+
+    useEffect(() => {
+        if (
+            !form.startTime ||
+            !serviceDuration
+        ) {
+            if (form.endTime) {
+                setForm((previous) => ({
+                    ...previous,
+                    endTime: "",
+                }));
+            }
+            return;
+        }
+
+        const calculatedEndTime =
+            calculateEndTime(
+                form.startTime,
+                serviceDuration
+            );
+
+        if (
+            calculatedEndTime !==
+            form.endTime
+        ) {
+            setForm((previous) => ({
+                ...previous,
+                endTime:
+                    calculatedEndTime,
+            }));
+        }
+    }, [
+        form.startTime,
+        form.endTime,
+        serviceDuration,
+    ]);
 
     /* ========================================================
        AUTO POSTAL CODE
@@ -1513,6 +1562,7 @@ export default function CustomerPage() {
         form.province,
         form.district,
         form.subdistrict,
+        form.postalCode,
     ]);
 
     const validateForm = () => {
@@ -1527,7 +1577,7 @@ export default function CustomerPage() {
         if (!form.fullName.trim()) {
 
             newErrors.fullName =
-                "กรุณากรอกชื่อ-นามสกุล";
+                translate("กรุณากรอกชื่อ-นามสกุล");
 
         }
 
@@ -1538,14 +1588,14 @@ export default function CustomerPage() {
         if (!form.phone.trim()) {
 
             newErrors.phone =
-                "กรุณากรอกเบอร์โทรศัพท์";
+                translate("กรุณากรอกเบอร์โทรศัพท์");
 
         } else if (
             !/^0\d{9}$/.test(form.phone)
         ) {
 
             newErrors.phone =
-                "กรุณากรอกเบอร์โทรศัพท์ 10 หลัก";
+                translate("กรุณากรอกเบอร์โทรศัพท์ 10 หลัก");
 
         }
 
@@ -1556,8 +1606,33 @@ export default function CustomerPage() {
         if (!form.eventType) {
 
             newErrors.eventType =
-                "กรุณาเลือกประเภทงาน";
+                translate("กรุณาเลือกประเภทงาน");
 
+        }
+
+        /* ----------------------------------------------------
+           เวลาเริ่มงาน
+        ---------------------------------------------------- */
+
+        if (!form.startTime) {
+            newErrors.startTime =
+                translate("กรุณาเลือกเวลาเริ่มงาน");
+        }
+
+        /* ----------------------------------------------------
+           เวลาสิ้นสุด
+        ---------------------------------------------------- */
+
+        if (
+            !form.endTime ||
+            form.endTime !==
+                calculateEndTime(
+                    form.startTime,
+                    serviceDuration
+                )
+        ) {
+            newErrors.endTime =
+                translate("กรุณาตรวจสอบช่วงเวลาจัดงาน");
         }
 
         /* ----------------------------------------------------
@@ -1567,7 +1642,7 @@ export default function CustomerPage() {
         if (!form.venue.trim()) {
 
             newErrors.venue =
-                "กรุณากรอกชื่อสถานที่จัดงาน";
+                translate("กรุณากรอกชื่อสถานที่จัดงาน");
 
         }
 
@@ -1578,7 +1653,7 @@ export default function CustomerPage() {
         if (!form.province) {
 
             newErrors.province =
-                "กรุณาเลือกจังหวัด";
+                translate("กรุณาเลือกจังหวัด");
 
         }
 
@@ -1589,7 +1664,7 @@ export default function CustomerPage() {
         if (!form.district.trim()) {
 
             newErrors.district =
-                "กรุณากรอกเขต / อำเภอ";
+                translate("กรุณากรอกเขต / อำเภอ");
 
         }
 
@@ -1600,7 +1675,7 @@ export default function CustomerPage() {
         if (!form.subdistrict.trim()) {
 
             newErrors.subdistrict =
-                "กรุณากรอกแขวง / ตำบล";
+                translate("กรุณากรอกแขวง / ตำบล");
 
         }
 
@@ -1616,7 +1691,7 @@ export default function CustomerPage() {
         ) {
 
             newErrors.email =
-                "รูปแบบ Email ไม่ถูกต้อง";
+                translate("รูปแบบ Email ไม่ถูกต้อง");
 
         }
 
@@ -1630,7 +1705,7 @@ export default function CustomerPage() {
         ) {
 
             newErrors.googleMaps =
-                "กรุณาใส่ลิงก์ Google Maps ที่ถูกต้อง";
+                translate("กรุณาใส่ลิงก์ Google Maps ที่ถูกต้อง");
 
         }
 
@@ -1711,6 +1786,17 @@ export default function CustomerPage() {
                 guests:
                     form.guestCount,
 
+                /* Time */
+
+                startTime:
+                    form.startTime,
+
+                endTime:
+                    form.endTime,
+
+                durationHours:
+                    String(serviceDuration),
+
                 /* Location */
 
                 venue:
@@ -1770,39 +1856,114 @@ export default function CustomerPage() {
                 STEP INDICATOR
             ================================================= */}
 
-            <section className="border-b bg-white">
+            {/* =================================================
+                BOOKING HEADER + STEP INDICATOR
+            ================================================= */}
 
-                <div className="mx-auto max-w-7xl px-6 py-8">
+            <section className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl">
 
-                    <div className="flex items-center gap-3 text-sm">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
-                        <span className="rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 1
-                        </span>
+                    {/* Top row */}
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                    <div className="flex min-h-[72px] items-center justify-between gap-4">
 
-                        <span className="rounded-full bg-green-100 px-4 py-2 font-semibold text-green-700">
-                            ✓ Step 2
-                        </span>
+                        <div className="min-w-0 text-center">
+                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
+                                KOKO Memory
+                            </p>
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                            <p className="truncate text-sm font-bold text-slate-900 sm:text-base">
+                                {translate("ขั้นตอนการจอง")}
+                            </p>
+                        </div>
 
-                        <span className="rounded-full bg-pink-500 px-4 py-2 font-semibold text-white">
-                            Step 3
-                        </span>
+                        <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
+                            <p className="text-[11px] font-medium text-slate-400">
+                                {translate("ขั้นตอน")}
+                            </p>
 
-                        <span className="hidden text-slate-300 sm:inline">
-                            →
-                        </span>
+                            <p className="text-sm font-black text-slate-900">
+                                03 <span className="font-normal text-slate-300">/</span> 06
+                            </p>
+                        </div>
 
-                        <span className="hidden rounded-full bg-slate-100 px-4 py-2 text-slate-500 sm:inline">
-                            Step 4
-                        </span>
+                    </div>
+
+                    {/* Step progress */}
+
+                    <div className="overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
+                        <div className="mx-auto flex min-w-max items-center justify-center gap-2 sm:gap-3">
+
+                            {[
+                                {
+                                    number: 1,
+                                    label: "แพ็กเกจ",
+                                    done: true,
+                                },
+                                {
+                                    number: 2,
+                                    label: "วันจัดงาน",
+                                    done: true,
+                                },
+                                {
+                                    number: 3,
+                                    label: "ข้อมูล",
+                                    active: true,
+                                },
+                                {
+                                    number: 4,
+                                    label: "ตรวจสอบ",
+                                },
+                                {
+                                    number: 5,
+                                    label: "ชำระเงิน",
+                                },
+                                {
+                                    number: 6,
+                                    label: "สำเร็จ",
+                                },
+                            ].map((step, index) => (
+                                <div
+                                    key={step.number}
+                                    className="flex items-center gap-2 sm:gap-3"
+                                >
+                                    <div
+                                        className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${
+                                            step.active
+                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200"
+                                                : step.done
+                                                    ? "bg-green-50 text-green-700"
+                                                    : "bg-slate-100 text-slate-400"
+                                        }`}
+                                    >
+                                        <span
+                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${
+                                                step.active
+                                                    ? "bg-white/20 text-white"
+                                                    : step.done
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-white text-slate-400"
+                                            }`}
+                                        >
+                                            {step.done ? "✓" : step.number}
+                                        </span>
+
+                                        <span>
+                                            {translate(step.label)}
+                                        </span>
+                                    </div>
+
+                                    {index < 5 && (
+                                        <span className="text-slate-300">
+                                            →
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+
+                        </div>
 
                     </div>
 
@@ -1831,15 +1992,15 @@ export default function CustomerPage() {
                             <div className="mb-10">
 
                                 <p className="text-sm font-bold uppercase tracking-[0.25em] text-pink-500">
-                                    Booking Step 3
+                                    {translate("ขั้นตอนที่ 3")}
                                 </p>
 
                                 <h1 className="mt-2 text-3xl font-black text-slate-900 md:text-4xl">
-                                    ข้อมูลผู้จองและสถานที่จัดงาน
+                                    {translate("ข้อมูลผู้จองและสถานที่จัดงาน")}
                                 </h1>
 
                                 <p className="mt-3 leading-7 text-slate-500">
-                                    กรุณากรอกข้อมูลให้ครบถ้วน เพื่อให้ทีมงานสามารถเตรียมงานและประเมินค่าเดินทางได้อย่างถูกต้อง
+                                    {translate("กรุณากรอกข้อมูลให้ครบถ้วน เพื่อให้ทีมงานสามารถเตรียมงานและประเมินค่าเดินทางได้อย่างถูกต้อง")}
                                 </p>
 
                             </div>
@@ -1889,7 +2050,7 @@ export default function CustomerPage() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder="เช่น สมชาย ใจดี"
+                                                    placeholder={translate("เช่น สมชาย ใจดี")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -1941,7 +2102,7 @@ export default function CustomerPage() {
                                                             )
                                                         )
                                                     }
-                                                    placeholder="0801234567"
+                                                    placeholder={translate("0801234567")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -1975,7 +2136,7 @@ export default function CustomerPage() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="@kokomemory"
+                                                    placeholder={translate("@kokomemory")}
                                                 className="mt-2 h-12 rounded-xl"
                                             />
 
@@ -2007,7 +2168,7 @@ export default function CustomerPage() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder="example@email.com"
+                                                    placeholder={translate("example@email.com")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -2065,7 +2226,7 @@ export default function CustomerPage() {
 
                                                 <SelectTrigger className="mt-2 h-12 rounded-xl">
 
-                                                    <SelectValue placeholder="เลือกประเภทงาน" />
+                                                    <SelectValue placeholder={translate("เลือกประเภทงาน")} />
 
                                                 </SelectTrigger>
 
@@ -2083,7 +2244,7 @@ export default function CustomerPage() {
                                                                 }
                                                             >
                                                                 {
-                                                                    item.label
+                                                                    translate(item.label)
                                                                 }
                                                             </SelectItem>
 
@@ -2126,7 +2287,7 @@ export default function CustomerPage() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="เช่น 300"
+                                                placeholder={translate("เช่น 300")}
                                                 className="mt-2 h-12 rounded-xl"
                                             />
 
@@ -2137,7 +2298,162 @@ export default function CustomerPage() {
                                 </div>
 
                                 {/* =================================================
-                                    3. LOCATION
+                                    3. EVENT TIME
+                                ================================================= */}
+
+                                <div>
+
+                                    <div className="flex items-start gap-3">
+
+                                        <div className="rounded-xl bg-pink-100 p-3 text-pink-500">
+                                            <Clock3 size={22} />
+                                        </div>
+
+                                        <div>
+                                            <h2 className="text-xl font-bold text-slate-900">
+                                                3. เวลาให้บริการ
+                                            </h2>
+
+                                            <p className="mt-1 text-sm leading-6 text-slate-500">
+                                                แพ็กเกจนี้กำหนดระยะเวลาไว้{" "}
+                                                <span className="font-bold text-pink-500">
+                                                    {serviceDuration} ชั่วโมง
+                                                </span>{" "}
+                                                กรุณาเลือกเวลาเริ่มงาน ระบบจะคำนวณเวลาสิ้นสุดให้อัตโนมัติ
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                    <div className="mt-6 grid gap-6 md:grid-cols-2">
+
+                                        <div>
+                                            <Label>
+                                                เวลาเริ่มงาน
+                                                <span className="ml-1 text-pink-500">
+                                                    *
+                                                </span>
+                                            </Label>
+
+                                            <Select
+                                                value={form.startTime}
+                                                onValueChange={(value) =>
+                                                    handleChange(
+                                                        "startTime",
+                                                        value ?? ""
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    className={`mt-2 h-12 rounded-xl ${
+                                                        errors.startTime
+                                                            ? "border-red-300"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    <SelectValue placeholder={translate("เลือกเวลาเริ่มงาน")} />
+                                                </SelectTrigger>
+
+                                                <SelectContent>
+                                                    {startTimeOptions.map(
+                                                        (time) => (
+                                                            <SelectItem
+                                                                key={time}
+                                                                value={time}
+                                                            >
+                                                                {time} น.
+                                                            </SelectItem>
+                                                        )
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+
+                                            {errors.startTime && (
+                                                <p className="mt-2 text-sm text-red-500">
+                                                    {errors.startTime}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <Label>
+                                                เวลาสิ้นสุด
+                                            </Label>
+
+                                            <div
+                                                className={`mt-2 flex h-12 items-center justify-between rounded-xl border px-4 ${
+                                                    form.endTime
+                                                        ? "border-green-200 bg-green-50"
+                                                        : "border-slate-200 bg-slate-50"
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <Clock3
+                                                        size={17}
+                                                        className={
+                                                            form.endTime
+                                                                ? "text-green-500"
+                                                                : "text-slate-400"
+                                                        }
+                                                    />
+
+                                                    <span
+                                                        className={`text-sm font-bold ${
+                                                            form.endTime
+                                                                ? "text-green-700"
+                                                                : "text-slate-400"
+                                                        }`}
+                                                    >
+                                                        {form.endTime
+                                                            ? `${form.endTime} น.`
+                                                            : "เลือกเวลาเริ่มงานก่อน"}
+                                                    </span>
+                                                </div>
+
+                                                {form.endTime && (
+                                                    <CheckCircle2
+                                                        size={18}
+                                                        className="text-green-500"
+                                                    />
+                                                )}
+                                            </div>
+
+                                            {errors.endTime && (
+                                                <p className="mt-2 text-sm text-red-500">
+                                                    {errors.endTime}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                    </div>
+
+                                    {form.startTime && form.endTime && (
+                                        <div className="mt-4 rounded-2xl border border-pink-100 bg-pink-50 p-4">
+                                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                                <div>
+                                                    <p className="text-xs font-semibold text-pink-500">
+                                                        ช่วงเวลาที่เลือก
+                                                    </p>
+
+                                                    <p className="mt-1 text-base font-black text-slate-900">
+                                                        {formatTimeRange(
+                                                            form.startTime,
+                                                            form.endTime
+                                                        )}
+                                                    </p>
+                                                </div>
+
+                                                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-pink-600">
+                                                    {serviceDuration} ชั่วโมง
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </div>
+
+                                {/* =================================================
+                                    4. LOCATION
                                 ================================================= */}
 
                                 <div>
@@ -2153,11 +2469,11 @@ export default function CustomerPage() {
                                         <div>
 
                                             <h2 className="text-xl font-bold text-slate-900">
-                                                3. สถานที่จัดงาน
+                                                4. {translate("สถานที่จัดงาน")}
                                             </h2>
 
                                             <p className="mt-1 text-sm text-slate-500">
-                                                ข้อมูลส่วนนี้ใช้สำหรับตรวจสอบพื้นที่และคำนวณค่าเดินทาง
+                                                {translate("ข้อมูลส่วนนี้ใช้สำหรับตรวจสอบพื้นที่และคำนวณค่าเดินทาง")}
                                             </p>
 
                                         </div>
@@ -2172,7 +2488,7 @@ export default function CustomerPage() {
 
                                             <Label>
 
-                                                ชื่อสถานที่จัดงาน
+                                                {translate("ชื่อสถานที่จัดงาน")}
 
                                                 <span className="ml-1 text-pink-500">
                                                     *
@@ -2190,7 +2506,7 @@ export default function CustomerPage() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="เช่น โรงแรม ABC Bangkok / Impact Arena"
+                                                placeholder={translate("เช่น โรงแรม ABC Bangkok / Impact Arena")}
                                                 className="mt-2 h-12 rounded-xl"
                                             />
 
@@ -2210,7 +2526,7 @@ export default function CustomerPage() {
 
                                             <Label>
 
-                                                จังหวัด
+                                                {translate("จังหวัด")}
 
                                                 <span className="ml-1 text-pink-500">
                                                     *
@@ -2355,7 +2671,7 @@ export default function CustomerPage() {
                                         <div>
 
                                             <Label>
-                                                ที่อยู่เพิ่มเติม
+                                                {translate("ที่อยู่เพิ่มเติม")}
                                             </Label>
 
                                             <Textarea
@@ -2368,7 +2684,7 @@ export default function CustomerPage() {
                                                         e.target.value
                                                     )
                                                 }
-                                                placeholder="บ้านเลขที่ อาคาร ถนน ชั้น ห้อง หรือรายละเอียดที่ช่วยให้ทีมงานหาสถานที่ได้ง่ายขึ้น"
+                                                placeholder={translate("บ้านเลขที่ อาคาร ถนน ชั้น ห้อง หรือรายละเอียดที่ช่วยให้ทีมงานหาสถานที่ได้ง่ายขึ้น")}
                                                 className="mt-2 min-h-24 rounded-xl"
                                             />
 
@@ -2379,7 +2695,7 @@ export default function CustomerPage() {
                                         <div className="max-w-xs">
 
                                             <Label>
-                                                รหัสไปรษณีย์
+                                                {translate("รหัสไปรษณีย์")}
                                             </Label>
 
                                             <div className="relative mt-2">
@@ -2391,7 +2707,7 @@ export default function CustomerPage() {
                                                         form.postalCode
                                                     }
                                                     readOnly
-                                                    placeholder="เลือกตำบลเพื่อเติมอัตโนมัติ"
+                                                    placeholder={translate("เลือกตำบลเพื่อเติมอัตโนมัติ")}
                                                     className="h-12 rounded-xl bg-slate-50 pr-10"
                                                 />
 
@@ -2405,7 +2721,7 @@ export default function CustomerPage() {
                                             </div>
 
                                             <p className="mt-2 text-xs text-slate-400">
-                                                ระบบจะเติมรหัสไปรษณีย์อัตโนมัติจากพื้นที่ที่เลือก
+                                                {translate("ระบบจะเติมรหัสไปรษณีย์อัตโนมัติจากพื้นที่ที่เลือก")}
                                             </p>
 
                                         </div>
@@ -2435,7 +2751,7 @@ export default function CustomerPage() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    placeholder="วางลิงก์ Google Maps ของสถานที่จัดงาน"
+                                                    placeholder={translate("วางลิงก์ Google Maps ของสถานที่จัดงาน")}
                                                     className="h-12 rounded-xl pl-11"
                                                 />
 
@@ -2479,7 +2795,7 @@ export default function CustomerPage() {
                                 </div>
 
                                 {/* =================================================
-                                    4. NOTE
+                                    5. NOTE
                                 ================================================= */}
 
                                 <div>
@@ -2498,7 +2814,7 @@ export default function CustomerPage() {
                                                 e.target.value
                                             )
                                         }
-                                        placeholder="เช่น เวลาเริ่มงาน, ธีมงาน, ต้องการ Backdrop แบบไหน หรือรายละเอียดอื่น ๆ"
+                                        placeholder={translate("เช่น เวลาเริ่มงาน, ธีมงาน, ต้องการ Backdrop แบบไหน หรือรายละเอียดอื่น ๆ")}
                                         className="mt-2 min-h-32 rounded-xl"
                                     />
 
@@ -2516,7 +2832,7 @@ export default function CustomerPage() {
 
                                 <Button
                                     type="button"
-                                    variant="ghost"
+                                    variant="outline"
                                     onClick={() =>
                                         router.push(
                                             `/booking/schedule?package=${encodeURIComponent(
@@ -2524,14 +2840,14 @@ export default function CustomerPage() {
                                             )}`
                                         )
                                     }
-                                    className="h-14 rounded-full sm:flex-1"
+                                    className="h-14 rounded-full border-slate-200 bg-white font-semibold text-slate-700 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600 sm:flex-1"
                                 >
 
                                     <ArrowLeft
                                         size={18}
                                     />
 
-                                    กลับไปเลือกวัน
+                                        {translate("กลับไปเลือกวัน")}
 
                                 </Button>
 
@@ -2543,12 +2859,14 @@ export default function CustomerPage() {
                                         handleNext
                                     }
                                     disabled={
-                                        !selectedPackage
+                                        !selectedPackage ||
+                                        !form.startTime ||
+                                        !form.endTime
                                     }
                                     className="h-14 rounded-full bg-pink-500 font-bold text-white hover:bg-pink-400 sm:flex-1"
                                 >
 
-                                    ตรวจสอบข้อมูล
+                                        {translate("ตรวจสอบข้อมูล")}
 
                                     <ArrowRight
                                         size={18}
@@ -2568,16 +2886,16 @@ export default function CustomerPage() {
 
                     <div>
 
-                        <Card className="sticky top-24 rounded-3xl border-0 shadow-xl">
+                        <Card className="rounded-3xl border-0 shadow-xl lg:sticky lg:top-24">
 
                             <CardContent className="p-7">
 
                                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-500">
-                                    Your Booking
+                                    {translate("Your Booking")}
                                 </p>
 
                                 <h2 className="mt-2 text-2xl font-black text-slate-900">
-                                    สรุปการจอง
+                                    {translate("สรุปการจอง")}
                                 </h2>
 
                                 {/* =================================================
@@ -2587,7 +2905,7 @@ export default function CustomerPage() {
                                 <div className="mt-7 rounded-2xl bg-slate-50 p-5">
 
                                     <p className="text-sm text-slate-500">
-                                        แพ็กเกจ
+                                        {translate("แพ็กเกจ")}
                                     </p>
 
                                     {selectedPackage ? (
@@ -2611,7 +2929,7 @@ export default function CustomerPage() {
                                                 <div>
 
                                                     <p className="text-xs text-slate-400">
-                                                        ราคา
+                                                        {translate("ราคา")}
                                                     </p>
 
                                                     <p className="text-xl font-black text-pink-500">
@@ -2626,14 +2944,14 @@ export default function CustomerPage() {
                                                 <div className="text-right">
 
                                                     <p className="text-xs text-slate-400">
-                                                        ระยะเวลา
+                                                        {translate("ระยะเวลา")}
                                                     </p>
 
                                                     <p className="font-bold text-slate-700">
                                                         {
                                                             selectedPackage.hours
                                                         }{" "}
-                                                        ชั่วโมง
+                                                        {translate("ชั่วโมง")}
                                                     </p>
 
                                                 </div>
@@ -2647,7 +2965,7 @@ export default function CustomerPage() {
                                         <div className="mt-3 rounded-xl bg-red-50 p-3">
 
                                             <p className="text-sm font-semibold text-red-600">
-                                                ไม่พบแพ็กเกจ
+                                                {translate("ไม่พบแพ็กเกจ")}
                                             </p>
 
                                             <button
@@ -2659,7 +2977,7 @@ export default function CustomerPage() {
                                                 }
                                                 className="mt-1 text-xs text-red-500 underline"
                                             >
-                                                กลับไปเลือกแพ็กเกจ
+                                                {translate("กลับไปเลือกแพ็กเกจ")}
                                             </button>
 
                                         </div>
@@ -2682,7 +3000,7 @@ export default function CustomerPage() {
                                         />
 
                                         <p className="text-sm text-slate-500">
-                                            วันที่จัดงาน
+                                            {translate("วันที่จัดงาน")}
                                         </p>
 
                                     </div>
@@ -2698,7 +3016,37 @@ export default function CustomerPage() {
                                 </div>
 
                                 {/* =================================================
-                                    Travel Fee
+                                    Time
+                                ================================================= */}
+
+                                <div className="mt-4 rounded-2xl bg-slate-50 p-5">
+
+                                    <div className="flex items-center gap-2">
+                                        <Clock3
+                                            size={18}
+                                            className="text-pink-500"
+                                        />
+
+                                        <p className="text-sm text-slate-500">
+                                            เวลาให้บริการ
+                                        </p>
+                                    </div>
+
+                                    <p className="mt-2 font-bold text-slate-900">
+                                        {formatTimeRange(
+                                            form.startTime,
+                                            form.endTime
+                                        )}
+                                    </p>
+
+                                    <p className="mt-1 text-xs text-slate-400">
+                                        ระยะเวลาแพ็กเกจ {serviceDuration} ชั่วโมง
+                                    </p>
+
+                                </div>
+
+                                {/* =================================================
+                                    {translate("ค่าเดินทาง")}
                                 ================================================= */}
 
                                 {form.province && (
@@ -2727,7 +3075,7 @@ export default function CustomerPage() {
                                         <div className="mt-3 flex items-center justify-between border-t border-pink-100 pt-3">
 
                                             <span className="text-sm text-slate-500">
-                                                ค่าเดินทาง
+                                                {translate("ค่าเดินทาง")}
                                             </span>
 
                                             <span className="font-bold text-pink-600">
@@ -2757,7 +3105,7 @@ export default function CustomerPage() {
                                     <div className="flex justify-between text-sm">
 
                                         <span className="text-slate-500">
-                                            ราคาแพ็กเกจ
+                                            {translate("ราคาแพ็กเกจ")}
                                         </span>
 
                                         <span className="font-semibold">
@@ -2774,7 +3122,7 @@ export default function CustomerPage() {
                                     <div className="mt-3 flex justify-between text-sm">
 
                                         <span className="text-slate-500">
-                                            ค่าเดินทาง
+                                                {translate("ค่าเดินทาง")}
                                         </span>
 
                                         <span className="font-semibold">
@@ -2822,11 +3170,11 @@ export default function CustomerPage() {
                                     <div>
 
                                         <p className="font-bold text-green-700">
-                                            คำนวณราคาเบื้องต้นแล้ว
+                                            {translate("คำนวณราคาเบื้องต้นแล้ว")}
                                         </p>
 
                                         <p className="mt-1 text-xs leading-5 text-green-700/80">
-                                            ค่าเดินทางเป็นประมาณการเบื้องต้น ทีมงานจะตรวจสอบรายละเอียดสถานที่อีกครั้งก่อนยืนยันการจอง
+                                            {translate("ค่าเดินทางเป็นประมาณการเบื้องต้น ทีมงานจะตรวจสอบรายละเอียดสถานที่อีกครั้งก่อนยืนยันการจอง")}
                                         </p>
 
                                     </div>
@@ -2844,5 +3192,13 @@ export default function CustomerPage() {
             </section>
 
         </main>
+    );
+}
+
+export default function CustomerPage() {
+    return (
+        <Suspense fallback={null}>
+            <CustomerContent />
+        </Suspense>
     );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import {
     Phone,
     Mail,
@@ -12,6 +14,8 @@ import {
 } from "react-icons/fa";
 
 import Link from "next/link";
+import { useI18n } from "@/i18n";
+import { socialLinks } from "@/config/social-links";
 
 const mainContacts = [
     {
@@ -37,7 +41,7 @@ const mainContacts = [
         title: "LINE Official",
         value: "@024ppzhh",
         description: "พูดคุยกับทีมงานโดยตรง",
-        link: "https://line.me/R/ti/p/@024ppzhh",
+        link: socialLinks.line,
         color: "bg-green-100 text-green-500",
         action: "แชทกับเรา",
     },
@@ -49,7 +53,7 @@ const socialContacts = [
         title: "Instagram",
         value: "@kokomemory",
         description: "ติดตามผลงานและภาพบรรยากาศจากงานต่าง ๆ",
-        link: "https://www.instagram.com/photobooth.koko?igsh=MWV0dW1nejZ1eG0zbg==&igsi=MWV0dW1nejZ1eG0zbg==",
+        link: socialLinks.instagram,
         color: "bg-pink-100 text-pink-500",
     },
     {
@@ -57,12 +61,13 @@ const socialContacts = [
         title: "Facebook",
         value: "KOKO Memory",
         description: "ข่าวสาร โปรโมชั่น และผลงานของเรา",
-        link: "https://www.facebook.com/share/1EsxWaJ8th/",
+        link: socialLinks.facebook,
         color: "bg-blue-100 text-blue-600",
     },
 ];
 
 export default function ContactInfo() {
+    const { translate } = useI18n();
     return (
         <section className="bg-white py-24">
 
@@ -124,7 +129,7 @@ export default function ContactInfo() {
                                 <div className="relative mt-7">
 
                                     <h3 className="text-2xl font-bold text-slate-900">
-                                        {item.title}
+                                        {translate(item.title)}
                                     </h3>
 
                                     <p className="mt-3 text-lg font-semibold text-slate-800">
@@ -132,7 +137,7 @@ export default function ContactInfo() {
                                     </p>
 
                                     <p className="mt-2 text-sm leading-6 text-slate-500">
-                                        {item.description}
+                                        {translate(item.description)}
                                     </p>
 
                                 </div>
@@ -142,7 +147,7 @@ export default function ContactInfo() {
                                 <div className="relative mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
 
                                     <span className="text-sm font-semibold text-pink-500">
-                                        {item.action}
+                                        {translate(item.action)}
                                     </span>
 
                                     <ArrowUpRight
@@ -215,7 +220,7 @@ export default function ContactInfo() {
                                         </p>
 
                                         <p className="mt-2 text-sm leading-6 text-slate-500">
-                                            {item.description}
+                                            {translate(item.description)}
                                         </p>
 
                                     </div>
@@ -247,7 +252,7 @@ export default function ContactInfo() {
                     <div className="mx-auto max-w-3xl">
 
                         <span className="text-sm font-semibold uppercase tracking-[0.3em] text-pink-400">
-                            LET'S WORK TOGETHER
+                            LET&apos;S WORK TOGETHER
                         </span>
 
                         <h3 className="mt-4 text-3xl font-black text-white md:text-4xl">

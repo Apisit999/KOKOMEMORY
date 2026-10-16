@@ -1,0 +1,15 @@
+# Temporary bootstrap vhost for HTTP-01 certificate issuance.
+# Install as a separate sites-available/sites-enabled vhost only after review.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name studio-staging.kokomemory.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}

@@ -35,13 +35,15 @@
 
 import { useMemo, useState } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
+import { useI18n } from "@/i18n";
+import { getProvinceLabel, getProvinceSearchValues, provinceOptions } from "@/data/thailand/localized-areas";
 
 type Province = {
     id: string;
     name: string;
 };
 
-const provinces: Province[] = [
+const legacyProvinces: Province[] = [
     { id: "10", name: "กรุงเทพมหานคร" },
     { id: "71", name: "กาญจนบุรี" },
     { id: "46", name: "กาฬสินธุ์" },
@@ -118,6 +120,14 @@ const provinces: Province[] = [
     { id: "57", name: "เชียงราย" },
     { id: "47", name: "สระบุรี" },
 ];
+void legacyProvinces;
+
+// Keep this reusable component aligned with the authoritative 77-province
+// dataset. The selected value remains the existing Thai internal value.
+const provinces: Province[] = provinceOptions.map((province) => ({
+    id: province.value,
+    name: province.value,
+}));
 
 type ProvinceComboboxProps = {
     value: string;
@@ -130,6 +140,7 @@ export default function ProvinceCombobox({
     onChange,
     error,
 }: ProvinceComboboxProps) {
+    const { locale, translate } = useI18n();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
 
@@ -141,7 +152,9 @@ export default function ProvinceCombobox({
         }
 
         return provinces.filter((province) =>
-            province.name.toLowerCase().includes(keyword)
+            getProvinceSearchValues(province.name).some((label) =>
+                label.toLocaleLowerCase("th").includes(keyword),
+            ),
         );
     }, [search]);
 
@@ -187,8 +200,8 @@ export default function ProvinceCombobox({
                     }
                 >
                     {selectedProvince
-                        ? selectedProvince.name
-                        : "ค้นหาหรือเลือกจังหวัด..."}
+                        ? getProvinceLabel(selectedProvince.name, locale)
+                        : translate("ค้นหาหรือเลือกจังหวัด...")}
                 </span>
 
                 <ChevronDown
@@ -219,7 +232,7 @@ export default function ProvinceCombobox({
                                 onChange={(event) =>
                                     setSearch(event.target.value)
                                 }
-                                placeholder="พิมพ์ชื่อจังหวัด..."
+                                placeholder={translate("พิมพ์ชื่อจังหวัด...")}
                                 className="h-11 w-full rounded-xl bg-slate-50 pl-10 pr-10 text-sm outline-none ring-0 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-pink-200"
                             />
 
@@ -255,7 +268,7 @@ export default function ProvinceCombobox({
                                                 : "text-slate-700 hover:bg-slate-50"
                                             }`}
                                     >
-                                        <span>{province.name}</span>
+                                        <span>{getProvinceLabel(province.name, locale)}</span>
 
                                         {selected && (
                                             <Check
@@ -268,7 +281,7 @@ export default function ProvinceCombobox({
                             })
                         ) : (
                             <div className="px-4 py-8 text-center text-sm text-slate-400">
-                                ไม่พบจังหวัดที่ค้นหา
+                                {translate("ไม่พบจังหวัดที่ค้นหา")}
                             </div>
                         )}
                     </div>

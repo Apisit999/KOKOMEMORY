@@ -7,20 +7,10 @@ import {
     useState,
 } from "react";
 
-import {
-    collection,
-    doc,
-    onSnapshot,
-    serverTimestamp,
-    updateDoc,
-    writeBatch,
-} from "firebase/firestore";
 
-import {
-    getAuth,
-} from "firebase/auth";
 
-import { db } from "@/lib/firebase";
+import { adminApiFetch } from "@/lib/admin-api-client";
+import { auth } from "@/lib/firebase";
 
 type PaymentStatus =
     | "pending"
@@ -42,6 +32,7 @@ type Payment = {
     status?: PaymentStatus;
 
     slipUrl?: string;
+    secureSlipUrl?: string;
 
     customerName?: string;
 
@@ -55,17 +46,17 @@ type Payment = {
 
     accountNumber?: string;
 
-    submittedAt?: any;
+    submittedAt?: unknown;
 
-    createdAt?: any;
+    createdAt?: unknown;
 
-    verifiedAt?: any;
+    verifiedAt?: unknown;
 
     verifiedBy?: string;
 
     rejectReason?: string;
 
-    rejectedAt?: any;
+    rejectedAt?: unknown;
 
     rejectedBy?: string;
 };
@@ -121,12 +112,17 @@ function getStatusDot(status?: string) {
     }
 }
 
-function getTimestampValue(value: any) {
+function getTimestampValue(value: unknown) {
     if (!value) {
         return 0;
     }
 
-    if (typeof value?.toMillis === "function") {
+    if (
+        typeof value === "object" &&
+        value !== null &&
+        "toMillis" in value &&
+        typeof value.toMillis === "function"
+    ) {
         return value.toMillis();
     }
 
@@ -134,14 +130,19 @@ function getTimestampValue(value: any) {
         return value.getTime();
     }
 
-    if (typeof value?.seconds === "number") {
+    if (
+        typeof value === "object" &&
+        value !== null &&
+        "seconds" in value &&
+        typeof value.seconds === "number"
+    ) {
         return value.seconds * 1000;
     }
 
     return 0;
 }
 
-function formatDate(value: any) {
+function formatDate(value: unknown) {
     const timestamp = getTimestampValue(value);
 
     if (!timestamp) {
@@ -158,7 +159,11 @@ function playNotificationSound() {
     try {
         const AudioContext =
             window.AudioContext ||
-            (window as any).webkitAudioContext;
+            (
+                window as typeof window & {
+                    webkitAudioContext?: typeof window.AudioContext;
+                }
+            ).webkitAudioContext;
 
         if (!AudioContext) {
             return;
@@ -241,6 +246,17 @@ export default function AdminPaymentsPage() {
     const previousSubmittedCount =
         useRef<number | null>(null);
 
+    async function openSecureSlip(payment: Payment) {
+        if (!payment.secureSlipUrl) return;
+        const user = auth.currentUser;
+        if (!user) return;
+        const response = await fetch(payment.secureSlipUrl, { headers: { Authorization: `Bearer ${await user.getIdToken()}` } });
+        if (!response.ok) return;
+        const objectUrl = URL.createObjectURL(await response.blob());
+        window.open(objectUrl, "_blank", "noopener,noreferrer");
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    }
+
     /*
     ============================================================
     REALTIME PAYMENTS
@@ -248,97 +264,47 @@ export default function AdminPaymentsPage() {
     */
 
     useEffect(() => {
-        setLoading(true);
-        setError("");
-
-        const paymentsRef =
-            collection(db, "payments");
-
-        const unsubscribe =
-            onSnapshot(
-                paymentsRef,
-                (snapshot) => {
-                    const data =
-                        snapshot.docs.map(
-                            (item) =>
-                                ({
-                                    id: item.id,
-                                    ...item.data(),
-                                }) as Payment
-                        );
-
-                    data.sort(
-                        (a, b) =>
-                            getTimestampValue(
-                                b.submittedAt ||
-                                b.createdAt
-                            ) -
-                            getTimestampValue(
-                                a.submittedAt ||
-                                a.createdAt
-                            )
-                    );
-
-                    const submittedCount =
-                        data.filter(
-                            (payment) =>
-                                payment.status ===
-                                "submitted"
-                        ).length;
-
-                    /*
-                    ====================================================
-                    NEW PAYMENT DETECTION
-                    ====================================================
-                    */
-
-                    if (
-                        previousSubmittedCount.current !==
-                        null &&
-                        submittedCount >
-                        previousSubmittedCount.current
-                    ) {
-                        playNotificationSound();
-
-                        if (
-                            "Notification" in window &&
-                            Notification.permission ===
-                            "granted"
-                        ) {
-                            new Notification(
-                                "KOKO Memory",
-                                {
-                                    body:
-                                        "มีหลักฐานการชำระเงินใหม่ กรุณาตรวจสอบ",
-                                    icon: "/favicon.ico",
-                                }
-                            );
-                        }
+        let cancelled = false;
+        const loadPayments = () => adminApiFetch<{ payments?: Payment[] }>("/api/admin/payment")
+            .then((result) => {
+                if (cancelled) return;
+                const data = (result.payments || []).sort(
+                    (a, b) =>
+                        getTimestampValue(b.submittedAt || b.createdAt) -
+                        getTimestampValue(a.submittedAt || a.createdAt),
+                );
+                const submittedCount = data.filter(
+                    (payment) => payment.status === "submitted",
+                ).length;
+                if (
+                    previousSubmittedCount.current !== null &&
+                    submittedCount > previousSubmittedCount.current
+                ) {
+                    playNotificationSound();
+                    if ("Notification" in window && Notification.permission === "granted") {
+                        new Notification("KOKO Memory", { body: "มีหลักฐานการชำระเงินใหม่ กรุณาตรวจสอบ", icon: "/favicon.ico" });
                     }
-
-                    previousSubmittedCount.current =
-                        submittedCount;
-
-                    setPayments(data);
-
-                    setLoading(false);
-                },
-                (err) => {
-                    console.error(
-                        "Payments realtime error:",
-                        err
-                    );
-
-                    setError(
-                        err?.message ||
-                        "ไม่สามารถโหลดข้อมูลการชำระเงินได้"
-                    );
-
-                    setLoading(false);
                 }
-            );
+                previousSubmittedCount.current = submittedCount;
+                setPayments(data);
+                setLoading(false);
+            })
+            .catch((err: unknown) => {
+                if (cancelled) return;
+                console.error("Payments API error:", err);
+                setError(err instanceof Error ? err.message : "ไม่สามารถโหลดข้อมูลการชำระเงินได้");
+                setLoading(false);
+            });
 
-        return () => unsubscribe();
+        void loadPayments();
+        const timer = window.setInterval(() => { void loadPayments(); }, 15000);
+        return () => {
+            cancelled = true;
+            window.clearInterval(timer);
+        };
+
+        /* Legacy Firestore listener retained below but disabled from execution. */
+        
     }, []);
 
     /*
@@ -406,7 +372,7 @@ export default function AdminPaymentsPage() {
                         payment.id
                             .toLowerCase()
                             .includes(keyword) ||
-                        payment.bookingId
+                        payment.bookingId || ""
                             ?.toLowerCase()
                             .includes(keyword) ||
                         payment.customerName
@@ -509,113 +475,26 @@ export default function AdminPaymentsPage() {
         }
 
         try {
-            setProcessingId(
-                payment.id
-            );
-
-            const auth =
-                getAuth();
-
-            const adminEmail =
-                auth.currentUser
-                    ?.email ||
-                "admin";
-
-            const paymentRef =
-                doc(
-                    db,
-                    "payments",
-                    payment.id
-                );
-
-            /*
-            ใช้ Batch เพื่ออัปเดต Payment
-            และ Booking พร้อมกัน
-            */
-
-            const batch =
-                writeBatch(db);
-
-            batch.update(
-                paymentRef,
-                {
-                    status:
-                        "verified",
-
-                    verifiedAt:
-                        serverTimestamp(),
-
-                    verifiedBy:
-                        adminEmail,
-
-                    updatedAt:
-                        serverTimestamp(),
-                }
-            );
-
-            if (
-                payment.bookingId
-            ) {
-                const bookingRef =
-                    doc(
-                        db,
-                        "bookings",
-                        payment.bookingId
-                    );
-
-                batch.update(
-                    bookingRef,
-                    {
-                        bookingStatus:
-                            "confirmed",
-
-                        paymentStatus:
-                            "verified",
-
-                        paymentId:
-                            payment.id,
-
-                        paymentAmount:
-                            payment.amount ||
-                            0,
-
-                        "payment.status":
-                            "verified",
-
-                        "payment.paidAmount":
-                            payment.amount ||
-                            0,
-
-                        "payment.paidAt":
-                            serverTimestamp(),
-
-                        "payment.verifiedAt":
-                            serverTimestamp(),
-
-                        updatedAt:
-                            serverTimestamp(),
-                    }
-                );
-            }
-
-            await batch.commit();
-
-            alert(
-                "ยืนยันการชำระเงินเรียบร้อยแล้ว"
-            );
-        } catch (error: any) {
-            console.error(
-                "Verify payment error:",
-                error
-            );
-
-            alert(
-                error?.message ||
-                "ไม่สามารถยืนยันการชำระเงินได้"
-            );
+            setProcessingId(payment.id);
+            await adminApiFetch(`/api/admin/payment/${encodeURIComponent(payment.id)}`, {
+                method: "PATCH",
+                body: JSON.stringify({
+                    action: "verify",
+                    bookingId: payment.bookingId,
+                }),
+            });
+            setPayments((current) => current.map((item) =>
+                item.id === payment.id ? { ...item, status: "verified" } : item,
+            ));
+        } catch (error) {
+            console.error("Verify payment error:", error);
+            alert(error instanceof Error ? error.message : "ไม่สามารถยืนยันการชำระเงินได้");
         } finally {
             setProcessingId(null);
         }
+        return;
+
+        
     }
 
     /*
@@ -658,97 +537,29 @@ export default function AdminPaymentsPage() {
         }
 
         try {
-            setProcessingId(
-                payment.id
-            );
-
-            const auth =
-                getAuth();
-
-            const adminEmail =
-                auth.currentUser
-                    ?.email ||
-                "admin";
-
-            const paymentRef =
-                doc(
-                    db,
-                    "payments",
-                    payment.id
-                );
-
-            const batch =
-                writeBatch(db);
-
-            batch.update(
-                paymentRef,
-                {
-                    status:
-                        "rejected",
-
-                    rejectReason:
-                        cleanReason,
-
-                    rejectedAt:
-                        serverTimestamp(),
-
-                    rejectedBy:
-                        adminEmail,
-
-                    updatedAt:
-                        serverTimestamp(),
-                }
-            );
-
-            if (
-                payment.bookingId
-            ) {
-                const bookingRef =
-                    doc(
-                        db,
-                        "bookings",
-                        payment.bookingId
-                    );
-
-                batch.update(
-                    bookingRef,
-                    {
-                        bookingStatus:
-                            "payment_rejected",
-
-                        paymentStatus:
-                            "rejected",
-
-                        "payment.status":
-                            "rejected",
-
-                        "payment.rejectReason":
-                            cleanReason,
-
-                        updatedAt:
-                            serverTimestamp(),
-                    }
-                );
-            }
-
-            await batch.commit();
-
-            alert(
-                "ปฏิเสธหลักฐานการชำระเงินเรียบร้อยแล้ว"
-            );
-        } catch (error: any) {
-            console.error(
-                "Reject payment error:",
-                error
-            );
-
-            alert(
-                error?.message ||
-                "ไม่สามารถปฏิเสธรายการได้"
-            );
+            setProcessingId(payment.id);
+            await adminApiFetch(`/api/admin/payment/${encodeURIComponent(payment.id)}`, {
+                method: "PATCH",
+                body: JSON.stringify({
+                    action: "reject",
+                    bookingId: payment.bookingId,
+                    reason: cleanReason,
+                }),
+            });
+            setPayments((current) => current.map((item) =>
+                item.id === payment.id
+                    ? { ...item, status: "rejected", rejectReason: cleanReason }
+                    : item,
+            ));
+        } catch (error) {
+            console.error("Reject payment error:", error);
+            alert(error instanceof Error ? error.message : "ไม่สามารถปฏิเสธการชำระเงินได้");
         } finally {
             setProcessingId(null);
         }
+        return;
+
+        
     }
 
     /*
@@ -776,7 +587,7 @@ export default function AdminPaymentsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-50 px-3 py-5 sm:px-5 md:px-8 md:py-10">
+        <main className="bg-slate-50 px-3 py-5 sm:px-5 md:px-8 md:py-10">
             <div className="mx-auto max-w-7xl">
 
                 {/* =================================================
@@ -1323,20 +1134,17 @@ export default function AdminPaymentsPage() {
 
                                             <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50 p-5 sm:flex-row sm:flex-wrap">
 
-                                                {payment.slipUrl ? (
-                                                    <a
-                                                        href={
-                                                            payment.slipUrl
-                                                        }
-                                                        target="_blank"
-                                                        rel="noreferrer"
+                                                {payment.secureSlipUrl ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => void openSecureSlip(payment)}
                                                         className="flex min-h-11 items-center justify-center rounded-xl bg-slate-900 px-5 text-sm font-bold text-white transition hover:bg-slate-800"
                                                     >
                                                         📷 ดูหลักฐานการชำระเงิน
-                                                    </a>
+                                                    </button>
                                                 ) : (
                                                     <span className="flex min-h-11 items-center justify-center rounded-xl bg-slate-200 px-5 text-sm text-slate-500">
-                                                        ไม่มีสลิป
+                                                        {payment.slipUrl ? "สลิปเก่าต้องตรวจสอบ/ย้ายเข้าระบบปลอดภัย" : "ไม่มีสลิป"}
                                                     </span>
                                                 )}
 

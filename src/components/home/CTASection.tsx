@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { ArrowRight, Phone, MessageCircle } from "lucide-react";
+import { socialLinks } from "@/config/social-links";
 
 export default function CTASection() {
     return (
@@ -10,7 +12,7 @@ export default function CTASection() {
 
             <div className="relative mx-auto flex max-w-7xl flex-col items-center px-4 sm:px-6 text-center text-white">
 
-                <span className="rounded-full border border-white/30 bg-white/10 px-4 sm:px-4 sm:px-6 py-2 text-sm uppercase tracking-[0.3em] backdrop-blur-xl">
+                <span className="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm uppercase tracking-[0.3em] backdrop-blur-xl sm:px-6">
                     BOOK NOW
                 </span>
 
@@ -27,7 +29,8 @@ export default function CTASection() {
 
                 <div className="mt-10 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-5">
 
-                    <button
+                    <Link
+                        href="/booking"
                         className="
             flex
             items-center
@@ -46,9 +49,12 @@ export default function CTASection() {
 
                         <ArrowRight size={20} />
 
-                    </button>
+                    </Link>
 
-                    <button
+                    <a
+                        href={socialLinks.line}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="
             flex
             items-center
@@ -72,7 +78,7 @@ export default function CTASection() {
 
                         LINE Official
 
-                    </button>
+                    </a>
 
                 </div>
 

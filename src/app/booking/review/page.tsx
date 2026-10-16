@@ -40,13 +40,18 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import {
+    Suspense,
+    useRef,
+    useState,
+} from "react";
 
 import {
     ArrowLeft,
     ArrowRight,
     CalendarDays,
     CheckCircle2,
+    Clock3,
     Mail,
     MapPin,
     MessageCircle,
@@ -56,13 +61,10 @@ import {
     User,
 } from "lucide-react";
 
-import {
-    doc,
-    setDoc,
-    serverTimestamp,
-} from "firebase/firestore";
-
-import { db } from "@/lib/firebase";
+import { getTravelFee, getBookingDeposit } from "@/data/booking-pricing";
+import { auth } from "@/lib/firebase";
+import { getPackageById, resolvePackageId } from "@/data/booking-packages";
+import { useI18n } from "@/i18n";
 
 
 /* ============================================================
@@ -73,29 +75,25 @@ import { db } from "@/lib/firebase";
    ที่ Step 3 ส่งมา
 ============================================================ */
 
-const packages = {
-
+const fallbackPackages = {
     basic: {
         name: "Basic",
         price: 8900,
         deposit: 3000,
         hours: 3,
     },
-
     premium: {
         name: "Premium",
         price: 14900,
         deposit: 5000,
         hours: 5,
     },
-
     luxury: {
         name: "Luxury",
         price: 24900,
         deposit: 10000,
         hours: 6,
     },
-
 } as const;
 
 
@@ -103,8 +101,9 @@ const packages = {
    HELPERS
 ============================================================ */
 
-function formatThaiDate(
-    dateString: string
+function formatBookingDate(
+    dateString: string,
+    locale: "th" | "en",
 ) {
 
     if (!dateString) {
@@ -124,7 +123,7 @@ function formatThaiDate(
     }
 
     return new Intl.DateTimeFormat(
-        "th-TH",
+        locale === "th" ? "th-TH" : "en-US",
         {
             dateStyle: "long",
         }
@@ -289,7 +288,8 @@ function getBookingId(
    PAGE
 ============================================================ */
 
-export default function ReviewBookingPage() {
+function ReviewBookingContent() {
+    const { locale, translate } = useI18n();
 
     const router =
         useRouter();
@@ -307,6 +307,17 @@ export default function ReviewBookingPage() {
 
     const eventDate =
         safeParam(searchParams.get("date")) || "";
+
+    const startTime =
+        safeParam(searchParams.get("startTime")) || "";
+
+    const endTime =
+        safeParam(searchParams.get("endTime")) || "";
+
+    const durationHoursFromStep3 =
+        Number(
+            safeParam(searchParams.get("durationHours"))
+        );
 
 
     /* ========================================================
@@ -372,55 +383,50 @@ export default function ReviewBookingPage() {
        ใช้ค่าที่ Step 3 ส่งมา
        ======================================================== */
 
-    const packagePriceFromStep3 =
-        Number(
-            safeParam(searchParams.get("packagePrice"))
-        );
-
-    const travelFeeFromStep3 =
-        Number(
-            safeParam(searchParams.get("travelFee"))
-        );
-
-    const estimatedTotalFromStep3 =
-        Number(
-            safeParam(searchParams.get("estimatedTotal"))
-        );
-
-    const depositFromStep3 =
-        Number(
-            safeParam(searchParams.get("deposit"))
-        );
-
-
     /* ========================================================
        PACKAGE
     ======================================================== */
 
-    const packageKey =
-        packageId as keyof typeof packages;
+    const resolvedPackageId =
+        resolvePackageId(packageId);
 
-    const knownPackage =
-        packages[packageKey];
+    const sharedPackage =
+        getPackageById(resolvedPackageId);
 
+    const fallbackPackage =
+        fallbackPackages[
+            packageId as keyof typeof fallbackPackages
+        ];
 
     /*
-     * ถ้า Package ID จาก Step 1
-     * ไม่ตรงกับ Basic / Premium / Luxury
-     *
-     * เราจะยังใช้ข้อมูลจาก Step 3
-     * ไม่ทำให้ระบบพัง
+     * ใช้ข้อมูล Package ชุดเดียวกับ Step 1-3
+     * เพื่อให้ชื่อ / ชั่วโมง / ราคา ตรงกันทุกหน้า
      */
-
     const packageName =
-        knownPackage?.name ||
+        sharedPackage?.title ||
+        sharedPackage?.name ||
+        fallbackPackage?.name ||
         packageId ||
         "แพ็กเกจ";
 
-
     const packageHours =
-        knownPackage?.hours ||
-        0;
+        Number.isFinite(durationHoursFromStep3) &&
+        durationHoursFromStep3 > 0
+            ? durationHoursFromStep3
+            : (
+                sharedPackage?.hours ||
+                fallbackPackage?.hours ||
+                0
+            );
+
+    const packagePaperSize =
+        sharedPackage?.paperSize || "";
+
+    const packageCategory =
+        sharedPackage?.category || "";
+
+    const packageFeatures =
+        sharedPackage?.features || [];
 
 
     /* ========================================================
@@ -429,61 +435,13 @@ export default function ReviewBookingPage() {
        ให้ค่าจาก Step 3 เป็นตัวหลัก
     ======================================================== */
 
-    const packagePrice =
-        Number.isFinite(
-            packagePriceFromStep3
-        )
-            ? packagePriceFromStep3
-            : (
-                knownPackage?.price ||
-                0
-            );
+    const packagePrice = sharedPackage?.price ?? fallbackPackage?.price ?? 0;
+    const travelFee = getTravelFee(province);
+    const discount = 0;
+    const total = packagePrice + travelFee;
+    const deposit = getBookingDeposit(packageId);
 
 
-    const travelFee =
-        Number.isFinite(
-            travelFeeFromStep3
-        )
-            ? travelFeeFromStep3
-            : 0;
-
-
-    const discount =
-        0;
-
-
-    const total =
-        Number.isFinite(
-            estimatedTotalFromStep3
-        )
-            ? estimatedTotalFromStep3
-            : Math.max(
-                packagePrice +
-                travelFee -
-                discount,
-                0
-            );
-
-
-    /*
-     * เงินมัดจำ
-     *
-     * ถ้า Package เป็นข้อมูลเดิม
-     * จะใช้ deposit จาก package
-     *
-     * ถ้าเป็น Package ใหม่
-     * และยังไม่ได้ส่ง deposit มา
-     * ให้เป็น 0 ก่อน
-     *
-     * เราจะเชื่อมระบบ Deposit จริง
-     * ใน Step Payment
-     */
-
-    const deposit =
-        Number.isFinite(depositFromStep3) &&
-            depositFromStep3 > 0
-            ? depositFromStep3
-            : (knownPackage?.deposit || 0);
 
 
     const remaining =
@@ -521,495 +479,219 @@ export default function ReviewBookingPage() {
        CREATE BOOKING
     ======================================================== */
 
-    const handleConfirmBooking =
-        async () => {
+    const handleConfirmBooking = async () => {
 
-            /*
-             * ป้องกันการกดปุ่มซ้ำ
-             */
+        if (isSubmitting || submitLockRef.current) {
+            return;
+        }
 
-            if (
-                isSubmitting ||
-                submitLockRef.current
-            ) {
-                return;
+        submitLockRef.current = true;
+
+        if (!packageId || !eventDate || !customerName || !phone || !startTime || !endTime) {
+            setSubmitError(translate("ข้อมูลการจองไม่ครบ กรุณากลับไปตรวจสอบข้อมูลอีกครั้ง"));
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitError("");
+
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+            setSubmitError(translate("กรุณาเข้าสู่ระบบก่อนทำรายการจอง"));
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            router.push(`/account/login?redirect=${encodeURIComponent(`/booking/review?${searchParams.toString()}`)}`);
+            return;
+        }
+
+        const refreshedUser = currentUser;
+
+        if (!refreshedUser) {
+            setSubmitError(translate("ไม่พบเซสชันผู้ใช้งาน กรุณาเข้าสู่ระบบใหม่อีกครั้ง"));
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        if (!refreshedUser.emailVerified) {
+            setSubmitError(translate("กรุณายืนยัน Email ก่อนทำรายการจอง"));
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        const authenticatedEmail = refreshedUser.email?.trim().toLowerCase();
+
+        if (!authenticatedEmail) {
+            setSubmitError(translate("ไม่พบ Email ของบัญชี กรุณาเข้าสู่ระบบใหม่อีกครั้ง"));
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+            return;
+        }
+
+        try {
+            const bookingFingerprint =
+                [
+                    packageId,
+                    eventDate,
+                    startTime,
+                    endTime,
+                    customerName,
+                    phone,
+                    authenticatedEmail,
+                    eventType,
+                    guests,
+                    venue,
+                    province,
+                    district,
+                    subdistrict,
+                    postalCode,
+                    address,
+                ].join("|").trim();
+
+            const bookingRequestId =
+                getBookingId(bookingFingerprint);
+
+            const payload = {
+                packageId,
+                clientRequestId: bookingRequestId,
+                eventDate,
+                startTime,
+                endTime,
+                durationHours: packageHours,
+                customer: {
+                    name: customerName,
+                    phone,
+                    line,
+                },
+                event: {
+                    type: eventType,
+                    guests,
+                },
+                venue: {
+                    name: venue,
+                    province,
+                    district,
+                    subdistrict,
+                    postalCode,
+                    address,
+                    googleMaps,
+                },
+                note,
+                pricing: {
+                    packagePrice,
+                    travelFee,
+                    discount,
+                    total,
+                    deposit,
+                    remaining,
+                },
+            };
+
+            const token = await refreshedUser.getIdToken();
+
+            const response = await fetch("/api/booking/create", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+                cache: "no-store",
+            });
+
+            const contentType = response.headers.get("content-type") || "";
+            let result: {
+                success?: boolean;
+                bookingId?: string;
+                created?: boolean;
+                error?: string;
+                code?: string;
+            } = {};
+
+            if (contentType.includes("application/json")) {
+                result = await response.json();
+            } else {
+                const text = await response.text();
+                console.error("Booking Create API returned non-JSON:", text.slice(0, 1000));
+                throw new Error(translate("เซิร์ฟเวอร์ตอบกลับข้อมูลไม่ถูกต้อง"));
             }
 
-            /*
-             * ล็อกทันที ก่อน await ใด ๆ
-             * จึงกัน double-click ได้จริง
-             */
-            submitLockRef.current = true;
-
-
-            /*
-             * ตรวจสอบข้อมูลสำคัญ
-             */
-
-            if (
-                !packageId
-            ) {
-
-                setSubmitError(
-                    "ไม่พบข้อมูลแพ็กเกจ กรุณากลับไปเลือกแพ็กเกจอีกครั้ง"
-                );
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
-                return;
+            if (!response.ok || !result.success || !result.bookingId) {
+                if (result.code === "BOOKING_EXPIRED") {
+                    try {
+                        sessionStorage.removeItem(`koko_booking_id_${bookingFingerprint}`);
+                    } catch {
+                        // Session storage may be unavailable in some browser contexts.
+                    }
+                }
+                const error = new Error(result.error || translate("ไม่สามารถสร้างรายการจองได้")) as Error & { code?: string };
+                error.code = result.code || `HTTP_${response.status}`;
+                throw error;
             }
 
+            const bookingId = result.bookingId;
 
-            if (
-                !eventDate
-            ) {
-
-                setSubmitError(
-                    "ไม่พบวันที่จัดงาน กรุณากลับไปเลือกวันอีกครั้ง"
-                );
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
-                return;
-            }
-
-
-            if (
-                !customerName ||
-                !phone
-            ) {
-
-                setSubmitError(
-                    "ข้อมูลลูกค้าไม่ครบ กรุณากลับไปตรวจสอบข้อมูลอีกครั้ง"
-                );
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
-                return;
-            }
-
-
-            setIsSubmitting(
-                true
+            console.log(
+                result.created ? "KOKO Booking Created:" : "KOKO Existing Booking:",
+                bookingId,
             );
 
-            setSubmitError("");
-
-
-            try {
-
-                /* ==================================================
-                   BOOKING DATA
-                ================================================== */
-
-                const bookingData = {
-
-                    /* ------------------------------------------
-                       SYSTEM
-                    ------------------------------------------ */
-
-                    bookingVersion:
-                        1,
-
-                    createdAt:
-                        serverTimestamp(),
-
-                    updatedAt:
-                        serverTimestamp(),
-
-
-                    /* ------------------------------------------
-                       PACKAGE
-                    ------------------------------------------ */
-
-                    package: {
-
-                        id:
-                            packageId,
-
-                        name:
-                            packageName,
-
-                        hours:
-                            packageHours,
-
-                        price:
-                            packagePrice,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       EVENT
-                    ------------------------------------------ */
-
-                    event: {
-
-                        date:
-                            eventDate,
-
-                        type:
-                            eventType,
-
-                        guests:
-                            guests,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       CUSTOMER
-                    ------------------------------------------ */
-
-                    customer: {
-
-                        name:
-                            customerName,
-
-                        phone:
-                            phone,
-
-                        line:
-                            line,
-
-                        email:
-                            email,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       VENUE
-                    ------------------------------------------ */
-
-                    venue: {
-
-                        name:
-                            venue,
-
-                        province:
-                            province,
-
-                        district:
-                            district,
-
-                        subdistrict:
-                            subdistrict,
-
-                        postalCode:
-                            postalCode,
-
-                        address:
-                            address,
-
-                        googleMaps:
-                            googleMaps,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       PRICE
-                    ------------------------------------------ */
-
-                    pricing: {
-
-                        packagePrice:
-                            packagePrice,
-
-                        travelFee:
-                            travelFee,
-
-                        discount:
-                            discount,
-
-                        total:
-                            total,
-
-                        deposit:
-                            deposit,
-
-                        remaining:
-                            remaining,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       PAYMENT
-                    ------------------------------------------ */
-
-                    payment: {
-
-                        status:
-                            "unpaid",
-
-                        method:
-                            null,
-
-                        proofUrl:
-                            null,
-
-                        paidAmount:
-                            0,
-
-                        paidAt:
-                            null,
-
-                        verifiedAt:
-                            null,
-
-                        verifiedBy:
-                            null,
-
-                    },
-
-
-                    /* ------------------------------------------
-                       BOOKING STATUS
-                    ------------------------------------------ */
-
-                    bookingStatus:
-                        "pending_payment",
-
-
-                    /* ------------------------------------------
-                       NOTE
-                    ------------------------------------------ */
-
-                    note:
-                        note,
-
-                };
-
-
-                /* ==================================================
-                   CREATE UNIQUE BOOKING ID
-                   --------------------------------------------------
-                   ใช้ข้อมูลสำคัญของการจองสร้าง fingerprint
-                   เพื่อให้การกดซ้ำของการจองเดิมใช้ ID เดิม
-                ================================================== */
-
-                const bookingFingerprint =
-                    [
-                        packageId,
-                        eventDate,
-                        customerName,
-                        phone,
-                        email,
-                        eventType,
-                        guests,
-                        venue,
-                        province,
-                        district,
-                        subdistrict,
-                        postalCode,
-                        address,
-                    ]
-                        .join("|")
-                        .trim();
-
-                const bookingId =
-                    getBookingId(
-                        bookingFingerprint
-                    );
-
-                const bookingRef =
-                    doc(
-                        db,
-                        "bookings",
-                        bookingId
-                    );
-
-
-                /* ==================================================
-                   IDEMPOTENT BOOKING CREATION
-                   --------------------------------------------------
-                   ใช้ bookingId ที่สร้างจาก fingerprint เดิมเสมอ
-                   แทน Firestore transaction
-
-                   เหตุผล:
-                   - กัน double-click ด้วย submitLockRef
-                   - การส่งข้อมูลซ้ำจากหน้าเดิมใช้ document ID เดิม
-                   - ไม่ต้องเปิด transaction/retry loop ของ Firestore
-                   - ข้อมูล Unicode ถูกส่งเป็น Firestore document data
-                     ไม่ได้ถูกใส่ลง HTTP Header
-
-                   ถ้า bookingId เดิมถูกสร้างแล้ว การกดซ้ำจะเขียนข้อมูล
-                   ลง document เดิม ไม่สร้าง document ใหม่
-                ================================================== */
-
-                await setDoc(
-                    bookingRef,
-                    bookingData,
-                    { merge: false }
-                );
-
-                console.log(
-                    "KOKO Booking saved:",
-                    bookingId
-                );
-
-
-                /* ==================================================
-                   PAYMENT PARAMETERS
-                   --------------------------------------------------
-                   ส่ง Booking ID ไป Payment
-                ================================================== */
-
-                const paymentParams =
-                    buildSafePaymentParams({
-
-                        bookingId:
-                            bookingId,
-
-                        package:
-                            packageId,
-
-                        date:
-                            eventDate,
-
-                        name:
-                            customerName,
-
-                        phone:
-                            phone,
-
-                        line:
-                            line,
-
-                        email:
-                            email,
-
-                        event:
-                            eventType,
-
-                        guests:
-                            guests,
-
-                        venue:
-                            venue,
-
-                        province:
-                            province,
-
-                        district:
-                            district,
-
-                        subdistrict:
-                            subdistrict,
-
-                        postalCode:
-                            postalCode,
-
-                        address:
-                            address,
-
-                        googleMaps:
-                            googleMaps,
-
-                        note:
-                            note,
-
-                        packagePrice:
-                            String(
-                                packagePrice
-                            ),
-
-                        travelFee:
-                            String(
-                                travelFee
-                            ),
-
-                        estimatedTotal:
-                            String(
-                                total
-                            ),
-
-                        deposit:
-                            String(
-                                deposit
-                            ),
-
-                        remaining:
-                            String(
-                                remaining
-                            ),
-
-                    });
-
-
-                /* ==================================================
-                   GO PAYMENT
-                ================================================== */
-
-                router.push(
-                    `/booking/payment?${paymentParams.toString()}`
-                );
-
-
-            } catch (
-            error
-            ) {
-
-                console.error(
-                    "KOKO CREATE BOOKING ERROR:",
-                    error
-                );
-
-
-                const firebaseError =
-                    error as {
-                        code?: string;
-                        message?: string;
-                    };
-
-                console.error(
-                    "KOKO FIREBASE ERROR CODE:",
-                    firebaseError?.code
-                );
-
-                console.error(
-                    "KOKO FIREBASE ERROR MESSAGE:",
-                    firebaseError?.message
-                );
-
-                const errorCode =
-                    firebaseError?.code ||
-                    (error instanceof Error ? error.name : "") ||
-                    "UNKNOWN_ERROR";
-
-                let errorMessage =
-                    firebaseError?.message ||
-                    (error instanceof Error ? error.message : String(error)) ||
-                    "ไม่ทราบสาเหตุ";
-
-                if (
-                    errorMessage.includes(
-                        "setRequestHeader"
-                    ) ||
-                    errorMessage.includes(
-                        "ISO-8859-1"
-                    )
-                ) {
-                    errorMessage =
-                        "พบข้อมูล Unicode ที่ browser พยายามส่งเป็น HTTP Header " +
-                        "ซึ่งไม่รองรับภาษาไทย/Unicode โดยตรง ระบบจึงหยุดคำขอไว้ " +
-                        "โค้ดหน้านี้ได้ทำ normalization และส่งข้อมูลผ่าน UTF-8 URL/Firestore แล้ว " +
-                        "หากยังเกิดอีก ให้ตรวจไฟล์ src/lib/firebase และส่วน API/Proxy ที่เพิ่ม Header เอง";
-                }
-
-                setSubmitError(
-                    `ไม่สามารถสร้างรายการจองได้ (${errorCode})\\n${errorMessage}`
-                );
-
-                setIsSubmitting(false);
-                submitLockRef.current = false;
-
+            const paymentParams = buildSafePaymentParams({
+                bookingId,
+                package: packageId,
+                date: eventDate,
+                startTime,
+                endTime,
+                durationHours: String(packageHours),
+                name: customerName,
+                phone,
+                line,
+                email: authenticatedEmail,
+                event: eventType,
+                guests,
+                venue,
+                province,
+                district,
+                subdistrict,
+                postalCode,
+                address,
+                googleMaps,
+                note,
+                packagePrice: String(packagePrice),
+                travelFee: String(travelFee),
+                estimatedTotal: String(total),
+                deposit: String(deposit),
+                remaining: String(remaining),
+            });
+
+            router.push(`/booking/payment?${paymentParams.toString()}`);
+        } catch (error) {
+            console.error("KOKO CREATE BOOKING ERROR:", error);
+
+            const typedError = error as { code?: string; message?: string };
+            const errorCode = typedError?.code || (error instanceof Error ? error.name : "") || "UNKNOWN_ERROR";
+            const errorMessage = typedError?.message || (error instanceof Error ? error.message : String(error)) || translate("ไม่ทราบสาเหตุ");
+
+            if (errorCode === "DATE_ALREADY_BOOKED" || errorMessage === "DATE_ALREADY_BOOKED") {
+                setSubmitError(translate("ขออภัย วันที่นี้มีลูกค้าท่านอื่นจองไปแล้ว กรุณากลับไปเลือกวันใหม่"));
+            } else if (errorCode === "BOOKING_EXPIRED") {
+                setSubmitError(translate("เวลาพักคิวหมดแล้ว กรุณากดทำรายการอีกครั้งเพื่อจองคิวใหม่"));
+            } else if (errorCode === "EMAIL_NOT_VERIFIED") {
+                setSubmitError(translate("กรุณายืนยัน Email ก่อนทำรายการจอง"));
+            } else if (errorCode === "UNAUTHORIZED" || errorCode === "INVALID_TOKEN") {
+                setSubmitError(translate("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง"));
+            } else {
+                setSubmitError(`${translate("ไม่สามารถสร้างรายการจองได้")} (${errorCode})\n${errorMessage}`);
             }
 
-        };
-
+            setIsSubmitting(false);
+            submitLockRef.current = false;
+        }
+    };
 
     /* ========================================================
        UI
@@ -1020,111 +702,114 @@ export default function ReviewBookingPage() {
         <main className="min-h-screen bg-slate-50">
 
             {/* =================================================
-                STEP HEADER
+                BOOKING HEADER + STEP INDICATOR
             ================================================= */}
 
-            <section className="border-b bg-white">
+            <section className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-xl">
 
-                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6">
 
-                    <div className="flex flex-wrap items-center gap-2 text-xs sm:gap-3 sm:text-sm">
+                    {/* Top row */}
 
-                        {/* Step 1 */}
+                    <div className="flex min-h-[72px] items-center justify-between gap-4">
 
-                        <Link
-                            href="/booking/package"
-                            className="
-                                rounded-full
-                                bg-green-100
-                                px-3
-                                py-2
-                                font-semibold
-                                text-green-700
-                                transition
-                                hover:bg-green-200
-                                sm:px-4
-                            "
-                        >
-                            ✓ Step 1
-                        </Link>
+                        <div className="min-w-0 text-center">
+                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
+                                KOKO Memory
+                            </p>
 
+                            <p className="truncate text-sm font-bold text-slate-900 sm:text-base">
+                                {translate("ขั้นตอนการจอง")}
+                            </p>
+                        </div>
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                        <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
+                            <p className="text-[11px] font-medium text-slate-400">
+                                {translate("ขั้นตอน")}
+                            </p>
 
+                            <p className="text-sm font-black text-slate-900">
+                                04 <span className="font-normal text-slate-300">/</span> 06
+                            </p>
+                        </div>
 
-                        {/* Step 2 */}
+                    </div>
 
-                        <Link
-                            href={`/booking/schedule?package=${encodeURIComponent(
-                                packageId
-                            )}`}
-                            className="
-                                rounded-full
-                                bg-green-100
-                                px-3
-                                py-2
-                                font-semibold
-                                text-green-700
-                                transition
-                                hover:bg-green-200
-                                sm:px-4
-                            "
-                        >
-                            ✓ Step 2
-                        </Link>
+                    {/* Step progress */}
 
+                    <div className="overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
-                        <span className="text-slate-300">
-                            →
-                        </span>
+                        <div className="mx-auto flex min-w-max items-center justify-center gap-2 sm:gap-3">
 
+                            {[
+                                {
+                                    number: 1,
+                                    label: "แพ็กเกจ",
+                                    done: true,
+                                },
+                                {
+                                    number: 2,
+                                    label: "วันจัดงาน",
+                                    done: true,
+                                },
+                                {
+                                    number: 3,
+                                    label: "ข้อมูล",
+                                    done: true,
+                                },
+                                {
+                                    number: 4,
+                                    label: "ตรวจสอบ",
+                                    active: true,
+                                },
+                                {
+                                    number: 5,
+                                    label: "ชำระเงิน",
+                                },
+                                {
+                                    number: 6,
+                                    label: "สำเร็จ",
+                                },
+                            ].map((step, index) => (
+                                <div
+                                    key={step.number}
+                                    className="flex items-center gap-2 sm:gap-3"
+                                >
+                                    <div
+                                        className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${
+                                            step.active
+                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200"
+                                                : step.done
+                                                    ? "bg-green-50 text-green-700"
+                                                    : "bg-slate-100 text-slate-400"
+                                        }`}
+                                    >
+                                        <span
+                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${
+                                                step.active
+                                                    ? "bg-white/20 text-white"
+                                                    : step.done
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-white text-slate-400"
+                                            }`}
+                                        >
+                                            {step.done ? "✓" : step.number}
+                                        </span>
 
-                        {/* Step 3 */}
+                                        <span>
+                                            {translate(step.label)}
+                                        </span>
+                                    </div>
 
-                        <Link
-                            href={`/booking/customer?package=${encodeURIComponent(
-                                packageId
-                            )}&date=${encodeURIComponent(
-                                eventDate
-                            )}`}
-                            className="
-                                rounded-full
-                                bg-green-100
-                                px-3
-                                py-2
-                                font-semibold
-                                text-green-700
-                                transition
-                                hover:bg-green-200
-                                sm:px-4
-                            "
-                        >
-                            ✓ Step 3
-                        </Link>
+                                    {index < 5 && (
+                                        <span className="text-slate-300">
+                                            →
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
 
-
-                        <span className="text-slate-300">
-                            →
-                        </span>
-
-
-                        {/* Step 4 */}
-
-                        <span
-                            className="
-                                rounded-full
-                                bg-pink-500
-                                px-3
-                                py-2
-                                font-semibold
-                                text-white
-                                sm:px-4
-                            "
-                        >
-                            Step 4
-                        </span>
+                        </div>
 
                     </div>
 
@@ -1156,16 +841,15 @@ export default function ReviewBookingPage() {
                         <div>
 
                             <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-500">
-                                Booking Step 4
+                                {translate("ขั้นตอนที่ 4")}
                             </p>
 
                             <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
-                                ตรวจสอบข้อมูลการจอง
+                                {translate("ตรวจสอบข้อมูลการจอง")}
                             </h1>
 
                             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                                กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้อง
-                                ก่อนดำเนินการชำระเงิน
+                                {translate("กรุณาตรวจสอบข้อมูลทั้งหมดให้ถูกต้อง ก่อนดำเนินการชำระเงิน")}
                             </p>
 
                         </div>
@@ -1186,22 +870,64 @@ export default function ReviewBookingPage() {
                                 <div className="min-w-0">
 
                                     <p className="text-xs font-semibold text-slate-400">
-                                        แพ็กเกจที่เลือก
+                                        {translate("แพ็กเกจที่เลือก")}
                                     </p>
 
                                     <h2 className="mt-1 break-words text-xl font-black text-slate-900 sm:text-2xl">
                                         {packageName}
                                     </h2>
 
-                                    {packageHours > 0 && (
-                                        <p className="mt-1 text-sm text-slate-500">
-                                            ระยะเวลา {packageHours} ชั่วโมง
-                                        </p>
-                                    )}
+                                    <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                                        {packageHours > 0 && (
+                                            <span className="rounded-full bg-slate-100 px-3 py-1">
+                                                {packageHours} {translate("ชั่วโมง")}
+                                            </span>
+                                        )}
+
+                                        {packagePaperSize && (
+                                            <span className="rounded-full bg-slate-100 px-3 py-1">
+                                                {translate("ขนาด")} {packagePaperSize}
+                                            </span>
+                                        )}
+
+                                        {packageCategory && (
+                                            <span className="rounded-full bg-slate-100 px-3 py-1">
+                                                {packageCategory === "360"
+                                                    ? "360 Photobooth"
+                                                    : "Photobooth"
+                                                }
+                                            </span>
+                                        )}
+                                    </div>
 
                                 </div>
 
                             </div>
+
+                            {packageFeatures.length > 0 && (
+                                <div className="mt-6 border-t border-slate-100 pt-5">
+                                    <p className="text-xs font-semibold text-slate-400">
+                                        {translate("สิ่งที่รวมอยู่ในแพ็กเกจ")}
+                                    </p>
+
+                                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                        {packageFeatures.map((feature, index) => (
+                                            <div
+                                                key={`${feature}-${index}`}
+                                                className="flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-700"
+                                            >
+                                                <CheckCircle2
+                                                    size={16}
+                                                    className="mt-0.5 shrink-0 text-green-500"
+                                                />
+                                                <span className="break-words">
+                                                    {feature}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                         </section>
 
@@ -1221,11 +947,11 @@ export default function ReviewBookingPage() {
                                 <div>
 
                                     <h2 className="text-lg font-black text-slate-900">
-                                        ข้อมูลลูกค้า
+                                        {translate("ข้อมูลลูกค้า")}
                                     </h2>
 
                                     <p className="text-xs text-slate-400">
-                                        ข้อมูลสำหรับติดต่อ
+                                        {translate("ข้อมูลสำหรับติดต่อ")}
                                     </p>
 
                                 </div>
@@ -1244,7 +970,7 @@ export default function ReviewBookingPage() {
 
                                         <User size={14} />
 
-                                        ชื่อ - นามสกุล
+                                        {translate("ชื่อ - นามสกุล")}
 
                                     </div>
 
@@ -1263,7 +989,7 @@ export default function ReviewBookingPage() {
 
                                         <Phone size={14} />
 
-                                        เบอร์โทรศัพท์
+                                        {translate("เบอร์โทรศัพท์")}
 
                                     </div>
 
@@ -1331,11 +1057,11 @@ export default function ReviewBookingPage() {
                                 <div>
 
                                     <h2 className="text-lg font-black text-slate-900">
-                                        รายละเอียดงาน
+                                        {translate("รายละเอียดงาน")}
                                     </h2>
 
                                     <p className="text-xs text-slate-400">
-                                        วันที่และรายละเอียดงาน
+                                        {translate("วันที่และรายละเอียดงาน")}
                                     </p>
 
                                 </div>
@@ -1348,13 +1074,45 @@ export default function ReviewBookingPage() {
                                 <div className="rounded-2xl bg-slate-50 p-4">
 
                                     <p className="text-xs text-slate-400">
-                                        วันที่จัดงาน
+                                            {translate("วันที่จัดงาน")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
-                                        {formatThaiDate(
-                                            eventDate
-                                        )}
+                                        {formatBookingDate(eventDate, locale)}
+                                    </p>
+
+                                </div>
+
+
+                                <div className="rounded-2xl bg-slate-50 p-4">
+
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <Clock3 size={14} />
+                                        {translate("เวลาเริ่มงาน")}
+                                    </div>
+
+                                    <p className="mt-2 font-semibold text-slate-900">
+                                        {startTime
+                                            ? `${startTime} ${translate("น.")}`
+                                            : "-"
+                                        }
+                                    </p>
+
+                                </div>
+
+
+                                <div className="rounded-2xl bg-slate-50 p-4">
+
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <Clock3 size={14} />
+                                        {translate("เวลาสิ้นสุด")}
+                                    </div>
+
+                                    <p className="mt-2 font-semibold text-slate-900">
+                                        {endTime
+                                            ? `${endTime} ${translate("น.")}`
+                                            : "-"
+                                        }
                                     </p>
 
                                 </div>
@@ -1363,11 +1121,27 @@ export default function ReviewBookingPage() {
                                 <div className="rounded-2xl bg-slate-50 p-4">
 
                                     <p className="text-xs text-slate-400">
-                                        ประเภทงาน
+                                        {translate("ระยะเวลา")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
-                                        {eventType || "-"}
+                                        {packageHours > 0
+                                            ? `${packageHours} ${translate("ชั่วโมง")}`
+                                            : "-"
+                                        }
+                                    </p>
+
+                                </div>
+
+
+                                <div className="rounded-2xl bg-slate-50 p-4">
+
+                                    <p className="text-xs text-slate-400">
+                                        {translate("ประเภทงาน")}
+                                    </p>
+
+                                    <p className="mt-2 font-semibold text-slate-900">
+                                        {eventType ? translate(eventType) : "-"}
                                     </p>
 
                                 </div>
@@ -1376,12 +1150,12 @@ export default function ReviewBookingPage() {
                                 <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
 
                                     <p className="text-xs text-slate-400">
-                                        จำนวนแขกโดยประมาณ
+                                        {translate("จำนวนแขกโดยประมาณ")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
                                         {guests
-                                            ? `${guests} คน`
+                                            ? `${guests} ${translate("คน")}`
                                             : "-"
                                         }
                                     </p>
@@ -1408,11 +1182,11 @@ export default function ReviewBookingPage() {
                                 <div>
 
                                     <h2 className="text-lg font-black text-slate-900">
-                                        สถานที่จัดงาน
+                                        {translate("สถานที่จัดงาน")}
                                     </h2>
 
                                     <p className="text-xs text-slate-400">
-                                        รายละเอียดสถานที่
+                                        {translate("รายละเอียดสถานที่")}
                                     </p>
 
                                 </div>
@@ -1426,7 +1200,7 @@ export default function ReviewBookingPage() {
                                 <div className="rounded-2xl bg-slate-50 p-4">
 
                                     <p className="text-xs text-slate-400">
-                                        สถานที่
+                                        {translate("สถานที่")}
                                     </p>
 
                                     <p className="mt-2 font-semibold text-slate-900">
@@ -1441,7 +1215,7 @@ export default function ReviewBookingPage() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            จังหวัด
+                                            {translate("จังหวัด")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1454,7 +1228,7 @@ export default function ReviewBookingPage() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            เขต / อำเภอ
+                                            {translate("เขต / อำเภอ")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1467,7 +1241,7 @@ export default function ReviewBookingPage() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            แขวง / ตำบล
+                                            {translate("แขวง / ตำบล")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1480,7 +1254,7 @@ export default function ReviewBookingPage() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            รหัสไปรษณีย์
+                                            {translate("รหัสไปรษณีย์")}
                                         </p>
 
                                         <p className="mt-2 font-semibold text-slate-900">
@@ -1497,7 +1271,7 @@ export default function ReviewBookingPage() {
                                     <div className="rounded-2xl bg-slate-50 p-4">
 
                                         <p className="text-xs text-slate-400">
-                                            ที่อยู่เพิ่มเติม
+                                            {translate("ที่อยู่เพิ่มเติม")}
                                         </p>
 
                                         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
@@ -1536,7 +1310,7 @@ export default function ReviewBookingPage() {
 
                                         <MapPin size={18} />
 
-                                        เปิด Google Maps
+                                        {translate("เปิด Google Maps")}
 
                                     </a>
 
@@ -1556,7 +1330,7 @@ export default function ReviewBookingPage() {
                             <section className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 sm:p-7">
 
                                 <h2 className="text-lg font-black text-slate-900">
-                                    รายละเอียดเพิ่มเติม
+                                        {translate("รายละเอียดเพิ่มเติม")}
                                 </h2>
 
                                 <p className="mt-4 whitespace-pre-wrap break-words rounded-2xl bg-slate-50 p-4 text-sm leading-7 text-slate-700">
@@ -1584,12 +1358,26 @@ export default function ReviewBookingPage() {
                             <div className="bg-gradient-to-br from-pink-500 to-pink-400 p-6 text-white sm:p-7">
 
                                 <p className="text-sm font-semibold text-white/80">
-                                    สรุปค่าใช้บริการ
+                                        {translate("สรุปค่าใช้บริการ")}
                                 </p>
 
                                 <h2 className="mt-2 text-2xl font-black">
                                     {packageName}
                                 </h2>
+
+                                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-white/90">
+                                    {eventDate && (
+                                        <span className="rounded-full bg-white/15 px-3 py-1.5">
+                                            {formatBookingDate(eventDate, locale)}
+                                        </span>
+                                    )}
+
+                                    {startTime && endTime && (
+                                        <span className="rounded-full bg-white/15 px-3 py-1.5">
+                                            {startTime} - {endTime} {translate("น.")}
+                                        </span>
+                                    )}
+                                </div>
 
                             </div>
 
@@ -1598,13 +1386,34 @@ export default function ReviewBookingPage() {
 
                             <div className="p-5 sm:p-7">
 
+                                <div className="mb-6 rounded-2xl bg-slate-50 p-4">
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+                                        <CalendarDays size={15} />
+                                            {translate("วันและเวลาจัดงาน")}
+                                    </div>
+
+                                    <p className="mt-2 text-sm font-bold text-slate-900">
+                                        {eventDate
+                                            ? formatBookingDate(eventDate, locale)
+                                            : "-"
+                                        }
+                                    </p>
+
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        {startTime && endTime
+                                            ? `${startTime} - ${endTime} ${translate("น.")}`
+                                            : translate("ยังไม่ได้ระบุเวลา")
+                                        }
+                                    </p>
+                                </div>
+
                                 <div className="space-y-4">
 
 
                                     <div className="flex items-center justify-between gap-4 text-sm">
 
                                         <span className="text-slate-500">
-                                            ราคาแพ็กเกจ
+                                            {translate("ราคาแพ็กเกจ")}
                                         </span>
 
                                         <span className="shrink-0 font-bold text-slate-900">
@@ -1619,13 +1428,13 @@ export default function ReviewBookingPage() {
                                     <div className="flex items-center justify-between gap-4 text-sm">
 
                                         <span className="text-slate-500">
-                                            ค่าเดินทาง
+                                            {translate("ค่าเดินทาง")}
                                         </span>
 
                                         <span className="shrink-0 font-bold text-slate-900">
 
                                             {travelFee === 0
-                                                ? "ฟรี"
+                                                ? translate("ฟรี")
                                                 : `฿${formatMoney(
                                                     travelFee
                                                 )}`
@@ -1641,7 +1450,7 @@ export default function ReviewBookingPage() {
                                         <div className="flex items-center justify-between gap-4 text-sm">
 
                                             <span className="text-slate-500">
-                                                ส่วนลด
+                                                {translate("ส่วนลด")}
                                             </span>
 
                                             <span className="shrink-0 font-bold text-green-600">
@@ -1666,11 +1475,11 @@ export default function ReviewBookingPage() {
                                         <div>
 
                                             <p className="text-sm text-slate-500">
-                                                ยอดรวม
+                                                {translate("ยอดรวม")}
                                             </p>
 
                                             <p className="mt-1 text-xs text-slate-400">
-                                                ราคาประมาณการ
+                                                {translate("ราคาประมาณการ")}
                                             </p>
 
                                         </div>
@@ -1693,7 +1502,7 @@ export default function ReviewBookingPage() {
                                     <div className="flex items-center justify-between gap-4">
 
                                         <span className="text-sm font-semibold text-slate-700">
-                                            เงินมัดจำ
+                                            {translate("เงินมัดจำ")}
                                         </span>
 
                                         <span className="font-black text-pink-600">
@@ -1701,7 +1510,7 @@ export default function ReviewBookingPage() {
                                                 ? `฿${formatMoney(
                                                     deposit
                                                 )}`
-                                                : "รอยืนยัน"
+                                                : translate("รอยืนยัน")
                                             }
                                         </span>
 
@@ -1713,7 +1522,7 @@ export default function ReviewBookingPage() {
                                         <div className="mt-3 flex items-center justify-between gap-4 border-t border-pink-100 pt-3">
 
                                             <span className="text-xs text-slate-500">
-                                                ยอดคงเหลือ
+                                                {translate("ยอดคงเหลือ")}
                                             </span>
 
                                             <span className="text-sm font-bold text-slate-900">
@@ -1729,6 +1538,45 @@ export default function ReviewBookingPage() {
                                 </div>
 
 
+                                {/* Booking summary */}
+
+                                <div className="mt-6 rounded-2xl border border-slate-100 bg-white p-4 ring-1 ring-slate-100">
+                                    <p className="text-xs font-bold text-slate-400">
+                                        {translate("สรุปข้อมูลการจอง")}
+                                    </p>
+
+                                    <div className="mt-3 space-y-2.5 text-sm">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">{translate("ลูกค้า")}</span>
+                                            <span className="text-right font-semibold text-slate-900">
+                                                {customerName || "-"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">{translate("สถานที่")}</span>
+                                            <span className="max-w-[65%] text-right font-semibold text-slate-900">
+                                                {venue || "-"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">{translate("ประเภทงาน")}</span>
+                                            <span className="text-right font-semibold text-slate-900">
+                                                {eventType ? translate(eventType) : "-"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-start justify-between gap-4">
+                                            <span className="text-slate-500">{translate("จำนวนแขก")}</span>
+                                            <span className="text-right font-semibold text-slate-900">
+                                                {guests ? `${guests} คน` : "-"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+
                                 {/* Security */}
 
                                 <div className="mt-6 flex gap-3 rounded-2xl bg-green-50 p-4">
@@ -1741,12 +1589,11 @@ export default function ReviewBookingPage() {
                                     <div>
 
                                         <p className="text-sm font-bold text-green-700">
-                                            ข้อมูลของคุณถูกตรวจสอบก่อนชำระเงิน
+                                            {translate("ข้อมูลของคุณถูกตรวจสอบก่อนชำระเงิน")}
                                         </p>
 
                                         <p className="mt-1 text-xs leading-5 text-green-700/80">
-                                            หลังยืนยัน ระบบจะสร้างเลขรายการจอง
-                                            และเชื่อมไปยังขั้นตอนการชำระเงิน
+                                            {translate("หลังยืนยัน ระบบจะสร้างเลขรายการจอง และเชื่อมไปยังขั้นตอนการชำระเงิน")}
                                         </p>
 
                                     </div>
@@ -1831,7 +1678,7 @@ export default function ReviewBookingPage() {
                                                 "
                                             />
 
-                                            กำลังสร้างรายการจอง...
+                                            {translate("กำลังสร้างรายการจอง...")}
 
                                         </>
 
@@ -1839,8 +1686,7 @@ export default function ReviewBookingPage() {
 
                                         <>
 
-                                            ยืนยันข้อมูล
-                                            และดำเนินการต่อ
+                                            {translate("ยืนยันข้อมูล และดำเนินการต่อ")}
 
                                             <ArrowRight
                                                 size={20}
@@ -1856,11 +1702,7 @@ export default function ReviewBookingPage() {
                                 {/* Back */}
 
                                 <Link
-                                    href={`/booking/customer?package=${encodeURIComponent(
-                                        packageId
-                                    )}&date=${encodeURIComponent(
-                                        eventDate
-                                    )}`}
+                                    href={`/booking/customer?${searchParams.toString()}`}
                                     className="
                                         mt-3
                                         flex
@@ -1885,7 +1727,7 @@ export default function ReviewBookingPage() {
                                         size={18}
                                     />
 
-                                    กลับไปแก้ไขข้อมูล
+                                    {translate("กลับไปแก้ไขข้อมูล")}
 
                                 </Link>
 
@@ -1900,5 +1742,13 @@ export default function ReviewBookingPage() {
             </section>
 
         </main>
+    );
+}
+
+export default function ReviewBookingPage() {
+    return (
+        <Suspense fallback={null}>
+            <ReviewBookingContent />
+        </Suspense>
     );
 }

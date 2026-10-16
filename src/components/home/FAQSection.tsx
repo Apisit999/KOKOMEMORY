@@ -2,37 +2,15 @@
 
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-
-const faqs = [
-    {
-        question: "ต้องจองล่วงหน้ากี่วัน ?",
-        answer:
-            "แนะนำให้จองล่วงหน้าอย่างน้อย 7-30 วัน เพื่อให้เลือกวันและเวลาที่ต้องการได้",
-    },
-    {
-        question: "ให้บริการนอกสถานที่หรือไม่ ?",
-        answer:
-            "ให้บริการทั้งในกรุงเทพฯ ปริมณฑล และต่างจังหวัด โดยอาจมีค่าเดินทางเพิ่มเติม",
-    },
-    {
-        question: "สามารถออกแบบ Photo Strip ได้หรือไม่ ?",
-        answer:
-            "ได้ ฟรี! ทีมงานสามารถออกแบบ Template ให้เข้ากับธีมงานของคุณ",
-    },
-    {
-        question: "แขกสามารถดาวน์โหลดรูปได้อย่างไร ?",
-        answer:
-            "หลังถ่ายรูปสามารถสแกน QR Code เพื่อดูและดาวน์โหลดรูปจาก Live Gallery ได้ทันที",
-    },
-    {
-        question: "สามารถปริ้นรูปได้ไม่จำกัดหรือไม่ ?",
-        answer:
-            "ขึ้นอยู่กับแพ็กเกจที่เลือก โดยแพ็กเกจ Premium และ VIP รองรับ Unlimited Print",
-    },
-];
+import { useI18n } from "@/i18n";
 
 export default function FAQSection() {
     const [open, setOpen] = useState(0);
+    const { t } = useI18n();
+    const faqs = [
+        ["faq.q1", "faq.a1"], ["faq.q2", "faq.a2"], ["faq.q3", "faq.a3"],
+        ["faq.q4", "faq.a4"], ["faq.q5", "faq.a5"],
+    ] as const;
 
     return (
         <section className="bg-white py-16 sm:py-20 lg:py-28">
@@ -46,11 +24,11 @@ export default function FAQSection() {
                     </span>
 
                     <h2 className="mt-6 text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">
-                        คำถามที่พบบ่อย
+                        {t("faq.badge")}
                     </h2>
 
                     <p className="mt-6 text-base sm:text-lg text-gray-500">
-                        หากมีคำถามเพิ่มเติมสามารถติดต่อทีมงานได้ตลอดเวลา
+                        {t("faq.description")}
                     </p>
 
                 </div>
@@ -72,7 +50,7 @@ export default function FAQSection() {
                             >
 
                                 <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-slate-900">
-                                    {item.question}
+                                    {t(item[0])}
                                 </h3>
 
                                 <ChevronDown
@@ -87,7 +65,7 @@ export default function FAQSection() {
                                 <div className="border-t px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
 
                                     <p className="leading-7 sm:leading-8 text-gray-600">
-                                        {item.answer}
+                                        {t(item[1])}
                                     </p>
 
                                 </div>

@@ -20,7 +20,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, type ReactNode } from "react";
+import {
+    Suspense,
+    useEffect,
+    type ReactNode,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -32,6 +36,8 @@ import {
     Sparkles,
     Video,
 } from "lucide-react";
+
+import { useI18n } from "@/i18n";
 
 
 /* ============================================================
@@ -303,6 +309,7 @@ function PackageCard({
     item: PackageItem;
     selected: boolean;
 }) {
+    const { translate } = useI18n();
     return (
         <article
             id={`package-${item.id}`}
@@ -343,7 +350,7 @@ function PackageCard({
 
             {selected && (
                 <div className="absolute left-3 top-3 z-10 rounded-full bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg sm:left-5 sm:top-5 sm:text-xs">
-                    ✓ แพ็กเกจที่เลือก
+                    ✓ {translate("แพ็กเกจที่เลือก")}
                 </div>
             )}
 
@@ -352,7 +359,7 @@ function PackageCard({
 
             {item.popular && (
                 <div className="absolute right-3 top-3 z-10 rounded-full bg-pink-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg sm:right-5 sm:top-5 sm:text-xs">
-                    ⭐ แนะนำ
+                    ⭐ {translate("แนะนำ")}
                 </div>
             )}
 
@@ -391,7 +398,7 @@ function PackageCard({
             <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-pink-500 sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
                 {item.category === "360"
                     ? "360 PHOTOBOOTH"
-                    : item.group.toUpperCase()}
+                    : translate(item.group).toUpperCase()}
             </p>
 
 
@@ -405,7 +412,7 @@ function PackageCard({
             {/* Title */}
 
             <p className="mt-2 min-h-[42px] text-sm leading-6 text-slate-500">
-                {item.title}
+                {translate(item.title)}
             </p>
 
 
@@ -417,7 +424,7 @@ function PackageCard({
                 </span>
 
                 <span className="text-xs text-slate-400 sm:text-sm">
-                    / แพ็กเกจ
+                    / {translate("แพ็กเกจ")}
                 </span>
             </div>
 
@@ -431,7 +438,7 @@ function PackageCard({
                 />
 
                 <span className="min-w-0 truncate">
-                    ระยะเวลา {item.hours} ชั่วโมง
+                    {translate("ระยะเวลา")} {item.hours} {translate("ชั่วโมง")}
                 </span>
             </div>
 
@@ -446,7 +453,7 @@ function PackageCard({
                     />
 
                     <span className="min-w-0 truncate">
-                        ขนาดรูป {item.paperSize}
+                        {translate("ขนาดรูป")} {item.paperSize}
                     </span>
                 </div>
             )}
@@ -457,7 +464,7 @@ function PackageCard({
             <div className="mt-7 flex-1">
 
                 <p className="mb-4 font-bold text-slate-900">
-                    สิ่งที่ได้รับ
+                    {translate("สิ่งที่ได้รับ")}
                 </p>
 
                 <div className="space-y-3">
@@ -473,7 +480,7 @@ function PackageCard({
                             />
 
                             <span className="min-w-0 break-words">
-                                {feature}
+                                {translate(feature)}
                             </span>
                         </div>
                     ))}
@@ -543,6 +550,7 @@ function GroupHeader({
     title: string;
     description: string;
 }) {
+    const { translate } = useI18n();
     return (
         <div className="mb-8 flex items-start gap-3 sm:mb-10 sm:items-center sm:gap-4">
 
@@ -553,11 +561,11 @@ function GroupHeader({
             <div className="min-w-0">
 
                 <h2 className="text-2xl font-black leading-tight text-slate-900 sm:text-3xl">
-                    {title}
+                    {translate(title)}
                 </h2>
 
                 <p className="mt-1 text-sm leading-6 text-slate-500 sm:text-base">
-                    {description}
+                    {translate(description)}
                 </p>
 
             </div>
@@ -571,7 +579,9 @@ function GroupHeader({
    MAIN PAGE
 ============================================================ */
 
-export default function PackagePage() {
+function PackageContent() {
+
+    const { translate } = useI18n();
 
     const searchParams = useSearchParams();
 
@@ -580,6 +590,7 @@ export default function PackagePage() {
     const selectedPackageId = packageFromUrl
         ? packageAliases[packageFromUrl] || packageFromUrl
         : null;
+
 
 
     /* ========================================================
@@ -666,7 +677,7 @@ export default function PackagePage() {
                 <div className="pointer-events-none absolute -right-32 top-10 h-72 w-72 rounded-full bg-purple-100/60 blur-3xl sm:h-96 sm:w-96" />
 
 
-                <div className="relative mx-auto w-full max-w-7xl px-4 pb-12 pt-24 text-center sm:px-6 sm:pb-16 sm:pt-28 lg:px-8 lg:pt-32">
+                <div className="booking-package-hero relative mx-auto w-full max-w-7xl px-4 pb-12 pt-24 text-center sm:px-6 sm:pb-16 sm:pt-28 lg:px-8 lg:pt-32">
 
                     <span className="inline-flex max-w-full items-center gap-2 rounded-full bg-pink-100 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-pink-600 sm:px-5 sm:text-sm sm:tracking-[0.25em]">
 
@@ -675,23 +686,21 @@ export default function PackagePage() {
                             className="shrink-0"
                         />
 
-                        BOOKING STEP 1
+                        {translate("ขั้นตอนที่ 1")}
 
                     </span>
 
 
                     <h1 className="mt-6 text-3xl font-black tracking-tight text-slate-900 sm:mt-7 sm:text-5xl lg:text-6xl">
 
-                        เลือกแพ็กเกจ
+                        {translate("เลือกแพ็กเกจ")}
 
                     </h1>
 
 
                     <p className="mx-auto mt-5 max-w-2xl px-2 text-sm leading-7 text-slate-500 sm:mt-6 sm:px-0 sm:text-base sm:leading-8 lg:text-lg">
 
-                        เลือกแพ็กเกจ Photobooth
-                        ที่เหมาะกับงานของคุณ
-                        จากนั้นระบบจะพาไปเลือกวันที่ต้องการจัดงาน
+                        {translate("เลือกแพ็กเกจ Photobooth ที่เหมาะกับงานของคุณ จากนั้นระบบจะพาไปเลือกวันที่ต้องการจัดงาน")}
 
                     </p>
 
@@ -707,7 +716,7 @@ export default function PackagePage() {
                                 className="shrink-0"
                             />
 
-                            กำลังแสดงแพ็กเกจที่คุณเลือกจากหน้า Home
+                            {translate("กำลังแสดงแพ็กเกจที่คุณเลือกจากหน้า Home")}
 
                         </div>
 
@@ -863,7 +872,7 @@ export default function PackagePage() {
 
                             <h3 className="text-lg font-black text-slate-900 sm:text-xl">
 
-                                หมายเหตุเกี่ยวกับราคา
+                                {translate("หมายเหตุเกี่ยวกับราคา")}
 
                             </h3>
 
@@ -913,13 +922,13 @@ export default function PackagePage() {
 
                         <p className="font-bold text-slate-900">
 
-                            พร้อมแล้วสำหรับวันพิเศษของคุณ?
+                            {translate("พร้อมแล้วสำหรับวันพิเศษของคุณ?")}
 
                         </p>
 
                         <p className="mt-1 text-sm leading-6 text-slate-500">
 
-                            เลือกแพ็กเกจ แล้วไปเลือกวันที่ต้องการจัดงาน
+                            {translate("เลือกแพ็กเกจ แล้วไปเลือกวันที่ต้องการจัดงาน")}
 
                         </p>
 
@@ -930,7 +939,7 @@ export default function PackagePage() {
 
                         <CheckCircle size={18} />
 
-                        1 วัน = 1 คิว
+                        {translate("1 วัน = 1 คิว")}
 
                     </div>
 
@@ -939,5 +948,13 @@ export default function PackagePage() {
             </section>
 
         </main>
+    );
+}
+
+export default function PackagePage() {
+    return (
+        <Suspense fallback={null}>
+            <PackageContent />
+        </Suspense>
     );
 }

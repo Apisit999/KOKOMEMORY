@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import brandLogo from "../../../public/logo/logo.jpg";
 import Link from "next/link";
 import {
     Phone,
@@ -12,13 +15,17 @@ import {
     FaFacebookF,
     FaInstagram,
 } from "react-icons/fa";
+import { useI18n } from "@/i18n";
+import { socialLinks } from "@/config/social-links";
 export default function Footer() {
+    const { t, translate } = useI18n();
+
     return (
-        <footer className="bg-[#223B73] text-white">
+        <footer className="border-t border-white/10 bg-[#0B0B0F] text-white">
 
             <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
 
-                <div className="grid gap-10 sm:gap-12 lg:grid-cols-4">
+                <div className="grid gap-10 sm:gap-12 md:grid-cols-2 xl:grid-cols-[1.35fr_1fr_1fr_1fr]">
 
                     {/* Company */}
 
@@ -29,11 +36,12 @@ export default function Footer() {
                             <div className="relative h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-full">
 
                                 <Image
-                                    src="/logo/logo.jpg"
+                                    src={brandLogo}
                                     alt="KOKO Memory"
                                     fill
                                     priority
                                     className="object-cover"
+                                    sizes="(max-width: 640px) 56px, 64px"
                                 />
 
                             </div>
@@ -44,32 +52,30 @@ export default function Footer() {
                                     KOKO Memory
                                 </h2>
 
-                                <p className="text-pink-300">
-                                    Wedding Photobooth
+                                <p className="text-[#FF8CC4]">
+                                    Creative Technology Studio
                                 </p>
 
                             </div>
 
                         </div>
 
-                        <p className="mt-6 sm:mt-8 leading-7 sm:leading-8 text-white/70">
+                        <p className="mt-6 max-w-md text-sm leading-7 text-white/70 sm:mt-8 sm:text-base sm:leading-8">
 
-                            บริการ Photobooth งานแต่ง งานอีเวนต์
-                            งานเลี้ยง งานเปิดตัวสินค้า พร้อมระบบ
-                            Live Gallery ดาวน์โหลดรูปผ่าน QR Code
+                            {translate("บริการเช่า Photobooth โปรแกรม Photobooth ซอฟต์แวร์ธุรกิจ และงานออกแบบ/พิมพ์ 3D พร้อมดูแลทุกขั้นตอน")}
 
                         </p>
 
-                        <div className="mt-8 space-y-4">
+                        <div className="mt-8 space-y-4 text-sm sm:text-base">
 
                             <div className="flex items-center gap-3">
 
                                 <Phone
                                     size={20}
-                                    className="text-pink-400"
+                                    className="text-[#FF8CC4]"
                                 />
 
-                                080-081-9933
+                                <a href="tel:+66800819933" className="text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">080-081-9933</a>
 
                             </div>
 
@@ -80,7 +86,7 @@ export default function Footer() {
                                     className="text-green-400"
                                 />
 
-                                @024ppzhh
+                                <a href={socialLinks.line} target="_blank" rel="noopener noreferrer" className="text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">@024ppzhh</a>
 
                             </div>
 
@@ -88,10 +94,10 @@ export default function Footer() {
 
                                 <Mail
                                     size={20}
-                                    className="text-blue-300"
+                                    className="text-[#FF8CC4]"
                                 />
 
-                                info@kokomemory.com
+                                <a href="mailto:kokomemory@gmail.com" className="break-all text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">kokomemory@gmail.com</a>
 
                             </div>
 
@@ -104,7 +110,7 @@ export default function Footer() {
                     <div>
 
                         <h3 className="mb-8 text-2xl font-bold">
-                            เมนู
+                            {t("footer.menu")}
                         </h3>
 
                         <ul className="space-y-4">
@@ -118,7 +124,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    หน้าแรก
+                                    {t("common.home")}
 
                                 </Link>
 
@@ -133,7 +139,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    เกี่ยวกับเรา
+                                    {t("common.about")}
 
                                 </Link>
 
@@ -142,13 +148,13 @@ export default function Footer() {
                             <li>
 
                                 <Link
-                                    href="/gallery"
+                                    href="/gallery/portfolio"
                                     className="flex items-center gap-2 text-white/70 hover:text-pink-300"
                                 >
 
                                     <ChevronRight size={16} />
 
-                                    ผลงาน
+                                    {t("common.portfolio")}
 
                                 </Link>
 
@@ -163,11 +169,15 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    แพ็กเกจ
+                                    {t("common.packages")}
 
                                 </Link>
 
                             </li>
+
+                            <li><Link href="/photobooth" className="flex items-center gap-2 text-white/70 hover:text-[#D5EE85]"><ChevronRight size={16} />Photobooth</Link></li>
+
+                            <li><Link href="/software" className="flex items-center gap-2 text-white/70 hover:text-[#D5EE85]"> <ChevronRight size={16} />Software</Link></li>
 
                             <li>
 
@@ -178,7 +188,7 @@ export default function Footer() {
 
                                     <ChevronRight size={16} />
 
-                                    ติดต่อ
+                                    {t("common.contact")}
 
                                 </Link>
 
@@ -193,22 +203,18 @@ export default function Footer() {
                     <div>
 
                         <h3 className="mb-8 text-2xl font-bold">
-                            บริการ
+                            {t("footer.services")}
                         </h3>
 
                         <ul className="space-y-4 text-white/70">
 
-                            <li>Wedding Photobooth</li>
+                            <li>Photobooth rental</li>
 
-                            <li>360 Booth</li>
+                            <li>Photobooth software</li>
 
-                            <li>Live Gallery</li>
+                            <li>3D printing</li>
 
-                            <li>Backdrop</li>
-
-                            <li>Template Design</li>
-
-                            <li>QR Download</li>
+                            <li>Business software</li>
 
                         </ul>
 
@@ -219,13 +225,15 @@ export default function Footer() {
                     <div>
 
                         <h3 className="mb-8 text-2xl font-bold">
-                            ติดตามเรา
+                            {t("footer.follow")}
                         </h3>
 
                         <div className="space-y-5">
 
                             <a
-                                href="#"
+                                href={socialLinks.facebook}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-pink-500"
                             >
 
@@ -236,8 +244,10 @@ export default function Footer() {
                             </a>
 
                             <a
-                                href="#"
-                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-green-500"
+                                href={socialLinks.line}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-[#778E38]"
                             >
 
                                 <MessageCircle />
@@ -247,8 +257,10 @@ export default function Footer() {
                             </a>
 
                             <a
-                                href="#"
-                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-pink-600"
+                                href={socialLinks.instagram}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-[#778E38]"
                             >
 
                                 <FaInstagram size={20} />
@@ -270,7 +282,7 @@ export default function Footer() {
 
                                     <br />
 
-                                    ให้บริการทั่วประเทศ
+                                    {t("footer.nationwide")}
 
                                 </p>
 

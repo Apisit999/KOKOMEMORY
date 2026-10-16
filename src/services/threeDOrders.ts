@@ -1,0 +1,186 @@
+"use client";
+
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import type {
+    ThreeDOrder,
+    ThreeDOrderInput,
+    ThreeDOrderStatus,
+    ThreeDPaymentStatus,
+} from "@/types/threeDOrder";
+
+export type {
+    ThreeDOrder,
+    ThreeDOrderInput,
+    ThreeDOrderStatus,
+    ThreeDPaymentStatus,
+};
+
+function waitForAuthUser(): Promise<User | null> {
+    if (auth.currentUser) {
+        return Promise.resolve(auth.currentUser);
+    }
+
+    return new Promise((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            unsubscribe();
+            resolve(user);
+        });
+    });
+}
+
+async function adminRequest<T>(
+    path: string,
+    init: RequestInit = {}
+): Promise<T> {
+    const user = await waitForAuthUser();
+
+    if (!user) {
+        throw new Error("กรุณาเข้าสู่ระบบ Admin ก่อนใช้งาน");
+    }
+
+    const token = await user.getIdToken();
+
+    const response = await fetch(path, {
+        ...init,
+        headers: {
+            ...(init.body instanceof FormData
+                ? {}
+                : { "Content-Type": "application/json" }),
+            ...(init.headers || {}),
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    const data = (await response.json()) as T & {
+        error?: string;
+    };
+
+    if (!response.ok) {
+        throw new Error(
+            data.error || "ไม่สามารถดำเนินการกับ Order ได้"
+        );
+    }
+
+    return data;
+}
+
+/**
+ * ดึง Order ทั้งหมด
+ */
+export async function getThreeDOrders(): Promise<ThreeDOrder[]> {
+    const result = await adminRequest<{
+        orders?: ThreeDOrder[];
+    }>("/api/admin/3d-printing/orders");
+
+    return Array.isArray(result.orders) ? result.orders : [];
+}
+
+/**
+ * ดึง Order ตาม ID
+ */
+export async function getThreeDOrder(
+    id: string
+): Promise<ThreeDOrder> {
+    const result = await adminRequest<{
+        order: ThreeDOrder;
+    }>(
+        `/api/admin/3d-printing/orders/${encodeURIComponent(id)}`
+    );
+
+    return result.order;
+}
+
+/**
+ * สร้าง Order ใหม่
+ */
+export async function createThreeDOrder(
+    data: ThreeDOrderInput
+): Promise<ThreeDOrder> {
+    const result = await adminRequest<{
+        order: ThreeDOrder;
+    }>("/api/admin/3d-printing/orders", {
+        method: "POST",
+        body: JSON.stringify(data),
+    });
+
+    return result.order;
+}
+
+/**
+ * แก้ไข Order
+ */
+export async function updateThreeDOrder(
+    id: string,
+    data: Partial<ThreeDOrderInput>
+): Promise<ThreeDOrder> {
+    const result = await adminRequest<{
+        order: ThreeDOrder;
+    }>(
+        `/api/admin/3d-printing/orders/${encodeURIComponent(id)}`,
+        {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        }
+    );
+
+    return result.order;
+}
+
+/**
+ * เปลี่ยนสถานะงานผลิต
+ */
+export async function updateThreeDOrderStatus(
+    id: string,
+    orderStatus: ThreeDOrderStatus
+): Promise<ThreeDOrder> {
+    return updateThreeDOrder(id, {
+        orderStatus,
+    });
+}
+
+/**
+ * เปลี่ยนสถานะการชำระเงิน
+ */
+export async function updateThreeDPaymentStatus(
+    id: string,
+    paymentStatus: ThreeDPaymentStatus
+): Promise<ThreeDOrder> {
+    return updateThreeDOrder(id, {
+        paymentStatus,
+    });
+}
+
+/**
+ * ลบ Order
+ */
+export async function deleteThreeDOrder(
+    id: string
+): Promise<void> {
+    await adminRequest(
+        `/api/admin/3d-printing/orders/${encodeURIComponent(id)}`,
+        {
+            method: "DELETE",
+        }
+    );
+}
+
+export async function archiveThreeDOrder(id: string): Promise<void> {
+    await adminRequest(`/api/admin/3d-printing/orders/${encodeURIComponent(id)}/archive`, { method: "POST" });
+}
+
+export async function restoreThreeDOrder(id: string): Promise<void> {
+    await adminRequest(`/api/admin/3d-printing/orders/${encodeURIComponent(id)}/restore`, { method: "POST" });
+}
+
+async function lifecycleAction<T>(id: string, action: string, body?: Record<string, unknown>): Promise<T> {
+    const result = await adminRequest<T>(`/api/admin/3d-printing/orders/${encodeURIComponent(id)}/${action}`, { method: "POST", body: body ? JSON.stringify(body) : undefined });
+    return result;
+}
+
+export const startThreeDOrder = (id: string) => lifecycleAction<{ status: string }>(id, "start");
+export const completeThreeDProduction = (id: string) => lifecycleAction<{ status: string }>(id, "complete-production");
+export const approveThreeDQuality = (id: string) => lifecycleAction<{ status: string }>(id, "quality-check", { approved: true });
+export const rejectThreeDQuality = (id: string) => lifecycleAction<{ status: string }>(id, "quality-check", { approved: false });
+export const shipThreeDOrder = (id: string, carrier: string, trackingNumber: string) => lifecycleAction<{ status: string }>(id, "ship", { carrier, trackingNumber });
+export const completeThreeDOrder = (id: string) => lifecycleAction<{ status: string }>(id, "complete");

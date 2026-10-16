@@ -18,6 +18,7 @@
  */
 
 import Link from "next/link";
+import { useI18n } from "@/i18n";
 
 
 interface Service {
@@ -200,6 +201,7 @@ const services: Service[] = [
 
 
 export default function ServicesContent() {
+    const { translate } = useI18n();
 
     return (
 
@@ -247,7 +249,7 @@ export default function ServicesContent() {
                             text-slate-500
                         "
                     >
-                        What We Do
+                        {translate("What We Do")}
                     </span>
 
 
@@ -362,7 +364,7 @@ export default function ServicesContent() {
                                         text-slate-900
                                     "
                                 >
-                                    {service.title}
+                                    {translate(service.title)}
                                 </h3>
 
 
@@ -376,7 +378,7 @@ export default function ServicesContent() {
                                         text-slate-500
                                     "
                                 >
-                                    {service.description}
+                                    {translate(service.description)}
                                 </p>
 
 
@@ -400,7 +402,7 @@ export default function ServicesContent() {
                                             text-slate-500
                                         "
                                     >
-                                        {service.detail}
+                                        {translate(service.detail)}
                                     </p>
 
                                 </div>

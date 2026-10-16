@@ -13,11 +13,20 @@
  * ------------------------------------------------------------
  * 1 วัน = 1 คิว
  *
- * สถานะวันที่:
+ * ระบบ Availability:
  * ------------------------------------------------------------
- * 🟢 ว่าง       = สามารถเลือกได้
- * 🔴 จองแล้ว    = ไม่สามารถเลือกได้
- * ⚫ ปิดรับ      = ไม่สามารถเลือกได้
+ * 🔥 อ่านข้อมูลจาก Firebase Firestore จริง
+ * 🔴 ถ้า bookingDates ล็อกวันนั้น → ปิดวัน
+ * 🟢 ถ้าไม่มี lock และไม่ใช่วันปิดรับ → ว่าง
+ *
+ * หมายเหตุ:
+ * ------------------------------------------------------------
+ * ฝั่งลูกค้าไม่อ่าน collection "bookings" ทั้งหมด
+ * เพื่อป้องกันข้อมูลการจองของลูกค้าคนอื่นรั่วไหล
+ *
+ * Real-time:
+ * ------------------------------------------------------------
+ * ใช้ onSnapshot() กับ bookingDates เพื่ออัปเดตสถานะวันแบบ Real-time
  *
  * Flow:
  * ------------------------------------------------------------
@@ -28,19 +37,30 @@
  * Step 5 → ชำระเงิน
  * Step 6 → สำเร็จ
  *
- * ในอนาคต:
- * ------------------------------------------------------------
- * [ ] Firebase
- * [ ] ดึงวันที่จองแล้วจาก Database
- * [ ] ดึงวันที่ Admin ปิดรับจาก Database
- * [ ] Real-time availability
- * [ ] ป้องกันการจองซ้ำ
- * [ ] ระบบ Admin จัดการวัน
  * ============================================================
  */
 
-import { useMemo, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import {
+    Suspense,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
+
+import {
+    useSearchParams,
+    useRouter,
+} from "next/navigation";
+
+import {
+    collection,
+    documentId,
+    onSnapshot,
+    type Timestamp,
+    query,
+    where,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 import {
     CalendarDays,
@@ -50,24 +70,22 @@ import {
 } from "lucide-react";
 
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+} from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/i18n";
 
 
 /* ============================================================
    Package Data
-   ------------------------------------------------------------
-   ข้อมูลแพ็กเกจสำหรับใช้แสดงใน Step 2
- *
-   ตอนนี้เป็นข้อมูลชั่วคราว
-   ภายหลังสามารถย้ายไป Firebase / package.service.ts ได้
 ============================================================ */
 
 const packages = {
 
     /* --------------------------------------------------------
        แพ็กเกจเริ่มต้น
-       S / M / L
     -------------------------------------------------------- */
 
     "photobooth-s": {
@@ -91,9 +109,9 @@ const packages = {
         hours: 4,
     },
 
+
     /* --------------------------------------------------------
        แพ็กเกจมาตรฐาน
-       SS / MM / LL
     -------------------------------------------------------- */
 
     "photobooth-ss": {
@@ -117,9 +135,9 @@ const packages = {
         hours: 4,
     },
 
+
     /* --------------------------------------------------------
        แพ็กเกจพรีเมียม
-       S1 / M1 / L1
     -------------------------------------------------------- */
 
     "photobooth-s1": {
@@ -142,6 +160,7 @@ const packages = {
         price: 16400,
         hours: 4,
     },
+
 
     /* --------------------------------------------------------
        360 Photo Booth
@@ -168,12 +187,10 @@ const packages = {
         hours: 4,
     },
 
-    /* ========================================================
+
+    /* --------------------------------------------------------
        รองรับ ID เก่า
-       --------------------------------------------------------
-       เผื่อ Step 1 เดิมยังส่ง basic / premium / luxury
-       จะได้ไม่เกิด Error
-    ======================================================== */
+    -------------------------------------------------------- */
 
     basic: {
         name: "Basic",
@@ -194,35 +211,17 @@ const packages = {
         category: "แพ็กเกจ",
         price: 24900,
         hours: 6,
+
     },
 
 } as const;
 
 
 /* ============================================================
-   วันที่มีคนจองแล้ว
+   Admin Closed Dates
    ------------------------------------------------------------
-   ตอนนี้เป็นข้อมูลจำลอง
- *
-   ภายหลัง:
-   Firebase → bookings → date
-============================================================ */
-
-const bookedDates = [
-    "2026-08-15",
-    "2026-08-22",
-    "2026-09-05",
-];
-
-
-/* ============================================================
-   วันที่ Admin ปิดรับ
-   ------------------------------------------------------------
-   เช่น:
-   - ทีมงานไม่ว่าง
-   - วันหยุด
-   - มีงานส่วนตัว
-   - อุปกรณ์ไม่พร้อม
+   ตอนนี้ยังเป็นวันปิดรับแบบ Static
+   ภายหลังสามารถย้ายไป Firebase ได้
 ============================================================ */
 
 const closedDates = [
@@ -233,14 +232,24 @@ const closedDates = [
 
 
 /* ============================================================
+   Booking Status
+   ------------------------------------------------------------
+   สถานะเหล่านี้ถือว่า "คืนคิว"
+============================================================ */
+
+const RELEASED_BOOKING_STATUSES = new Set([
+    "cancelled",
+    "canceled",
+    "rejected",
+    "declined",
+    "released",
+]);
+
+
+/* ============================================================
    Helper
    ------------------------------------------------------------
    Date → YYYY-MM-DD
- *
-   ตัวอย่าง:
-   18 สิงหาคม 2026
-   ↓
-   2026-08-18
 ============================================================ */
 
 function formatDateKey(date: Date) {
@@ -262,13 +271,140 @@ function formatDateKey(date: Date) {
 /* ============================================================
    Helper
    ------------------------------------------------------------
+   Firebase Timestamp / Date / String
+   → YYYY-MM-DD
+============================================================ */
+
+function normalizeDateValue(
+    value: unknown
+): string {
+
+    if (!value) {
+        return "";
+    }
+
+
+    /* --------------------------------------------------------
+       String
+       --------------------------------------------------------
+       รองรับ:
+       2026-09-20
+       2026-09-20T...
+    -------------------------------------------------------- */
+
+    if (typeof value === "string") {
+
+        const trimmed = value.trim();
+
+        if (
+            /^\d{4}-\d{2}-\d{2}$/.test(
+                trimmed
+            )
+        ) {
+            return trimmed;
+        }
+
+
+        const parsed =
+            new Date(trimmed);
+
+        if (
+            !Number.isNaN(
+                parsed.getTime()
+            )
+        ) {
+            return formatDateKey(parsed);
+        }
+
+        return "";
+    }
+
+
+    /* --------------------------------------------------------
+       JavaScript Date
+    -------------------------------------------------------- */
+
+    if (value instanceof Date) {
+
+        if (
+            !Number.isNaN(
+                value.getTime()
+            )
+        ) {
+            return formatDateKey(value);
+        }
+
+        return "";
+    }
+
+
+    /* --------------------------------------------------------
+       Firebase Timestamp
+    -------------------------------------------------------- */
+
+    const timestamp =
+        value as Partial<Timestamp>;
+
+    if (
+        typeof timestamp.toDate ===
+        "function"
+    ) {
+
+        const date =
+            timestamp.toDate();
+
+        if (
+            date instanceof Date &&
+            !Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return formatDateKey(date);
+        }
+    }
+
+
+    /* --------------------------------------------------------
+       Timestamp แบบ object
+       -------------------------------------------------------- */
+
+    if (
+        typeof timestamp.seconds ===
+            "number"
+    ) {
+
+        const date =
+            new Date(
+                timestamp.seconds * 1000
+            );
+
+        if (
+            !Number.isNaN(
+                date.getTime()
+            )
+        ) {
+            return formatDateKey(date);
+        }
+    }
+
+
+    return "";
+}
+
+
+/* ============================================================
+   Helper
+   ------------------------------------------------------------
    Date → ภาษาไทย
 ============================================================ */
 
-function formatThaiDate(date: Date) {
+function formatBookingDate(
+    date: Date,
+    locale: "th" | "en",
+) {
 
     return new Intl.DateTimeFormat(
-        "th-TH",
+        locale === "th" ? "th-TH" : "en-US",
         {
             dateStyle: "long",
         }
@@ -278,21 +414,6 @@ function formatThaiDate(date: Date) {
 
 /* ============================================================
    Booking Progress
-   ------------------------------------------------------------
-   ใช้แสดงขั้นตอนการจองทั้งหมด
- *
- * Step 1 → แพ็กเกจ
- * Step 2 → วันจัดงาน
- * Step 3 → ข้อมูลผู้จอง
- * Step 4 → ตรวจสอบ
- * Step 5 → ชำระเงิน
- * Step 6 → สำเร็จ
- *
- * Responsive:
- * ------------------------------------------------------------
- * Mobile  → เลื่อนแนวนอนได้
- * Tablet  → แสดงเต็มพื้นที่
- * Desktop → แสดงเต็มพื้นที่
 ============================================================ */
 
 const bookingSteps = [
@@ -327,182 +448,500 @@ const bookingSteps = [
    Main Component
 ============================================================ */
 
-export default function SchedulePage() {
+function ScheduleContent() {
+
+    const { locale, translate } = useI18n();
 
     /* ========================================================
        Router
-       --------------------------------------------------------
-       ใช้สำหรับเปลี่ยนหน้า
     ======================================================== */
 
     const router = useRouter();
 
 
     /* ========================================================
-       อ่านข้อมูลจาก URL
-       --------------------------------------------------------
-       ตัวอย่าง:
-
-       /booking/schedule?package=photobooth-m
+       URL Parameters
     ======================================================== */
 
-    const searchParams = useSearchParams();
+    const searchParams =
+        useSearchParams();
 
-    const packageId = searchParams.get("package");
+    const packageId =
+        searchParams.get("package");
+
+    /* ========================================================
+       Selected Date
+    ======================================================== */
+
+    const [
+        selectedDate,
+        setSelectedDate,
+    ] = useState<Date>();
+
+    const [visibleMonth, setVisibleMonth] = useState(() => new Date());
 
 
     /* ========================================================
-       วันที่ลูกค้าเลือก
+       Firebase Availability
+       --------------------------------------------------------
+       ใช้ bookingDates เป็นแหล่งข้อมูล Availability สำหรับลูกค้า
+
+       สำคัญ:
+       --------------------------------------------------------
+       ไม่อ่าน collection "bookings" จากฝั่งลูกค้า
+       เพราะ Firestore Rules อนุญาตให้ลูกค้าอ่านได้เฉพาะ
+       Booking ของตัวเองเท่านั้น เพื่อป้องกันข้อมูลลูกค้าคนอื่นรั่วไหล
     ======================================================== */
 
-    const [selectedDate, setSelectedDate] =
-        useState<Date>();
+    const [
+        lockedDates,
+        setLockedDates,
+    ] = useState<string[]>([]);
 
 
     /* ========================================================
-       หา Package จาก packageId
-       --------------------------------------------------------
-       ถ้าไม่มี Package จะใช้ null
+       Loading
     ======================================================== */
 
-    const selectedPackage = useMemo(() => {
+    const [
+        availabilityLoading,
+        setAvailabilityLoading,
+    ] = useState(true);
 
-        if (!packageId) {
-            return null;
-        }
 
-        return packages[
-            packageId as keyof typeof packages
-        ] ?? null;
+    /* ========================================================
+       Error
+    ======================================================== */
 
-    }, [packageId]);
+    const [
+        availabilityError,
+        setAvailabilityError,
+    ] = useState("");
+
+    const [availabilityRefresh, setAvailabilityRefresh] = useState(0);
+
+
+    /* ========================================================
+       Month-scoped real-time Firestore
+       --------------------------------------------------------
+       อ่านเฉพาะ bookingDates
+       --------------------------------------------------------
+       bookingDates เป็น public availability index
+       ที่เก็บเพียงข้อมูลการล็อกวัน ไม่ใช่ข้อมูลส่วนตัวลูกค้า
+    ======================================================== */
+
+    useEffect(() => {
+
+        setAvailabilityLoading(true);
+        setAvailabilityError("");
+        let expiryTimer: number | undefined;
+
+        const monthStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1);
+        const monthEnd = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 2, 0);
+        const toDateKey = (date: Date) =>
+            `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+        const availabilityQuery = query(
+            collection(db, "bookingDates"),
+            where(documentId(), ">=", toDateKey(monthStart)),
+            where(documentId(), "<=", toDateKey(monthEnd)),
+        );
+
+
+        const unsubscribeBookingDates =
+            onSnapshot(
+                availabilityQuery,
+
+                (snapshot) => {
+
+                    const dates =
+                        new Set<string>();
+                    let nextHoldExpiry: number | null = null;
+
+
+                    snapshot.forEach(
+                        (document) => {
+
+                            const data =
+                                document.data();
+
+
+                            /* ------------------------------------
+                               Status
+                            ------------------------------------ */
+
+                            const rawStatus =
+                                data.status ??
+                                "";
+
+                            const status =
+                                typeof rawStatus ===
+                                "string"
+                                    ? rawStatus
+                                        .trim()
+                                        .toLowerCase()
+                                    : "";
+
+
+                            /*
+                             * lock ที่ถูกยกเลิก
+                             * ไม่ต้องปิดวัน
+                             */
+
+                            if (
+                                RELEASED_BOOKING_STATUSES.has(
+                                    status
+                                )
+                            ) {
+                                return;
+                            }
+
+                            const holdExpiresAt = data.holdExpiresAt as Timestamp | undefined;
+                            if (status === "reserved" && holdExpiresAt && typeof holdExpiresAt.toMillis === "function") {
+                                const expiresAt = holdExpiresAt.toMillis();
+                                if (expiresAt <= Date.now()) return;
+                                nextHoldExpiry = nextHoldExpiry === null
+                                    ? expiresAt
+                                    : Math.min(nextHoldExpiry, expiresAt);
+                            }
+
+
+                            /* ------------------------------------
+                               วันที่
+                               รองรับทั้ง data.date / data.eventDate
+                               และ document.id
+                            ------------------------------------ */
+
+                            const possibleDates = [
+
+                                data?.date,
+
+                                data?.eventDate,
+
+                                document.id,
+
+                            ];
+
+
+                            let eventDate = "";
+
+
+                            for (
+                                const value
+                                of possibleDates
+                            ) {
+
+                                const normalized =
+                                    normalizeDateValue(
+                                        value
+                                    );
+
+                                if (
+                                    normalized
+                                ) {
+                                    eventDate =
+                                        normalized;
+                                    break;
+                                }
+
+                            }
+
+
+                            if (
+                                /^\d{4}-\d{2}-\d{2}$/.test(
+                                    eventDate
+                                )
+                            ) {
+
+                                dates.add(
+                                    eventDate
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    setLockedDates(
+                        Array.from(dates)
+                    );
+
+                    setAvailabilityLoading(
+                        false
+                    );
+
+                    if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
+                    if (nextHoldExpiry !== null) {
+                        expiryTimer = window.setTimeout(
+                            () => setAvailabilityRefresh((current) => current + 1),
+                            Math.max(0, nextHoldExpiry - Date.now()) + 50,
+                        );
+                    }
+
+                },
+
+                (error) => {
+
+                    console.error(
+                        "Firestore bookingDates listener error:",
+                        error
+                    );
+
+
+                    /*
+                     * bookingDates เป็นแหล่งข้อมูลหลัก
+                     * สำหรับ Availability ฝั่งลูกค้า
+                     *
+                     * ถ้าอ่านไม่ได้ ต้องหยุดการจองไว้ก่อน
+                     * เพื่อป้องกันการรับคิวซ้ำ
+                     */
+
+                    setLockedDates([]);
+
+                    setAvailabilityError(
+                        translate("ไม่สามารถตรวจสอบคิวว่างจากระบบได้ กรุณารีเฟรชหน้าอีกครั้ง")
+                    );
+
+                    setAvailabilityLoading(
+                        false
+                    );
+
+                }
+            );
+
+
+        /* ====================================================
+           Cleanup
+        ==================================================== */
+
+        return () => {
+
+            unsubscribeBookingDates();
+            if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
+
+        };
+
+    }, [availabilityRefresh, translate, visibleMonth]);
+
+
+    /* ========================================================
+       หา Package
+    ======================================================== */
+
+    const selectedPackage =
+        useMemo(() => {
+
+            if (!packageId) {
+                return null;
+            }
+
+            return packages[
+                packageId as keyof typeof packages
+            ] ?? null;
+
+        }, [packageId]);
+
+
+    /* ========================================================
+       รวมวันที่ถูกปิดทั้งหมด
+       --------------------------------------------------------
+       bookingDates
+       +
+       closedDates
+    ======================================================== */
+
+    const unavailableDates =
+        useMemo(() => {
+
+            return new Set([
+                ...lockedDates,
+                ...closedDates,
+            ]);
+
+        }, [
+            lockedDates,
+        ]);
 
 
     /* ========================================================
        ตรวจสอบวันที่ไม่สามารถจองได้
-       --------------------------------------------------------
-       true = ห้ามเลือก
-       false = เลือกได้
     ======================================================== */
 
-    const isDateUnavailable = (date: Date) => {
+    const isDateUnavailable =
+        (date: Date) => {
 
-        const key = formatDateKey(date);
-
-
-        /* ----------------------------------------------------
-           วันที่จองแล้ว
-        ---------------------------------------------------- */
-
-        if (bookedDates.includes(key)) {
-            return true;
-        }
+            const key =
+                formatDateKey(date);
 
 
-        /* ----------------------------------------------------
-           วันที่ Admin ปิดรับ
-        ---------------------------------------------------- */
+            /* -----------------------------------------------
+               ระหว่างโหลดข้อมูล
+               ห้ามเลือกก่อน
+            ----------------------------------------------- */
 
-        if (closedDates.includes(key)) {
-            return true;
-        }
+            if (
+                availabilityLoading
+            ) {
+                return true;
+            }
 
-        return false;
-    };
+
+            /* -----------------------------------------------
+               โหลดข้อมูลไม่ได้
+               ป้องกันการรับคิวซ้ำ
+            ----------------------------------------------- */
+
+            if (
+                availabilityError
+            ) {
+                return true;
+            }
+
+
+            /* -----------------------------------------------
+               Booking / Lock / Closed
+            ----------------------------------------------- */
+
+            return unavailableDates.has(
+                key
+            );
+
+        };
 
 
     /* ========================================================
-       ตรวจสอบสถานะวันที่ที่เลือก
+       ตรวจสอบสถานะวันที่เลือก
     ======================================================== */
 
-    const selectedDateStatus = useMemo(() => {
+    const selectedDateStatus =
+        useMemo(() => {
 
-        if (!selectedDate) {
-            return null;
-        }
-
-        const key = formatDateKey(selectedDate);
-
-
-        /* วันที่จองแล้ว */
-
-        if (bookedDates.includes(key)) {
-            return "booked";
-        }
+            if (!selectedDate) {
+                return null;
+            }
 
 
-        /* วันที่ Admin ปิดรับ */
+            const key =
+                formatDateKey(
+                    selectedDate
+                );
 
-        if (closedDates.includes(key)) {
-            return "closed";
-        }
+
+            if (
+                availabilityLoading ||
+                availabilityError
+            ) {
+                return null;
+            }
 
 
-        /* วันที่ว่าง */
+            /* -----------------------------------------------
+               bookingDates lock
+               ------------------------------------------------
+               bookingDates คือ Availability index ที่ลูกค้า
+               สามารถอ่านได้โดยไม่ต้องเปิดเผยข้อมูล bookings
+            ----------------------------------------------- */
 
-        return "available";
+            if (
+                lockedDates.includes(
+                    key
+                )
+            ) {
+                return "booked";
+            }
 
-    }, [selectedDate]);
+
+            /* -----------------------------------------------
+               Admin Closed
+            ----------------------------------------------- */
+
+            if (
+                closedDates.includes(
+                    key
+                )
+            ) {
+                return "closed";
+            }
+
+
+            return "available";
+
+        }, [
+            selectedDate,
+            lockedDates,
+            availabilityLoading,
+            availabilityError,
+        ]);
 
 
     /* ========================================================
        ไป Step 3
-       --------------------------------------------------------
-       ส่งข้อมูล:
-       - package
-       - date
     ======================================================== */
 
     const handleNext = () => {
 
-        /* ยังไม่ได้เลือกวัน */
+        /* -----------------------------------------------
+           ยังไม่ได้เลือกวัน
+        ----------------------------------------------- */
 
         if (!selectedDate) {
             return;
         }
 
 
-        /* วันที่เลือกไม่ว่าง */
+        /* -----------------------------------------------
+           วันที่ไม่ว่าง
+        ----------------------------------------------- */
 
         if (
-            selectedDateStatus !== "available"
+            selectedDateStatus !==
+            "available"
         ) {
             return;
         }
 
 
-        /* ไม่มี Package */
+        /* -----------------------------------------------
+           ไม่มี Package
+        ----------------------------------------------- */
 
         if (!packageId) {
-            router.push("/booking/package");
+
+            router.push(
+                "/booking/package"
+            );
+
             return;
         }
 
 
-        /* แปลงวันที่ */
+        /* -----------------------------------------------
+           แปลงวันที่
+        ----------------------------------------------- */
 
-        const date = formatDateKey(
-            selectedDate
-        );
+        const date =
+            formatDateKey(
+                selectedDate
+            );
 
 
-        /* ----------------------------------------------------
+        /* -----------------------------------------------
            ไป Step 3
-
-           ตัวอย่าง:
-
-           /booking/customer
-           ?package=photobooth-m
-           &date=2026-08-18
-        ---------------------------------------------------- */
+        ----------------------------------------------- */
 
         router.push(
             `/booking/customer?package=${encodeURIComponent(
                 packageId
             )}&date=${date}`
         );
+
     };
 
+
+    /* ========================================================
+       Render
+    ======================================================== */
 
     return (
 
@@ -511,26 +950,21 @@ export default function SchedulePage() {
 
             {/* =================================================
                 Booking Progress
-                -------------------------------------------------
-                แสดงขั้นตอนการจองตามหน้าที่จริง
             ================================================= */}
 
             <section className="border-b bg-white">
 
                 <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-7 lg:px-8">
 
-                    {/* ------------------------------------------------
-                       Horizontal Scroll
-                       ------------------------------------------------
-                       บนมือถือถ้าพื้นที่ไม่พอสามารถเลื่อนดูได้
-                    ------------------------------------------------ */}
-
-                    <div className="overflow-x-auto pb-1 scrollbar-hide">
+                    <div className="overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
                         <div className="mx-auto flex min-w-max items-start justify-center px-2 sm:min-w-0">
 
                             {bookingSteps.map(
-                                (step, index) => {
+                                (
+                                    step,
+                                    index
+                                ) => {
 
                                     const isCompleted =
                                         step.number < 2;
@@ -542,7 +976,9 @@ export default function SchedulePage() {
                                         index ===
                                         bookingSteps.length - 1;
 
+
                                     return (
+
                                         <div
                                             key={
                                                 step.number
@@ -550,13 +986,7 @@ export default function SchedulePage() {
                                             className="flex items-start"
                                         >
 
-                                            {/* =================================================
-                                                Step
-                                            ================================================= */}
-
                                             <div className="flex w-[68px] flex-col items-center sm:w-[90px] md:w-[105px]">
-
-                                                {/* Circle */}
 
                                                 <div
                                                     className={`
@@ -569,34 +999,36 @@ export default function SchedulePage() {
                                                         text-xs
                                                         font-bold
                                                         transition-all
-
                                                         sm:h-11
                                                         sm:w-11
                                                         sm:text-sm
 
-                                                        ${isCompleted
-                                                            ? "bg-green-100 text-green-600"
-                                                            : isCurrent
-                                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200 ring-4 ring-pink-50"
-                                                                : "bg-slate-100 text-slate-400"
+                                                        ${
+                                                            isCompleted
+                                                                ? "bg-green-100 text-green-600"
+                                                                : isCurrent
+                                                                    ? "bg-pink-500 text-white shadow-lg shadow-pink-200 ring-4 ring-pink-50"
+                                                                    : "bg-slate-100 text-slate-400"
                                                         }
                                                     `}
                                                 >
 
                                                     {isCompleted ? (
+
                                                         <CheckCircle2
                                                             size={
                                                                 18
                                                             }
                                                         />
+
                                                     ) : (
+
                                                         step.number
+
                                                     )}
 
                                                 </div>
 
-
-                                                {/* Label */}
 
                                                 <span
                                                     className={`
@@ -607,23 +1039,20 @@ export default function SchedulePage() {
                                                         sm:text-xs
                                                         md:text-sm
 
-                                                        ${isCompleted
-                                                            ? "text-green-600"
-                                                            : isCurrent
-                                                                ? "text-pink-500"
-                                                                : "text-slate-400"
+                                                        ${
+                                                            isCompleted
+                                                                ? "text-green-600"
+                                                                : isCurrent
+                                                                    ? "text-pink-500"
+                                                                    : "text-slate-400"
                                                         }
                                                     `}
                                                 >
-                                                    {step.label}
+                                                    {translate(step.label)}
                                                 </span>
 
                                             </div>
 
-
-                                            {/* =================================================
-                                                Connector
-                                            ================================================= */}
 
                                             {!isLast && (
 
@@ -633,15 +1062,14 @@ export default function SchedulePage() {
                                                         h-px
                                                         w-7
                                                         shrink-0
-
                                                         sm:mt-[22px]
                                                         sm:w-10
-
                                                         md:w-14
 
-                                                        ${step.number < 2
-                                                            ? "bg-green-200"
-                                                            : "bg-slate-200"
+                                                        ${
+                                                            step.number < 2
+                                                                ? "bg-green-200"
+                                                                : "bg-slate-200"
                                                         }
                                                     `}
                                                 />
@@ -649,7 +1077,9 @@ export default function SchedulePage() {
                                             )}
 
                                         </div>
+
                                     );
+
                                 }
                             )}
 
@@ -694,23 +1124,79 @@ export default function SchedulePage() {
 
                                     </div>
 
+
                                     <div className="min-w-0">
 
                                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pink-500 sm:text-sm sm:tracking-[0.2em]">
-                                            เลือกวันจัดงาน
+                                            {translate("เลือกวันจัดงาน")}
                                         </p>
 
                                         <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">
-                                            วันที่ต้องการใช้บริการ
+                                            {translate("วันที่ต้องการใช้บริการ")}
                                         </h1>
 
                                     </div>
 
                                 </div>
 
+
                                 <p className="mt-4 text-sm leading-6 text-slate-500 sm:text-base">
-                                    เลือกวันที่ต้องการใช้บริการ Photobooth
+                                    {translate("เลือกวันที่ต้องการใช้บริการ Photobooth")}
                                 </p>
+
+
+                                {/* =================================================
+                                    Loading
+                                ================================================= */}
+
+                                {availabilityLoading && (
+
+                                    <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+
+                                        {translate("กำลังตรวจสอบคิวจากระบบ...")}
+
+                                    </div>
+
+                                )}
+
+
+                                {/* =================================================
+                                    Error
+                                ================================================= */}
+
+                                {availabilityError && (
+
+                                    <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">
+
+                                        {availabilityError}
+
+                                    </div>
+
+                                )}
+
+
+                                {/* =================================================
+                                    Firebase Connected
+                                ================================================= */}
+
+                                {!availabilityLoading &&
+                                    !availabilityError && (
+
+                                        <div className="mt-4 rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
+
+                                            <div className="flex items-center gap-2">
+
+                                                <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
+
+                                                <span className="font-medium">
+                                                    {translate("ระบบตรวจสอบคิวแบบ Real-time")}
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
 
                             </div>
 
@@ -719,10 +1205,12 @@ export default function SchedulePage() {
                                 Calendar
                             ================================================= */}
 
-                            <div className="flex justify-center overflow-x-auto">
+                            <div className="flex justify-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
 
                                 <Calendar
                                     mode="single"
+                                    month={visibleMonth}
+                                    onMonthChange={setVisibleMonth}
                                     selected={
                                         selectedDate
                                     }
@@ -736,7 +1224,7 @@ export default function SchedulePage() {
                                         },
                                         isDateUnavailable,
                                     ]}
-                                    className="rounded-2xl border p-3 [--cell-size:2.75rem] sm:p-4 sm:[--cell-size:3rem] md:[--cell-size:3.5rem]"
+                                    className="rounded-2xl border p-2 [--cell-size:1.875rem] min-[360px]:[--cell-size:2.25rem] min-[390px]:[--cell-size:2.5rem] sm:p-4 sm:[--cell-size:3rem] md:[--cell-size:3.5rem]"
                                 />
 
                             </div>
@@ -748,40 +1236,34 @@ export default function SchedulePage() {
 
                             <div className="mt-7 grid gap-3 border-t pt-6 sm:mt-8 sm:grid-cols-3">
 
-                                {/* ว่าง */}
-
                                 <div className="flex items-center gap-3">
 
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-green-500" />
 
                                     <span className="text-sm text-slate-600">
-                                        ว่าง
+                                        {translate("ว่าง")}
                                     </span>
 
                                 </div>
 
-
-                                {/* จองแล้ว */}
 
                                 <div className="flex items-center gap-3">
 
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-red-500" />
 
                                     <span className="text-sm text-slate-600">
-                                        จองแล้ว
+                                        {translate("จองแล้ว")}
                                     </span>
 
                                 </div>
 
-
-                                {/* ปิดรับ */}
 
                                 <div className="flex items-center gap-3">
 
                                     <span className="h-3 w-3 shrink-0 rounded-full bg-slate-400" />
 
                                     <span className="text-sm text-slate-600">
-                                        ปิดรับ
+                                        {translate("ปิดรับ")}
                                     </span>
 
                                 </div>
@@ -806,12 +1288,12 @@ export default function SchedulePage() {
 
 
                                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pink-500 sm:text-sm sm:tracking-[0.2em]">
-                                    Booking Details
+                                    {translate("รายละเอียดการจอง")}
                                 </p>
 
 
                                 <h2 className="mt-2 text-2xl font-black text-slate-900 sm:mt-3">
-                                    รายละเอียดการจอง
+                                    {translate("รายละเอียดการจอง")}
                                 </h2>
 
 
@@ -822,8 +1304,9 @@ export default function SchedulePage() {
                                 <div className="mt-6 rounded-2xl bg-slate-50 p-4 sm:mt-8 sm:p-5">
 
                                     <p className="text-sm text-slate-500">
-                                        แพ็กเกจ
+                                        {translate("แพ็กเกจ")}
                                     </p>
+
 
                                     {selectedPackage ? (
 
@@ -834,6 +1317,7 @@ export default function SchedulePage() {
                                                     selectedPackage.name
                                                 }
                                             </p>
+
 
                                             <p className="mt-1 text-sm text-slate-500">
                                                 {
@@ -847,7 +1331,7 @@ export default function SchedulePage() {
                                                 <div>
 
                                                     <p className="text-xs text-slate-400">
-                                                        ราคา
+                                                        {translate("ราคา")}
                                                     </p>
 
                                                     <p className="text-xl font-black text-pink-500">
@@ -863,14 +1347,14 @@ export default function SchedulePage() {
                                                 <div className="text-right">
 
                                                     <p className="text-xs text-slate-400">
-                                                        ระยะเวลา
+                                                        {translate("ระยะเวลา")}
                                                     </p>
 
                                                     <p className="font-bold text-slate-700">
                                                         {
                                                             selectedPackage.hours
                                                         }{" "}
-                                                        ชั่วโมง
+                                                        {translate("ชั่วโมง")}
                                                     </p>
 
                                                 </div>
@@ -882,7 +1366,7 @@ export default function SchedulePage() {
                                     ) : (
 
                                         <p className="mt-1 font-medium text-red-500">
-                                            ไม่พบแพ็กเกจ
+                                            {translate("ไม่พบแพ็กเกจ")}
                                         </p>
 
                                     )}
@@ -897,8 +1381,9 @@ export default function SchedulePage() {
                                 <div className="mt-4 rounded-2xl bg-slate-50 p-4 sm:p-5">
 
                                     <p className="text-sm text-slate-500">
-                                        วันจัดงาน
+                                        {translate("วันจัดงาน")}
                                     </p>
+
 
                                     {selectedDate ? (
 
@@ -910,9 +1395,7 @@ export default function SchedulePage() {
                                             />
 
                                             <p className="font-bold leading-6 text-slate-900">
-                                                {formatThaiDate(
-                                                    selectedDate
-                                                )}
+                                                {formatBookingDate(selectedDate, locale)}
                                             </p>
 
                                         </div>
@@ -920,7 +1403,7 @@ export default function SchedulePage() {
                                     ) : (
 
                                         <p className="mt-1 font-medium text-slate-400">
-                                            กรุณาเลือกวันที่
+                                            {translate("กรุณาเลือกวันที่")}
                                         </p>
 
                                     )}
@@ -929,7 +1412,7 @@ export default function SchedulePage() {
 
 
                                 {/* =================================================
-                                    Available Status
+                                    Available
                                 ================================================= */}
 
                                 {selectedDate &&
@@ -943,7 +1426,7 @@ export default function SchedulePage() {
                                                 <span className="h-3 w-3 shrink-0 rounded-full bg-green-500" />
 
                                                 <p className="font-semibold text-green-700">
-                                                    วันที่นี้ยังว่าง
+                                                    {translate("วันที่นี้ยังว่าง")}
                                                 </p>
 
                                             </div>
@@ -954,21 +1437,73 @@ export default function SchedulePage() {
 
 
                                 {/* =================================================
-                                    Next Button
+                                    Booked
+                                ================================================= */}
+
+                                {selectedDate &&
+                                    selectedDateStatus ===
+                                    "booked" && (
+
+                                        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+
+                                            <div className="flex items-center gap-3">
+
+                                                <span className="h-3 w-3 shrink-0 rounded-full bg-red-500" />
+
+                                                <p className="font-semibold text-red-700">
+                                                    {translate("วันที่นี้ถูกจองแล้ว")}
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
+
+
+                                {/* =================================================
+                                    Closed
+                                ================================================= */}
+
+                                {selectedDate &&
+                                    selectedDateStatus ===
+                                    "closed" && (
+
+                                        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-100 p-4">
+
+                                            <div className="flex items-center gap-3">
+
+                                                <span className="h-3 w-3 shrink-0 rounded-full bg-slate-400" />
+
+                                                <p className="font-semibold text-slate-600">
+                                                    {translate("วันที่นี้ปิดรับจอง")}
+                                                </p>
+
+                                            </div>
+
+                                        </div>
+
+                                    )}
+
+
+                                {/* =================================================
+                                    Next
                                 ================================================= */}
 
                                 <Button
-                                    onClick={handleNext}
+                                    onClick={
+                                        handleNext
+                                    }
                                     disabled={
                                         !selectedDate ||
                                         selectedDateStatus !==
-                                        "available" ||
+                                            "available" ||
                                         !selectedPackage
                                     }
                                     className="mt-5 h-13 w-full rounded-full bg-pink-500 text-sm font-bold text-white shadow-lg shadow-pink-100 hover:bg-pink-400 sm:mt-6 sm:h-14 sm:text-base"
                                 >
 
-                                    ดำเนินการต่อ
+                                    {translate("ดำเนินการต่อ")}
 
                                     <ArrowRight
                                         size={19}
@@ -978,7 +1513,7 @@ export default function SchedulePage() {
 
 
                                 {/* =================================================
-                                    Back
+                                    {translate("กลับ")}
                                 ================================================= */}
 
                                 <Button
@@ -995,7 +1530,7 @@ export default function SchedulePage() {
                                         size={18}
                                     />
 
-                                    กลับไปเลือกแพ็กเกจ
+                                    {translate("กลับไปเลือกแพ็กเกจ")}
 
                                 </Button>
 
@@ -1011,20 +1546,20 @@ export default function SchedulePage() {
                         <div className="rounded-3xl border border-pink-100 bg-pink-50 p-5 sm:p-6">
 
                             <h3 className="font-bold text-slate-900">
-                                💡 หมายเหตุ
+                                {translate("💡 หมายเหตุ")}
                             </h3>
+
 
                             <p className="mt-3 text-sm leading-6 text-slate-600">
 
-                                KOKO Memory รับงานสูงสุด{" "}
+                                KOKO Memory {translate("รับงานสูงสุด")}{" "}
 
                                 <span className="font-bold text-pink-600">
-                                    1 งานต่อวัน
+                                    {translate("1 งานต่อวัน")}
                                 </span>
 
                                 {" "}
-                                เพื่อให้ทีมงานสามารถดูแลคุณภาพของงาน
-                                และให้บริการได้อย่างเต็มที่
+                                {translate("เพื่อให้ทีมงานสามารถดูแลคุณภาพของงาน และให้บริการได้อย่างเต็มที่")}
 
                             </p>
 
@@ -1032,32 +1567,19 @@ export default function SchedulePage() {
 
 
                         {/* =================================================
-                            Travel Fee Notice
-                            -------------------------------------------------
-                            ยังไม่คำนวณตรงนี้
-                            
-                            เพราะต้องรอ Step 3:
-                            ลูกค้ากรอกสถานที่จัดงาน
-                            
-                            แล้วระบบจึงคำนวณ:
-                            กรุงเทพฯ
-                            เขต / แขวง
-                            ปริมณฑล
-                            ต่างจังหวัด
-                            ================================================= */}
+                            Travel Fee
+                        ================================================= */}
 
                         <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6">
 
                             <h3 className="font-bold text-slate-900">
-                                📍 ค่าเดินทาง
+                                {translate("📍 ค่าเดินทาง")}
                             </h3>
+
 
                             <p className="mt-3 text-sm leading-6 text-slate-500">
 
-                                ราคานี้ยังไม่รวมค่าเดินทางสำหรับพื้นที่
-                                นอกเงื่อนไขที่กำหนด
-                                ระบบจะคำนวณค่าเดินทางหลังจากกรอก
-                                สถานที่จัดงานในขั้นตอนถัดไป
+                                {translate("ราคานี้ยังไม่รวมค่าเดินทางสำหรับพื้นที่นอกเงื่อนไขที่กำหนด ระบบจะคำนวณค่าเดินทางหลังจากกรอกสถานที่จัดงานในขั้นตอนถัดไป")}
 
                             </p>
 
@@ -1070,5 +1592,25 @@ export default function SchedulePage() {
             </section>
 
         </main>
+
     );
+}
+
+
+/* ============================================================
+   Page
+============================================================ */
+
+export default function SchedulePage() {
+
+    return (
+
+        <Suspense fallback={null}>
+
+            <ScheduleContent />
+
+        </Suspense>
+
+    );
+
 }

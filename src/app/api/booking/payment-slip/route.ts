@@ -1,0 +1,966 @@
+import { NextResponse } from "next/server";
+import {
+    S3Client,
+    PutObjectCommand,
+    DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { FieldValue } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
+import { randomUUID } from "crypto";
+
+import { adminDb } from "@/lib/firebase-admin";
+import { isBookingHoldExpired } from "@/lib/booking-lifecycle";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
+const ALLOWED_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/pdf",
+]);
+
+const PAYMENT_COLLECTION = "payments";
+const BOOKING_COLLECTION = "bookings";
+
+function getR2Client() {
+    const accountId =
+        process.env.R2_ACCOUNT_ID ||
+        process.env.CLOUDFLARE_ACCOUNT_ID;
+
+    const accessKeyId =
+        process.env.R2_ACCESS_KEY_ID;
+
+    const secretAccessKey =
+        process.env.R2_SECRET_ACCESS_KEY;
+
+    const bucketName =
+        process.env.R2_BUCKET_NAME;
+
+    if (
+        !accountId ||
+        !accessKeyId ||
+        !secretAccessKey ||
+        !bucketName
+    ) {
+        throw new Error(
+            "R2 Environment Variables ไม่ครบ"
+        );
+    }
+
+    return {
+        client: new S3Client({
+            region: "auto",
+            endpoint:
+                `https://${accountId}.r2.cloudflarestorage.com`,
+            credentials: {
+                accessKeyId,
+                secretAccessKey,
+            },
+        }),
+        bucketName,
+    };
+}
+
+function getPublicUrl(key: string) {
+    const publicUrl =
+        process.env.R2_PUBLIC_URL ||
+        process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
+
+    if (!publicUrl) {
+        throw new Error(
+            "ยังไม่ได้ตั้งค่า R2 Public URL"
+        );
+    }
+
+    return `${publicUrl.replace(/\/$/, "")}/${key}`;
+}
+
+function sanitizeFileName(name: string) {
+    return name
+        .replace(/[^a-zA-Z0-9._-]/g, "_")
+        .slice(-100);
+}
+
+function getExtension(file: File) {
+    if (file.type === "image/jpeg") {
+        return "jpg";
+    }
+
+    if (file.type === "image/png") {
+        return "png";
+    }
+
+    if (file.type === "application/pdf") {
+        return "pdf";
+    }
+
+    return "bin";
+}
+
+function getPaymentData(
+    booking: Record<string, unknown>
+): Record<string, unknown> {
+    const payment = booking.payment;
+
+    if (
+        payment &&
+        typeof payment === "object" &&
+        !Array.isArray(payment)
+    ) {
+        return payment as Record<string, unknown>;
+    }
+
+    return {};
+}
+
+function isAlreadySubmitted(
+    booking: Record<string, unknown>
+) {
+    const payment = getPaymentData(booking);
+
+    return (
+        booking.bookingStatus === "payment_submitted" ||
+        booking.bookingStatus === "payment_verified" ||
+        booking.bookingStatus === "confirmed" ||
+        booking.paymentStatus === "submitted" ||
+        booking.paymentStatus === "verified" ||
+        payment.status === "submitted" ||
+        payment.status === "verified"
+    );
+}
+
+function getCustomerField(
+    booking: Record<string, unknown>,
+    field: "name" | "phone" | "email"
+): string {
+    const customer = booking.customer;
+
+    if (
+        customer &&
+        typeof customer === "object" &&
+        !Array.isArray(customer)
+    ) {
+        const value =
+            (customer as Record<string, unknown>)[field];
+
+        return typeof value === "string" ? value : "";
+    }
+
+    return "";
+}
+
+function getExpectedPaymentAmount(
+    booking: Record<string, unknown>
+) {
+    const pricing =
+        booking.pricing &&
+        typeof booking.pricing === "object" &&
+        !Array.isArray(booking.pricing)
+            ? (booking.pricing as Record<string, unknown>)
+            : {};
+
+    const deposit = pricing.deposit;
+
+    if (
+        typeof deposit === "number" &&
+        Number.isFinite(deposit) &&
+        deposit > 0
+    ) {
+        return deposit;
+    }
+
+    const depositAmount =
+        booking.depositAmount;
+
+    if (
+        typeof depositAmount === "number" &&
+        Number.isFinite(depositAmount) &&
+        depositAmount > 0
+    ) {
+        return depositAmount;
+    }
+
+    const packageData =
+        booking.package &&
+        typeof booking.package === "object" &&
+        !Array.isArray(booking.package)
+            ? (booking.package as Record<string, unknown>)
+            : {};
+
+    const packageDeposit = packageData.deposit;
+
+    if (
+        typeof packageDeposit === "number" &&
+        Number.isFinite(packageDeposit) &&
+        packageDeposit > 0
+    ) {
+        return packageDeposit;
+    }
+
+    return 3000;
+}
+
+export async function POST(
+    request: Request
+) {
+    let uploadedKey: string | null = null;
+    let r2Client: S3Client | null = null;
+    let bucketName: string | null = null;
+
+    let bookingId = "";
+    let lockToken = "";
+    let lockAcquired = false;
+
+    try {
+        const authorization = request.headers.get("authorization") || "";
+        if (!authorization.startsWith("Bearer ")) {
+            throw new Error("UNAUTHORIZED");
+        }
+
+        const idToken = authorization.slice("Bearer ".length).trim();
+        if (!idToken) throw new Error("UNAUTHORIZED");
+
+        let decodedToken;
+        try {
+            decodedToken = await getAuth().verifyIdToken(idToken, true);
+        } catch {
+            throw new Error("INVALID_TOKEN");
+        }
+
+        const userRecord = await getAuth().getUser(decodedToken.uid);
+        if (userRecord.disabled) throw new Error("USER_DISABLED");
+        if (!userRecord.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+
+        /* =====================================================
+           1. FORM DATA
+        ===================================================== */
+
+        const formData =
+            await request.formData();
+
+        const file =
+            formData.get("file");
+
+        const bookingIdValue =
+            formData.get("bookingId");
+
+        /*
+         * amount จาก Browser รับไว้เพื่อ compatibility
+         * แต่ Server จะไม่เชื่อยอดนี้เป็นแหล่งความจริง
+         */
+        const amountValue =
+            formData.get("amount");
+
+        if (!(file instanceof File)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "ไม่พบไฟล์สลิป",
+                },
+                { status: 400 }
+            );
+        }
+
+        if (
+            typeof bookingIdValue !== "string" ||
+            !bookingIdValue.trim()
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "ไม่พบ Booking ID",
+                },
+                { status: 400 }
+            );
+        }
+
+        bookingId =
+            bookingIdValue.trim();
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId)) throw new Error("INVALID_BOOKING_ID");
+
+        const ownershipSnapshot = await adminDb
+            .collection(BOOKING_COLLECTION)
+            .doc(bookingId)
+            .get();
+
+        if (!ownershipSnapshot.exists) {
+            throw new Error("BOOKING_NOT_FOUND");
+        }
+
+        if (ownershipSnapshot.data()?.userId !== decodedToken.uid) {
+            throw new Error("FORBIDDEN");
+        }
+
+        if (!ALLOWED_TYPES.has(file.type)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "รองรับเฉพาะ JPG, PNG หรือ PDF เท่านั้น",
+                },
+                { status: 415 }
+            );
+        }
+
+        if (file.size <= 0) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: "ไฟล์สลิปว่างเปล่า",
+                },
+                { status: 400 }
+            );
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "ไฟล์สลิปต้องมีขนาดไม่เกิน 20 MB",
+                },
+                { status: 413 }
+            );
+        }
+
+        const requestedAmount =
+            Number(amountValue);
+
+        if (
+            amountValue !== null &&
+            (
+                !Number.isFinite(requestedAmount) ||
+                requestedAmount <= 0
+            )
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "ยอดชำระไม่ถูกต้อง",
+                },
+                { status: 400 }
+            );
+        }
+
+
+        /* =====================================================
+           2. BOOKING + DUPLICATE LOCK
+           -----------------------------------------------------
+           ใช้ Transaction เพื่อกัน:
+           - double click
+           - เปิดหลายแท็บ
+           - request ซ้ำพร้อมกัน
+           - race condition
+        ===================================================== */
+
+        const bookingRef =
+            adminDb
+                .collection(BOOKING_COLLECTION)
+                .doc(bookingId);
+
+        lockToken =
+            randomUUID();
+        let expiredDuringRequest = false;
+
+        await adminDb.runTransaction(
+            async (transaction) => {
+                const snapshot =
+                    await transaction.get(
+                        bookingRef
+                    );
+
+                if (!snapshot.exists) {
+                    throw new Error(
+                        "BOOKING_NOT_FOUND"
+                    );
+                }
+
+                const booking =
+                    snapshot.data() || {};
+                if (booking.userId !== decodedToken.uid) throw new Error("FORBIDDEN");
+                if (booking.bookingStatus === "pending_payment" && isBookingHoldExpired(booking.holdExpiresAt?.toDate?.() ?? booking.holdExpiresAt)) {
+                    const eventDate = typeof booking.event?.date === "string" ? booking.event.date : "";
+                    if (eventDate) {
+                        const dateRef = adminDb.collection("bookingDates").doc(eventDate);
+                        const dateSnap = await transaction.get(dateRef);
+                        if (dateSnap.exists && dateSnap.data()?.bookingId === bookingRef.id) transaction.update(dateRef, { status: "released", updatedAt: FieldValue.serverTimestamp() });
+                    }
+                    transaction.update(bookingRef, { bookingStatus: "expired", expiredAt: FieldValue.serverTimestamp(), expiredBy: "system", updatedAt: FieldValue.serverTimestamp() });
+                    expiredDuringRequest = true;
+                    return;
+                }
+                if (!["pending_payment", "payment_rejected"].includes(booking.bookingStatus)) {
+                    throw new Error("PAYMENT_STATE_NOT_ALLOWED");
+                }
+
+                if (
+                    isAlreadySubmitted(
+                        booking
+                    )
+                ) {
+                    throw new Error(
+                        "PAYMENT_ALREADY_SUBMITTED"
+                    );
+                }
+
+                if (
+                    booking.paymentUploadLock &&
+                    Date.now() - (booking.paymentUploadLock.startedAt?.toMillis?.() ?? Date.now()) < 10 * 60 * 1000
+                ) {
+                    throw new Error(
+                        "PAYMENT_UPLOAD_IN_PROGRESS"
+                    );
+                }
+
+                transaction.update(
+                    bookingRef,
+                    {
+                        paymentUploadLock: {
+                            token: lockToken,
+                            startedAt:
+                                FieldValue.serverTimestamp(),
+                        },
+                        updatedAt:
+                            FieldValue.serverTimestamp(),
+                    }
+                );
+            }
+        );
+
+        if (expiredDuringRequest) throw new Error("BOOKING_EXPIRED");
+
+        lockAcquired = true;
+
+
+        /* =====================================================
+           3. R2 CLIENT
+        ===================================================== */
+
+        const r2 =
+            getR2Client();
+
+        r2Client =
+            r2.client;
+
+        bucketName =
+            r2.bucketName;
+
+
+        /* =====================================================
+           4. FILE NAME + R2 KEY
+        ===================================================== */
+
+        const safeFileName =
+            sanitizeFileName(
+                file.name
+            );
+
+        const extension =
+            getExtension(file);
+
+        const fileName =
+            `${Date.now()}-${randomUUID()}-${safeFileName || `slip.${extension}`}`;
+
+        const key =
+            `payment-slips/${bookingId}/${fileName}`;
+
+        uploadedKey = key;
+
+
+        /* =====================================================
+           5. UPLOAD TO R2
+        ===================================================== */
+
+        const buffer =
+            Buffer.from(
+                await file.arrayBuffer()
+            );
+
+        await r2Client.send(
+            new PutObjectCommand({
+                Bucket: bucketName,
+                Key: key,
+                Body: buffer,
+                ContentType: file.type,
+                ContentLength: buffer.length,
+
+                // Payment slips are private customer/admin data. Do not make
+                // browser/CDN caches retain them as public immutable assets.
+                CacheControl:
+                    "private, no-store, max-age=0",
+
+                Metadata: {
+                    bookingId,
+                    originalName:
+                        safeFileName,
+                },
+            })
+        );
+
+
+        /* =====================================================
+           6. PUBLIC URL
+        ===================================================== */
+
+        const slipUrl =
+            getPublicUrl(key);
+
+
+        /* =====================================================
+           7. ATOMIC PAYMENT + BOOKING UPDATE
+           -----------------------------------------------------
+           Payment document และ Booking status เปลี่ยนพร้อมกัน
+           ใน Firestore transaction
+
+           ถ้าขั้นนี้ fail:
+           - Payment จะไม่ถูก commit
+           - R2 จะถูก rollback ใน catch
+           - lock จะถูกปล่อย
+        ===================================================== */
+
+        const paymentRef =
+            adminDb
+                .collection(PAYMENT_COLLECTION)
+                .doc();
+
+        const now =
+            FieldValue.serverTimestamp();
+
+        let finalAmount = 0;
+
+        await adminDb.runTransaction(
+            async (transaction) => {
+                const snapshot =
+                    await transaction.get(
+                        bookingRef
+                    );
+
+                const bookingDate = typeof snapshot.data()?.event?.date === "string"
+                    ? snapshot.data()?.event?.date as string
+                    : "";
+                const dateRef = bookingDate
+                    ? adminDb.collection("bookingDates").doc(bookingDate)
+                    : null;
+                const dateSnapshot = dateRef
+                    ? await transaction.get(dateRef)
+                    : null;
+
+                if (!snapshot.exists) {
+                    throw new Error(
+                        "BOOKING_NOT_FOUND"
+                    );
+                }
+
+                const booking =
+                    snapshot.data() || {};
+                if (booking.userId !== decodedToken.uid) throw new Error("FORBIDDEN");
+                if (!["pending_payment", "payment_rejected"].includes(booking.bookingStatus)) {
+                    throw new Error("PAYMENT_STATE_NOT_ALLOWED");
+                }
+
+                if (
+                    isAlreadySubmitted(
+                        booking
+                    )
+                ) {
+                    throw new Error(
+                        "PAYMENT_ALREADY_SUBMITTED"
+                    );
+                }
+
+                if (
+                    booking.paymentUploadLock?.token !==
+                    lockToken
+                ) {
+                    throw new Error(
+                        "PAYMENT_LOCK_LOST"
+                    );
+                }
+
+                /*
+                 * ใช้ยอดจาก Booking เป็นหลัก
+                 * ไม่เชื่อ amount ที่ Browser ส่งมา
+                 */
+                finalAmount =
+                    getExpectedPaymentAmount(
+                        booking
+                    );
+
+                if (dateRef && dateSnapshot?.exists && dateSnapshot.data()?.bookingId === bookingRef.id) {
+                    transaction.update(dateRef, {
+                        status: "reserved",
+                        holdExpiresAt: FieldValue.delete(),
+                        updatedAt: now,
+                    });
+                }
+
+                transaction.set(adminDb.collection("auditLogs").doc(), {
+                    action: "SUBMIT_PAYMENT", resource: "payment", bookingId,
+                    paymentId: paymentRef.id, userId: decodedToken.uid, amount: finalAmount, createdAt: now,
+                });
+                transaction.set(
+                    paymentRef,
+                    {
+                        bookingId,
+
+                        amount:
+                            finalAmount,
+
+                        currency:
+                            "THB",
+
+                        method:
+                            "bank_transfer",
+
+                        status:
+                            "submitted",
+
+                        bankName:
+                            "ธนาคารกสิกรไทย",
+
+                        accountName:
+                            "KOKO Memory",
+
+                        accountNumber:
+                            "180-172-8606",
+
+                        slipUrl,
+
+                        slipPath:
+                            key,
+
+                        slipKey:
+                            key,
+
+                        secureSlipUrl:
+                            `/api/payment-slip/${paymentRef.id}`,
+
+                        slipFileName:
+                            file.name,
+
+                        slipContentType:
+                            file.type,
+
+                        slipSize:
+                            file.size,
+
+                        customerName:
+                            getCustomerField(
+                                booking,
+                                "name"
+                            ),
+
+                        customerPhone:
+                            getCustomerField(
+                                booking,
+                                "phone"
+                            ),
+
+                        customerEmail:
+                            getCustomerField(
+                                booking,
+                                "email"
+                            ),
+
+                        submittedAt:
+                            now,
+
+                        createdAt:
+                            now,
+                    }
+                );
+
+                transaction.update(
+                    bookingRef,
+                    {
+                        bookingStatus:
+                            "payment_submitted",
+
+                        paymentId:
+                            paymentRef.id,
+
+                        paymentStatus:
+                            "submitted",
+
+                        paymentAmount:
+                            finalAmount,
+
+                        "payment.status":
+                            "submitted",
+
+                        "payment.method":
+                            "bank_transfer",
+
+                        "payment.proofUrl":
+                            slipUrl,
+
+                        "payment.proofKey":
+                            key,
+
+                        "payment.secureSlipUrl":
+                            `/api/payment-slip/${paymentRef.id}`,
+
+                        "payment.paidAmount":
+                            0,
+
+                        "payment.paidAt":
+                            null,
+
+                        paymentSubmittedAt:
+                            now,
+
+                        paymentUploadLock:
+                            FieldValue.delete(),
+
+                        updatedAt:
+                            now,
+                    }
+                );
+            }
+        );
+
+        lockAcquired = false;
+
+
+        /* =====================================================
+           8. SUCCESS
+        ===================================================== */
+
+        return NextResponse.json(
+            {
+                success: true,
+
+                paymentId:
+                    paymentRef.id,
+
+                bookingId,
+
+                amount:
+                    finalAmount,
+
+                slipUrl,
+
+                slipKey:
+                    key,
+            },
+            {
+                status: 201,
+            }
+        );
+
+    } catch (error) {
+        console.error(
+            "Payment R2 upload error:",
+            error
+        );
+
+
+        /* =====================================================
+           9. RELEASE LOCK
+           -----------------------------------------------------
+           ถ้าระบบล้มก่อน commit สำเร็จ
+           ต้องปล่อย lock เพื่อให้ลูกค้าลองใหม่ได้
+        ===================================================== */
+
+        if (
+            lockAcquired &&
+            bookingId &&
+            lockToken
+        ) {
+            try {
+                await adminDb.runTransaction(
+                    async (transaction) => {
+                        const bookingRef =
+                            adminDb
+                                .collection(
+                                    BOOKING_COLLECTION
+                                )
+                                .doc(
+                                    bookingId
+                                );
+
+                        const snapshot =
+                            await transaction.get(
+                                bookingRef
+                            );
+
+                        if (!snapshot.exists) {
+                            return;
+                        }
+
+                        const booking =
+                            snapshot.data() || {};
+
+                        if (
+                            booking.paymentUploadLock?.token ===
+                            lockToken
+                        ) {
+                            transaction.update(
+                                bookingRef,
+                                {
+                                    paymentUploadLock:
+                                        FieldValue.delete(),
+
+                                    updatedAt:
+                                        FieldValue.serverTimestamp(),
+                                }
+                            );
+                        }
+                    }
+                );
+            } catch (unlockError) {
+                console.error(
+                    "Payment lock release failed:",
+                    unlockError
+                );
+            }
+        }
+
+
+        /* =====================================================
+           10. ROLLBACK R2
+        ===================================================== */
+
+        if (
+            uploadedKey &&
+            r2Client &&
+            bucketName
+        ) {
+            try {
+                await r2Client.send(
+                    new DeleteObjectCommand({
+                        Bucket:
+                            bucketName,
+                        Key:
+                            uploadedKey,
+                    })
+                );
+            } catch (rollbackError) {
+                console.error(
+                    "R2 rollback failed:",
+                    rollbackError
+                );
+            }
+        }
+
+
+        const message =
+            error instanceof Error
+                ? error.message
+                : "UNKNOWN_ERROR";
+
+        if (["UNAUTHORIZED", "INVALID_TOKEN", "EMAIL_NOT_VERIFIED", "USER_DISABLED"].includes(message)) {
+            return NextResponse.json(
+                { success: false, error: "กรุณาเข้าสู่ระบบและยืนยันอีเมลก่อนส่งหลักฐาน", code: message },
+                { status: 401 },
+            );
+        }
+
+        if (message === "INVALID_BOOKING_ID") return NextResponse.json({ error: message }, { status: 400 });
+
+        if (message === "FORBIDDEN") {
+            return NextResponse.json(
+                { success: false, error: "ไม่มีสิทธิ์ใช้งาน Booking นี้", code: message },
+                { status: 403 },
+            );
+        }
+
+        if (
+            message ===
+            "BOOKING_NOT_FOUND"
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    code: message,
+                    error:
+                        "ไม่พบรายการจองนี้ในระบบ",
+                },
+                { status: 404 }
+            );
+        }
+
+        if (["PAYMENT_ALREADY_SUBMITTED", "PAYMENT_STATE_NOT_ALLOWED"].includes(message)) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "รายการนี้มีการส่งหลักฐานหรือชำระเงินแล้ว ไม่สามารถส่งซ้ำได้",
+                },
+                { status: 409 }
+            );
+        }
+
+        if (
+            message ===
+            "PAYMENT_UPLOAD_IN_PROGRESS"
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "รายการนี้กำลังอัปโหลดหลักฐานอยู่ กรุณารอสักครู่",
+                },
+                { status: 409 }
+            );
+        }
+
+        if (
+            message ===
+            "PAYMENT_LOCK_LOST"
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "รายการชำระเงินถูกเปลี่ยนแปลง กรุณารีเฟรชแล้วตรวจสอบอีกครั้ง",
+                },
+                { status: 409 }
+            );
+        }
+
+        if (
+            message.includes(
+                "R2 Environment Variables"
+            )
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "ระบบ R2 ยังตั้งค่าไม่ครบ",
+                },
+                { status: 500 }
+            );
+        }
+
+        if (
+            message.includes(
+                "R2 Public URL"
+            )
+        ) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error:
+                        "ระบบ R2 ยังไม่ได้ตั้งค่า Public URL",
+                },
+                { status: 500 }
+            );
+        }
+
+        return NextResponse.json(
+            {
+                success: false,
+                error:
+                    "ไม่สามารถส่งหลักฐานการชำระเงินได้ กรุณาลองใหม่อีกครั้ง",
+            },
+            { status: 500 }
+        );
+    }
+}

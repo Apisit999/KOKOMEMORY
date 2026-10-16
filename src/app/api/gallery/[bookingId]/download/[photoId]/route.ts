@@ -4,8 +4,11 @@ import {
     S3Client,
     GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { adminAuth } from "@/lib/firebase-admin";
+import { getGalleryShare } from "@/lib/gallery-share";
 
 export const runtime = "nodejs";
 
@@ -36,11 +39,30 @@ export async function GET(
             );
         }
 
-        console.log(
-            "DOWNLOAD:",
-            bookingId,
-            photoId
-        );
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(bookingId) || !/^[A-Za-z0-9_-]{1,128}$/.test(photoId)) {
+            return NextResponse.json({ success: false, error: "ข้อมูลรูปไม่ถูกต้อง" }, { status: 400 });
+        }
+
+        const query = new URL(request.url).searchParams;
+        const guestToken = query.get("guestToken") || query.get("token");
+        const token = request.headers.get("authorization")?.match(/^Bearer\s+(\S+)$/i)?.[1];
+        const guestShare = guestToken ? await getGalleryShare(bookingId, guestToken) : null;
+        if (guestShare) {
+            // Guest access is scoped to this booking and checked again below.
+        } else if (!token) return NextResponse.json({ success: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+        if (guestShare) {
+            // Skip customer/admin identity checks for a valid scoped share token.
+        } else {
+        if (!token) return NextResponse.json({ success: false, error: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
+        const decoded = await adminAuth.verifyIdToken(token, true);
+        const authUser = await adminAuth.getUser(decoded.uid);
+        if (authUser.disabled) return NextResponse.json({ success: false, error: "บัญชีถูกระงับ" }, { status: 401 });
+        const isAdmin = decoded.admin === true || decoded.isAdmin === true || decoded.role === "admin";
+        const bookingSnapshot = await adminDb.collection("bookings").doc(bookingId).get();
+        if (!bookingSnapshot.exists) return NextResponse.json({ success: false, error: "ไม่พบรายการจองนี้" }, { status: 404 });
+        if (!isAdmin && bookingSnapshot.data()?.userId !== decoded.uid) return NextResponse.json({ success: false, error: "ไม่มีสิทธิ์เข้าถึงรูปนี้" }, { status: 403 });
+        }
+
 
         // =========================================
         // ENV
@@ -117,6 +139,14 @@ export async function GET(
             );
         }
 
+        const photoStatus = typeof photo.status === "string" ? photo.status.toLowerCase() : "published";
+        if (photo.deleted === true || photo.deletedAt || !["published", "active", "ready"].includes(photoStatus)) {
+            return NextResponse.json({ success: false, error: "รูปนี้ยังไม่พร้อมให้ดาวน์โหลด" }, { status: 404 });
+        }
+        if (guestShare?.albumId && photo.albumId !== guestShare.albumId) {
+            return NextResponse.json({ success: false, error: "ไม่มีสิทธิ์เข้าถึงรูปนี้" }, { status: 404 });
+        }
+
         // =========================================
         // CHECK R2 KEY
         // =========================================
@@ -135,10 +165,6 @@ export async function GET(
             );
         }
 
-        console.log(
-            "R2 KEY:",
-            photo.key
-        );
 
         // =========================================
         // R2 CLIENT
@@ -158,29 +184,6 @@ export async function GET(
             });
 
         // =========================================
-        // GET FILE FROM R2
-        // =========================================
-
-        const result =
-            await s3.send(
-                new GetObjectCommand({
-                    Bucket: bucketName,
-                    Key: photo.key,
-                })
-            );
-
-        if (!result.Body) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error:
-                        "ไม่พบไฟล์ใน R2",
-                },
-                { status: 404 }
-            );
-        }
-
-        // =========================================
         // FILE NAME
         // =========================================
 
@@ -191,24 +194,13 @@ export async function GET(
                 : "koko-memory-photo.jpg";
 
         // =========================================
-        // CONVERT BODY
-        // =========================================
-
-        const byteArray =
-            await result.Body
-                .transformToByteArray();
-
-        const buffer =
-            Buffer.from(byteArray);
-
-        // =========================================
         // CONTENT TYPE
         // =========================================
 
         const contentType =
             typeof photo.contentType === "string"
                 ? photo.contentType
-                : result.ContentType ||
+                : photo.contentType ||
                 "application/octet-stream";
 
         // =========================================
@@ -221,36 +213,15 @@ export async function GET(
                 ""
             );
 
-        // =========================================
-        // DOWNLOAD RESPONSE
-        // =========================================
-
-        return new NextResponse(
-            buffer,
-            {
-                status: 200,
-
-                headers: {
-                    "Content-Type":
-                        contentType,
-
-                    "Content-Length":
-                        String(buffer.length),
-
-                    "Content-Disposition":
-                        `attachment; filename="${safeFileName}"`,
-
-                    "Cache-Control":
-                        "private, no-cache, no-store, must-revalidate",
-
-                    "Pragma":
-                        "no-cache",
-
-                    "Expires":
-                        "0",
-                },
-            }
-        );
+        const downloadUrl = await getSignedUrl(s3, new GetObjectCommand({
+            Bucket: bucketName,
+            Key: photo.key,
+            ResponseContentType: contentType,
+            ResponseContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(safeFileName)}`,
+        }), { expiresIn: 60 });
+        return NextResponse.json({ success: true, downloadUrl }, {
+            headers: { "Cache-Control": "private, no-cache, no-store, must-revalidate", Pragma: "no-cache", Expires: "0" },
+        });
 
     } catch (error) {
         console.error(
