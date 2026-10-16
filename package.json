@@ -10,7 +10,8 @@
     "test:auth": "node --experimental-strip-types --test tests/auth/*.test.ts",
     "test:studio": "node --experimental-strip-types --test tests/studio/*.test.ts",
     "studio:migrate": "node --env-file=.env.studio.local --experimental-strip-types scripts/studio-migrate.ts",
-    "studio:dev": "node scripts/studio-start-local.mjs"
+    "studio:dev": "node scripts/studio-start-local.mjs",
+    "studio:check-env": "node scripts/studio-check-staging-env.mjs .env.staging"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1114.0",
