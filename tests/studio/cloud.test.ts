@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash, generateKeyPairSync } from "node:crypto";
 import { EntitlementSigner } from "../../src/lib/studio/crypto.ts";
-import { CloudService, photoKey } from "../../src/lib/studio/cloud.ts";
-import { PRODUCT_ID, type Claims, type License, type Plan, type ReleaseStorage } from "../../src/lib/studio/types.ts";
+import { CloudService, photoKey, type PhotoStorage } from "../../src/lib/studio/cloud.ts";
+import { PRODUCT_ID, type Claims, type License, type Plan } from "../../src/lib/studio/types.ts";
 import { MemoryStore } from "./memory-store.ts";
 
 const pair = generateKeyPairSync("rsa", { modulusLength: 2048 });
@@ -18,7 +18,11 @@ const ID = (n: string) => n.repeat(32).slice(0, 32);
 function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?: string | null; status?: License["status"] } = {}) {
   const store = new MemoryStore();
   const files = new Map<string, Buffer>();
-  const storage: ReleaseStorage = {
+  const removed: string[] = [];
+  const failures = { remove: false };
+  const storage: PhotoStorage = {
+    presignDownload: async (key, seconds) => `https://view.example.invalid/${key}?exp=${seconds}`,
+    remove: async key => { if (failures.remove) throw new Error("r2 down"); removed.push(key); files.delete(key); },
     presignUpload: async key => `https://upload.example.invalid/${key}?sig=1`,
     inspect: async key => { const f = files.get(key); return f ? { size: f.length, sha256: sha(f) } : null; },
   };
@@ -29,7 +33,7 @@ function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?
   const claims: Claims = { schemaVersion: 1, keyId: "local-test", licenseId: "lic-1", deviceId: DEVICE, productId: PRODUCT_ID, issuedAt: iso(NOW), startsAt: iso(NOW - 1e6), expiresAt: null, refreshAfter: iso(NOW + 1e6), offlineUntil: iso(NOW + 2e6), features };
   const input = { deviceId: DEVICE, productId: PRODUCT_ID, entitlement: signer.sign(claims) };
   const cloud = new CloudService({ store, signer, storage, now: () => NOW });
-  return { store, files, cloud, input, license };
+  return { store, files, cloud, input, license, removed, failures };
 }
 async function makeEvent(f: ReturnType<typeof setup>) { return (await f.cloud.upsertEvent({ ...f.input, clientEventId: "event-0001", name: "งานแต่ง A", date: "2026-11-20" })).eventId; }
 
@@ -116,4 +120,88 @@ test("the Firestore store accepts every collection the cloud service uses (the i
   }
   assert.deepEqual([...new Set(touched)].sort(), ["studioEvents", "studioPhotos", "studioUsage"]);
   await assert.rejects(store.transaction(async tx => { await tx.get("notAStudioCollection", "abc"); }), /Invalid Studio document path/);
+});
+
+async function uploadReady(f: ReturnType<typeof setup>, eventId: string, letter: string, body = photo) {
+  await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID(letter), size: body.length, sha256: sha(body) });
+  f.files.set(photoKey("uid-a", eventId, ID(letter)), body);
+  return f.cloud.confirmPhoto({ ...f.input, photoId: ID(letter) });
+}
+const OWNER = { ownerUid: "uid-a" };
+const ADMIN = { admin: true } as const;
+
+test("account overview lists events with usage and the plan quota, only for that owner", async () => {
+  const f = setup({ quota: 5000 });
+  const eventId = await makeEvent(f);
+  await uploadReady(f, eventId, "a");
+  const view = await f.cloud.accountOverview("uid-a");
+  assert.equal(view.events.length, 1);
+  assert.deepEqual(view.usage, { bytes: photo.length, photos: 1 });
+  assert.equal(view.quotaBytes, 5000);
+  const other = await f.cloud.accountOverview("uid-b");
+  assert.deepEqual([other.events.length, other.usage.photos, other.quotaBytes], [0, 0, 0]);
+});
+
+test("event photos come with expiring read URLs; other customers cannot see them; hidden ones are admin-only", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  const done = await uploadReady(f, eventId, "a");
+  const mine = await f.cloud.eventPhotos(OWNER, eventId);
+  assert.equal(mine.photos.length, 1);
+  assert.ok(mine.photos[0].url.startsWith("https://view.example.invalid/studio/uid-a/") && mine.photos[0].url.endsWith("exp=600"));
+  await assert.rejects(f.cloud.eventPhotos({ ownerUid: "uid-b" }, eventId), /not_found/);
+  assert.equal((await f.cloud.eventPhotos(ADMIN, eventId)).photos.length, 1);
+  await f.cloud.managePhoto(ADMIN, "admin-1", { action: "hide", photoId: done.photoId });
+  assert.equal((await f.cloud.eventPhotos(OWNER, eventId)).photos.length, 0);
+  assert.equal((await f.cloud.eventPhotos(ADMIN, eventId)).photos[0].status, "hidden");
+  await f.cloud.managePhoto(ADMIN, "admin-1", { action: "unhide", photoId: done.photoId });
+  assert.equal((await f.cloud.eventPhotos(OWNER, eventId)).photos.length, 1);
+  const logs = [...f.store.documents].filter(([k]) => k.startsWith("studioAuditLogs/")).map(([, v]) => (v as { action: string; actor: string }));
+  assert.deepEqual(logs.map(l => l.action).sort(), ["photo.hidden", "photo.unhidden"]);
+  assert.ok(logs.every(l => l.actor === "admin-1"));
+});
+
+test("deleting a photo frees the quota, removes the file and is not re-uploaded by the booth", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  const a = await uploadReady(f, eventId, "a");
+  await uploadReady(f, eventId, "b", Buffer.from("second photo bytes"));
+  const out = await f.cloud.managePhoto(OWNER, "uid-a", { action: "delete", photoId: a.photoId });
+  assert.equal(out.status, "deleted");
+  assert.deepEqual(f.removed, [photoKey("uid-a", eventId, ID("a"))]);
+  const usage = f.store.documents.get("studioUsage/uid-a") as { photos: number; bytes: number };
+  assert.deepEqual([usage.photos, usage.bytes], [1, "second photo bytes".length]);
+  assert.equal((f.store.documents.get(`studioEvents/${eventId}`) as { photoCount: number }).photoCount, 1);
+  assert.equal((await f.cloud.eventPhotos(OWNER, eventId)).photos.length, 1);
+  // The booth asks again for the same photo: it is told it is already handled, and no upload URL is issued.
+  const again = await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID("a"), size: photo.length, sha256: sha(photo) });
+  assert.equal(again.alreadyUploaded, true);
+  // A second delete does not double-decrement.
+  await f.cloud.managePhoto(OWNER, "uid-a", { action: "delete", photoId: a.photoId });
+  assert.equal((f.store.documents.get("studioUsage/uid-a") as { photos: number }).photos, 1);
+});
+
+test("a failed file removal is reported, the photo is already gone from the account, and a retry finishes the job", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  const a = await uploadReady(f, eventId, "a");
+  f.failures.remove = true;
+  await assert.rejects(f.cloud.managePhoto(OWNER, "uid-a", { action: "delete", photoId: a.photoId }), /storage_unavailable/);
+  assert.equal((await f.cloud.eventPhotos(OWNER, eventId)).photos.length, 0);
+  assert.equal((f.store.documents.get("studioUsage/uid-a") as { photos: number }).photos, 0);
+  f.failures.remove = false;
+  await f.cloud.managePhoto(OWNER, "uid-a", { action: "delete", photoId: a.photoId });
+  assert.equal(f.removed.length, 1);
+});
+
+test("permissions: customers cannot hide photos or touch other accounts photos; bad input is rejected", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  const a = await uploadReady(f, eventId, "a");
+  await assert.rejects(f.cloud.managePhoto(OWNER, "uid-a", { action: "hide", photoId: a.photoId }), /forbidden/);
+  await assert.rejects(f.cloud.managePhoto({ ownerUid: "uid-b" }, "uid-b", { action: "delete", photoId: a.photoId }), /not_found/);
+  await assert.rejects(f.cloud.managePhoto(ADMIN, "admin", { action: "explode", photoId: a.photoId }), /invalid_request/);
+  await assert.rejects(f.cloud.managePhoto(ADMIN, "admin", { action: "delete", photoId: "nope" }), /invalid_request/);
+  await assert.rejects(f.cloud.eventPhotos(OWNER, "../etc"), /invalid_request/);
+  assert.equal(f.removed.length, 0);
 });

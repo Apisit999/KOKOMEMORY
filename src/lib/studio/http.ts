@@ -58,6 +58,10 @@ export function createStudioHandler(dependencies: Dependencies) {
         if (path === "desktop/updates") return Response.json(await (await releases()).updateCheck({ version: url.searchParams.get("version"), channel: url.searchParams.get("channel"), deviceId: url.searchParams.get("deviceId") }), { headers });
         if (path === "admin/releases" && identity?.admin) return Response.json(await (await releases()).adminList(), { headers });
         if (path === "admin/stats" && identity?.admin) return Response.json(await (await releases()).adminStats({ from: url.searchParams.get("from") ?? undefined, to: url.searchParams.get("to") ?? undefined }), { headers });
+        if (path === "account/cloud/events" && identity) return Response.json(await (await cloud()).accountOverview(identity.uid), { headers });
+        if (path === "account/cloud/photos" && identity) return Response.json(await (await cloud()).eventPhotos({ ownerUid: identity.uid }, url.searchParams.get("eventId")), { headers });
+        if (path === "admin/cloud/events" && identity?.admin) return Response.json(await (await cloud()).adminEvents(url.searchParams.get("ownerUid") ?? undefined), { headers });
+        if (path === "admin/cloud/photos" && identity?.admin) return Response.json(await (await cloud()).eventPhotos({ admin: true }, url.searchParams.get("eventId")), { headers });
         if (path === "desktop/plans") return Response.json(await service.plans(), { headers });
         if (path === "account/licenses" && identity) return Response.json(await service.account(identity.uid), { headers });
         if (path === "admin/licenses" && identity?.admin) return Response.json(await service.admin(), { headers });
@@ -75,6 +79,8 @@ export function createStudioHandler(dependencies: Dependencies) {
         case "desktop/cloud/events": result = await (await cloud()).upsertEvent(input); break;
         case "desktop/cloud/photos/init": result = await (await cloud()).initPhoto(input); break;
         case "desktop/cloud/photos/confirm": result = await (await cloud()).confirmPhoto(input); break;
+        case "account/cloud/photos/manage": result = await (await cloud()).managePhoto({ ownerUid: identity!.uid }, identity!.uid, input); break;
+        case "admin/cloud/photos/manage": result = await (await cloud()).managePhoto({ admin: true }, identity!.uid, input); break;
         case "desktop/photo-folders": result = await service.cloud(input); break;
         case "desktop/device-authorizations": result = await service.beginLink(input); break;
         case "desktop/device-authorizations/poll": result = await service.pollLink(input); break;

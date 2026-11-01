@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { hash, type EntitlementSigner } from "./crypto.ts";
 import { PRODUCT_ID, StudioError, type License, type Plan, type ReleaseStorage, type Transaction, type Store } from "./types.ts";
 
@@ -7,9 +8,17 @@ import { PRODUCT_ID, StudioError, type License, type Plan, type ReleaseStorage, 
  * Layout: owner account -> event -> photo. Files live in object storage under studio/{ownerUid}/{eventId}/{photoId}.jpg.
  */
 export type CloudEvent = { id: string; ownerUid: string; licenseId: string; clientEventId: string; name: string; date: string | null; status: "active" | "archived"; photoCount: number; bytes: number; createdAt: string; updatedAt: string };
-export type CloudPhoto = { id: string; eventId: string; ownerUid: string; sessionId: string | null; key: string; size: number; sha256: string; status: "pending" | "ready" | "hidden"; createdAt: string; updatedAt: string; readyAt: string | null };
+export type CloudPhoto = { id: string; eventId: string; ownerUid: string; sessionId: string | null; key: string; size: number; sha256: string; status: "pending" | "ready" | "hidden" | "deleted"; createdAt: string; updatedAt: string; readyAt: string | null };
 export type CloudUsage = { ownerUid: string; bytes: number; photos: number; updatedAt: string };
 type Input = Record<string, unknown>;
+/** Customer photos need signed, short-lived read URLs and deletion on top of the release storage contract. */
+export interface PhotoStorage extends ReleaseStorage {
+  presignDownload(key: string, expiresInSeconds: number): Promise<string>;
+  remove(key: string): Promise<void>;
+}
+/** Who is asking: a customer sees only their own photos; an admin sees everything. */
+export type CloudScope = { ownerUid: string } | { admin: true };
+export const VIEW_URL_SECONDS = 600;
 
 export const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
 const iso = (time: number) => new Date(time).toISOString();
@@ -21,8 +30,8 @@ function pattern(value: unknown, re: RegExp) { const v = text(value, 1, 128); if
 export const photoKey = (ownerUid: string, eventId: string, photoId: string) => `studio/${ownerUid}/${eventId}/${photoId}.jpg`;
 
 export class CloudService {
-  private store: Store; private signer: EntitlementSigner; private storage: ReleaseStorage; private now: () => number;
-  constructor(options: { store: Store; signer: EntitlementSigner; storage: ReleaseStorage; now?: () => number }) {
+  private store: Store; private signer: EntitlementSigner; private storage: PhotoStorage; private now: () => number;
+  constructor(options: { store: Store; signer: EntitlementSigner; storage: PhotoStorage; now?: () => number }) {
     this.store = options.store; this.signer = options.signer; this.storage = options.storage; this.now = options.now ?? Date.now;
   }
 
@@ -76,6 +85,7 @@ export class CloudService {
       const existing = await tx.get<CloudPhoto>("studioPhotos", id);
       if (existing) {
         if (existing.eventId !== eventId || existing.size !== size || existing.sha256 !== sha256) throw new StudioError("photo_conflict", 409);
+        // A deleted photo stays as a tombstone so the booth does not upload it again.
         return { id, key: existing.key, alreadyUploaded: existing.status !== "pending" };
       }
       const usage = (await tx.get<CloudUsage>("studioUsage", auth.ownerUid)) ?? { ownerUid: auth.ownerUid, bytes: 0, photos: 0, updatedAt: iso(this.now()) };
@@ -118,5 +128,74 @@ export class CloudService {
       tx.set<CloudUsage>("studioUsage", auth.ownerUid, { ownerUid: auth.ownerUid, bytes: usage.bytes + photo.size, photos: usage.photos + 1, updatedAt: at });
       return { photoId: photo.id, status: "ready" as const };
     });
+  }
+
+  // ---------- customer and admin side ----------
+  private scopeAllows(scope: CloudScope, ownerUid: string) { return "admin" in scope || scope.ownerUid === ownerUid; }
+
+  /** Events, storage used and the plan quota for one customer account. */
+  async accountOverview(ownerUid: string) {
+    const [events, licenses, usage] = await Promise.all([
+      this.store.list<CloudEvent>("studioEvents", { field: "ownerUid", value: ownerUid }, 100),
+      this.store.list<License>("studioLicenses", { field: "ownerUid", value: ownerUid }, 20),
+      this.store.transaction(tx => tx.get<CloudUsage>("studioUsage", ownerUid)),
+    ]);
+    let quotaBytes = 0;
+    for (const license of licenses) {
+      if (license.status !== "active") continue;
+      const plan = await this.store.transaction(tx => tx.get<Plan>("studioPlans", license.planId));
+      if (plan?.active && plan.features.includes("cloud_sync")) quotaBytes = Math.max(quotaBytes, plan.photoStorageQuotaBytes ?? 0);
+    }
+    return { events: events.sort((a, b) => b.createdAt.localeCompare(a.createdAt)), usage: { bytes: usage?.bytes ?? 0, photos: usage?.photos ?? 0 }, quotaBytes };
+  }
+
+  /** Admin: events across all customers, newest first, optionally for one owner. */
+  async adminEvents(ownerUid?: string) {
+    const events = await this.store.list<CloudEvent>("studioEvents", ownerUid ? { field: "ownerUid", value: ownerUid } : undefined, 100);
+    return { events: events.sort((a, b) => b.createdAt.localeCompare(a.createdAt)) };
+  }
+
+  /** Photos of one event with read URLs that expire after ten minutes. Hidden photos are visible to admins only. */
+  async eventPhotos(scope: CloudScope, eventId: unknown) {
+    const id = pattern(eventId, /^[0-9a-f]{32}$/);
+    const event = await this.store.transaction(tx => tx.get<CloudEvent>("studioEvents", id));
+    if (!event || !this.scopeAllows(scope, event.ownerUid)) throw new StudioError("not_found", 404);
+    const all = await this.store.list<CloudPhoto>("studioPhotos", { field: "eventId", value: id }, 100);
+    const visible = all.filter(p => p.ownerUid === event.ownerUid && (p.status === "ready" || ("admin" in scope && p.status === "hidden")))
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const photos = await Promise.all(visible.map(async p => ({ id: p.id, status: p.status, size: p.size, createdAt: p.createdAt, url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS) })));
+    return { event, photos, urlExpiresInSeconds: VIEW_URL_SECONDS };
+  }
+
+  /** delete (owner or admin), hide / unhide (admin only). Counters change only for photos that were counted. */
+  async managePhoto(scope: CloudScope, actor: string, input: Input) {
+    const action = input.action;
+    if (action !== "delete" && action !== "hide" && action !== "unhide") throw new StudioError("invalid_request");
+    if (action !== "delete" && !("admin" in scope)) throw new StudioError("forbidden", 403);
+    const photoId = pattern(input.photoId, /^[0-9a-f]{32}$/);
+    const result = await this.store.transaction(async tx => {
+      const photo = await tx.get<CloudPhoto>("studioPhotos", photoId);
+      if (!photo || !this.scopeAllows(scope, photo.ownerUid)) throw new StudioError("not_found", 404);
+      const event = await tx.get<CloudEvent>("studioEvents", photo.eventId);
+      const usage = await tx.get<CloudUsage>("studioUsage", photo.ownerUid);
+      const at = iso(this.now());
+      const audit = (name: string) => { const id = randomUUID(); tx.set("studioAuditLogs", id, { id, action: name, licenseId: `photo-${photo.id}`, deviceId: null, actor, createdAt: at }); };
+      if (action === "delete") {
+        if (photo.status === "deleted") return { photo, removeFile: true };
+        const counted = photo.status === "ready" || photo.status === "hidden";
+        tx.set<CloudPhoto>("studioPhotos", photo.id, { ...photo, status: "deleted", updatedAt: at });
+        if (counted && event) tx.set<CloudEvent>("studioEvents", event.id, { ...event, photoCount: Math.max(0, event.photoCount - 1), bytes: Math.max(0, event.bytes - photo.size), updatedAt: at });
+        if (counted && usage) tx.set<CloudUsage>("studioUsage", photo.ownerUid, { ...usage, bytes: Math.max(0, usage.bytes - photo.size), photos: Math.max(0, usage.photos - 1), updatedAt: at });
+        audit("photo.deleted");
+        return { photo: { ...photo, status: "deleted" as const }, removeFile: true };
+      }
+      if (photo.status === "deleted" || photo.status === "pending") throw new StudioError("photo_unavailable", 409);
+      const next = action === "hide" ? "hidden" : "ready";
+      if (photo.status !== next) { tx.set<CloudPhoto>("studioPhotos", photo.id, { ...photo, status: next, updatedAt: at }); audit(action === "hide" ? "photo.hidden" : "photo.unhidden"); }
+      return { photo: { ...photo, status: next as CloudPhoto["status"] }, removeFile: false };
+    });
+    // The database is already authoritative; a failed file removal is retried by deleting again.
+    if (result.removeFile) { try { await this.storage.remove(result.photo.key); } catch { throw new StudioError("storage_unavailable", 503); } }
+    return { photoId, status: result.photo.status };
   }
 }

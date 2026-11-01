@@ -7,6 +7,7 @@ import { ReleaseService } from "./releases.ts";
 import { CloudService } from "./cloud.ts";
 import { createHash } from "node:crypto";
 import type { PublicRelease, ReleaseStorage } from "./types.ts";
+import type { PhotoStorage } from "./cloud.ts";
 let service: StudioService | null = null;
 let releaseService: ReleaseService | null = null;
 let cloudService: CloudService | null = null;
@@ -32,6 +33,23 @@ function r2Storage(bucketEnv: "R2_BUCKET_NAME" | "R2_PRIVATE_BUCKET_NAME" = "R2_
   };
 }
 
+/** Private-bucket storage for customer photos: signed short-lived reads and deletion. */
+function r2PhotoStorage(): PhotoStorage {
+  const base = r2Storage("R2_PRIVATE_BUCKET_NAME");
+  const bucket = () => { const name = (process.env.R2_PRIVATE_BUCKET_NAME ?? "").trim(); if (!name) throw new Error("R2_PRIVATE_BUCKET_NAME is not configured"); return name; };
+  return {
+    ...base,
+    async presignDownload(key, expiresInSeconds) {
+      const [{ GetObjectCommand }, { getSignedUrl }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@aws-sdk/s3-request-presigner"), import("@/lib/r2")]);
+      return getSignedUrl(r2, new GetObjectCommand({ Bucket: bucket(), Key: key }), { expiresIn: expiresInSeconds });
+    },
+    async remove(key) {
+      const [{ DeleteObjectCommand }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@/lib/r2")]);
+      await r2.send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));
+    },
+  };
+}
+
 async function getReleases() {
   if (releaseService) return releaseService;
   await getService(); // enforces the same environment and project confirmation checks
@@ -51,7 +69,7 @@ async function getCloud() {
   const { adminDb } = await import("@/lib/firebase-admin");
   const privatePem = (process.env.STUDIO_SIGNING_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
   const trusted = JSON.parse(process.env.STUDIO_TRUSTED_PUBLIC_KEYS_JSON ?? "{}") as Record<string, string>;
-  cloudService = new CloudService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(process.env.STUDIO_SIGNING_KEY_ID ?? "", privatePem, trusted), storage: r2Storage("R2_PRIVATE_BUCKET_NAME") });
+  cloudService = new CloudService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(process.env.STUDIO_SIGNING_KEY_ID ?? "", privatePem, trusted), storage: r2PhotoStorage() });
   return cloudService;
 }
 async function getService() {
