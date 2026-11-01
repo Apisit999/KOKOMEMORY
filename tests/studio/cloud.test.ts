@@ -21,7 +21,7 @@ function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?
   const removed: string[] = [];
   const failures = { remove: false };
   const storage: PhotoStorage = {
-    presignDownload: async (key, seconds) => `https://view.example.invalid/${key}?exp=${seconds}`,
+    presignDownload: async (key, seconds, options) => `https://view.example.invalid/${key}?exp=${seconds}${options?.downloadName ? `&dl=${options.downloadName}` : ""}`,
     remove: async key => { if (failures.remove) throw new Error("r2 down"); removed.push(key); files.delete(key); },
     presignUpload: async key => `https://upload.example.invalid/${key}?sig=1`,
     inspect: async key => { const f = files.get(key); return f ? { size: f.length, sha256: sha(f) } : null; },
@@ -32,8 +32,9 @@ function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?
   store.documents.set("studioLicenses/lic-1", license);
   const claims: Claims = { schemaVersion: 1, keyId: "local-test", licenseId: "lic-1", deviceId: DEVICE, productId: PRODUCT_ID, issuedAt: iso(NOW), startsAt: iso(NOW - 1e6), expiresAt: null, refreshAfter: iso(NOW + 1e6), offlineUntil: iso(NOW + 2e6), features };
   const input = { deviceId: DEVICE, productId: PRODUCT_ID, entitlement: signer.sign(claims) };
-  const cloud = new CloudService({ store, signer, storage, now: () => NOW });
-  return { store, files, cloud, input, license, removed, failures };
+  const cloud = new CloudService({ store, signer, storage, now: () => NOW, origin: "https://studio.example.invalid", shareSecret: "test-share-secret-0123456789-abcdef-xyz" });
+  const at = (offsetMs: number) => new CloudService({ store, signer, storage, now: () => NOW + offsetMs, origin: "https://studio.example.invalid", shareSecret: "test-share-secret-0123456789-abcdef-xyz" });
+  return { store, files, cloud, input, license, removed, failures, at };
 }
 async function makeEvent(f: ReturnType<typeof setup>) { return (await f.cloud.upsertEvent({ ...f.input, clientEventId: "event-0001", name: "งานแต่ง A", date: "2026-11-20" })).eventId; }
 
@@ -115,10 +116,10 @@ test("the Firestore store accepts every collection the cloud service uses (the i
     runTransaction: async (work: (tx: unknown) => Promise<unknown>) => work({ get: async (ref: { name: string }) => { touched.push(ref.name); return { exists: false }; }, set: (ref: { name: string }) => { touched.push(ref.name); } }),
   };
   const store = new FirestoreStore(fakeDb as never);
-  for (const name of ["studioEvents", "studioPhotos", "studioUsage"]) {
+  for (const name of ["studioEvents", "studioPhotos", "studioUsage", "studioShareIndex", "studioShares"]) {
     await store.transaction(async tx => { await tx.get(name, "abc"); tx.set(name, "abc", { ok: true }); });
   }
-  assert.deepEqual([...new Set(touched)].sort(), ["studioEvents", "studioPhotos", "studioUsage"]);
+  assert.deepEqual([...new Set(touched)].sort(), ["studioEvents", "studioPhotos", "studioShareIndex", "studioShares", "studioUsage"]);
   await assert.rejects(store.transaction(async tx => { await tx.get("notAStudioCollection", "abc"); }), /Invalid Studio document path/);
 });
 
@@ -204,4 +205,97 @@ test("permissions: customers cannot hide photos or touch other accounts photos; 
   await assert.rejects(f.cloud.managePhoto(ADMIN, "admin", { action: "delete", photoId: "nope" }), /invalid_request/);
   await assert.rejects(f.cloud.eventPhotos(OWNER, "../etc"), /invalid_request/);
   assert.equal(f.removed.length, 0);
+});
+
+const tokenOf = (url: string) => url.split("/s/")[1] as string;
+async function uploadIn(f: ReturnType<typeof setup>, eventId: string, letter: string, sessionId: string, owner = "uid-a") {
+  const body = Buffer.from(`photo ${letter}`);
+  await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID(letter), size: body.length, sha256: sha(body), sessionId });
+  f.files.set(photoKey(owner, eventId, ID(letter)), body);
+  return f.cloud.confirmPhoto({ ...f.input, photoId: ID(letter) });
+}
+
+test("a session link shows only that guest's photos; the event link shows all; links are stable and unguessable", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "guest-one");
+  await uploadIn(f, eventId, "b", "guest-one");
+  await uploadIn(f, eventId, "c", "guest-two");
+  const one = await f.cloud.createSessionShare({ ...f.input, sessionId: "guest-one" });
+  const two = await f.cloud.createSessionShare({ ...f.input, sessionId: "guest-two" });
+  assert.match(one.url, /^https:\/\/studio\.example\.invalid\/s\/[A-Za-z0-9_-]{43}$/);
+  assert.notEqual(one.url, two.url);
+  assert.equal((await f.cloud.createSessionShare({ ...f.input, sessionId: "guest-one" })).url, one.url, "asking again returns the same link");
+  const viewOne = await f.cloud.viewShare(tokenOf(one.url));
+  const viewTwo = await f.cloud.viewShare(tokenOf(two.url));
+  assert.deepEqual([viewOne.photos.length, viewTwo.photos.length], [2, 1]);
+  assert.equal(viewOne.eventName, "งานแต่ง A");
+  assert.ok(viewOne.photos[0].downloadUrl.endsWith("&dl=KOKO-01.jpg"));
+  assert.ok(!viewOne.photos[0].url.includes("&dl="));
+  const host = (await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string };
+  assert.equal((await f.cloud.viewShare(tokenOf(host.url))).photos.length, 3);
+  // Only a hash is stored: the token itself never appears in any stored document.
+  const stored = JSON.stringify([...f.store.documents.values()]);
+  for (const url of [one.url, two.url, host.url]) assert.ok(!stored.includes(tokenOf(url)));
+});
+
+test("guests of one account can never see another account's photos through a link", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "shared-session-id");
+  // Another account re-uses the same session id for its own booth.
+  const stored = f.store.documents.get(`studioPhotos/${[...f.store.documents.keys()].find(k => k.startsWith("studioPhotos/"))!.split("/")[1]}`) as object;
+  f.store.documents.set("studioPhotos/other-photo", { ...stored, id: "other-photo", ownerUid: "uid-b", key: "studio/uid-b/x/y.jpg" });
+  const mine = await f.cloud.createSessionShare({ ...f.input, sessionId: "shared-session-id" });
+  const view = await f.cloud.viewShare(tokenOf(mine.url));
+  assert.equal(view.photos.length, 1);
+  assert.ok(view.photos.every(p => p.url.includes("studio/uid-a/")));
+});
+
+test("hidden, deleted and unfinished photos never appear on a share link", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  const a = await uploadIn(f, eventId, "a", "s1");
+  const b = await uploadIn(f, eventId, "b", "s1");
+  await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID("c"), size: 5, sha256: sha(photo), sessionId: "s1" }); // pending, never confirmed
+  const link = tokenOf((await f.cloud.createSessionShare({ ...f.input, sessionId: "s1" })).url);
+  await f.cloud.managePhoto(ADMIN, "admin", { action: "hide", photoId: a.photoId });
+  assert.equal((await f.cloud.viewShare(link)).photos.length, 1);
+  await f.cloud.managePhoto(OWNER, "uid-a", { action: "delete", photoId: b.photoId });
+  assert.equal((await f.cloud.viewShare(link)).photos.length, 0);
+});
+
+test("revoked, expired, forged and malformed links are indistinguishable; a new link after revoking is different", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "s1");
+  const first = await f.cloud.createSessionShare({ ...f.input, sessionId: "s1" });
+  const token = tokenOf(first.url);
+  assert.equal((await f.cloud.viewShare(token)).photos.length, 1);
+  await f.cloud.manageShare("uid-a", { action: "revoke", sessionId: "s1" });
+  const errors: string[] = [];
+  for (const attempt of [token, "A".repeat(43), "short", "", undefined, 42]) {
+    try { await f.cloud.viewShare(attempt); errors.push("allowed"); } catch (e) { errors.push((e as { code: string; status: number }).code + (e as { status: number }).status); }
+  }
+  assert.deepEqual(new Set(errors), new Set(["share_unavailable404"]));
+  const second = await f.cloud.createSessionShare({ ...f.input, sessionId: "s1" });
+  assert.notEqual(tokenOf(second.url), token);
+  assert.equal((await f.cloud.viewShare(tokenOf(second.url))).photos.length, 1);
+  await assert.rejects(f.cloud.viewShare(token), /share_unavailable/);
+  // Expiry: 31 days later a session link is gone, and asking again issues a fresh one.
+  const later = f.at(31 * 86400000);
+  await assert.rejects(later.viewShare(tokenOf(second.url)), /share_unavailable/);
+  assert.notEqual(tokenOf((await later.createSessionShare({ ...f.input, sessionId: "s1" })).url), tokenOf(second.url));
+});
+
+test("event links can only be managed by the event owner, and booths need a cloud license to create session links", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await assert.rejects(f.cloud.manageShare("uid-b", { action: "create", eventId }), /not_found/);
+  await assert.rejects(f.cloud.manageShare("uid-a", { action: "explode", eventId }), /invalid_request/);
+  await assert.rejects(f.cloud.manageShare("uid-a", { action: "create", eventId: "../x" }), /invalid_request/);
+  const noCloud = setup({ features: ["capture", "printing", "templates"] });
+  await assert.rejects(noCloud.cloud.createSessionShare({ ...noCloud.input, sessionId: "s1" }), /cloud_unavailable/);
+  await assert.rejects(f.cloud.createSessionShare({ ...f.input, sessionId: "bad id!" }), /invalid_request/);
+  assert.throws(() => new CloudService({ store: f.store, signer, storage: {} as never, origin: "https://x.invalid", shareSecret: "too-short" }), /share secret/);
 });

@@ -1,0 +1,30 @@
+/* Guest share page. Mobile first; uses the KOKO Studio palette (dark #141516, paper #F4F0E7, lime #D5EE85, pink #F2ADCA). */
+.koko-share{min-height:100vh;min-height:100dvh;background:#141516;color:#f4f0e7;font-family:var(--font-koko-sans);padding:max(20px,env(safe-area-inset-top)) 20px max(32px,env(safe-area-inset-bottom));max-width:1240px;margin-inline:auto}
+.koko-share *{box-sizing:border-box}
+.koko-share-head{padding:28px 0 22px}
+.koko-share-eyebrow{font-size:11px;letter-spacing:2px;font-weight:700;color:#d5ee85}
+.koko-share-head h1{font-size:clamp(28px,6vw,48px);font-weight:800;line-height:1.35;margin-top:10px;overflow-wrap:anywhere}
+.koko-share-sub{margin-top:8px;color:#bcbcb6;font-size:15px;line-height:1.7}
+.koko-share-note{margin-top:12px;padding:24px;border-radius:16px;background:#1f2020;border:1px solid #3a3b36;line-height:1.8}
+.koko-share-note h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.koko-share-note p{color:#bcbcb6;font-size:15px}
+.koko-share-grid{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:700px){.koko-share-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+@media(min-width:1000px){.koko-share-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.koko-share-grid button{display:block;width:100%;padding:0;border:6px solid #f4f0e7;border-radius:6px;background:#f4f0e7;cursor:pointer;overflow:hidden;box-shadow:0 10px 26px #0006;transition:transform .2s}
+.koko-share-grid button:hover{transform:translateY(-3px)}
+.koko-share-grid img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}
+.koko-share-foot{margin-top:32px;padding-top:20px;border-top:1px solid #3a3b36;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.koko-share-foot p{color:#9a9b93;font-size:13px;line-height:1.7}
+.koko-share-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 26px;border-radius:999px;border:0;background:#d5ee85;color:#141516;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer}
+.koko-share-btn:hover{background:#f2adca}
+.koko-share-btn.secondary{background:transparent;color:#f4f0e7;border:1px solid #6b6c64}
+.koko-share-btn.secondary:hover{background:#f4f0e7;color:#141516}
+.koko-share a:focus-visible,.koko-share button:focus-visible{outline:3px solid #d5ee85;outline-offset:3px}
+.koko-share-lightbox{position:fixed;inset:0;z-index:50;background:#0c0d0dF2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+.koko-share-lightbox>img{max-width:100%;max-height:calc(100dvh - 190px);object-fit:contain;border-radius:4px;touch-action:pan-y}
+.koko-share-lightbox-top{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center;color:#bcbcb6;font-size:14px}
+.koko-share-lightbox-top button,.koko-share-lightbox-bar>button{width:48px;height:48px;border-radius:50%;border:1px solid #6b6c64;background:#1f2020;color:#f4f0e7;font-size:22px;cursor:pointer}
+.koko-share-lightbox-bar{display:flex;align-items:center;gap:16px}
+.koko-share-lightbox-tip{max-width:420px;text-align:center;color:#9a9b93;font-size:12px;line-height:1.6}
+@media(prefers-reduced-motion:reduce){.koko-share *{transition:none!important;animation:none!important}}

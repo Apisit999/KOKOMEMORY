@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { hash, type EntitlementSigner } from "./crypto.ts";
 import { PRODUCT_ID, StudioError, type License, type Plan, type ReleaseStorage, type Transaction, type Store } from "./types.ts";
 
@@ -13,12 +13,20 @@ export type CloudUsage = { ownerUid: string; bytes: number; photos: number; upda
 type Input = Record<string, unknown>;
 /** Customer photos need signed, short-lived read URLs and deletion on top of the release storage contract. */
 export interface PhotoStorage extends ReleaseStorage {
-  presignDownload(key: string, expiresInSeconds: number): Promise<string>;
+  /** With downloadName the browser is told to save the file instead of showing it. */
+  presignDownload(key: string, expiresInSeconds: number, options?: { downloadName?: string }): Promise<string>;
   remove(key: string): Promise<void>;
 }
 /** Who is asking: a customer sees only their own photos; an admin sees everything. */
 export type CloudScope = { ownerUid: string } | { admin: true };
 export const VIEW_URL_SECONDS = 600;
+/** One link covers either a single capture session (one guest) or a whole event (the host). */
+export type ShareScope = "session" | "event";
+export type ShareIndex = { id: string; ownerUid: string; scope: ShareScope; target: string; generation: number; revoked: boolean; updatedAt: string };
+export type ShareRecord = { id: string; ownerUid: string; scope: ShareScope; eventId: string | null; sessionId: string | null; createdAt: string; expiresAt: string; revoked: boolean; revokedAt: string | null };
+export const SESSION_SHARE_DAYS = 30;
+export const EVENT_SHARE_DAYS = 90;
+const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 
 export const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
 const iso = (time: number) => new Date(time).toISOString();
@@ -30,8 +38,11 @@ function pattern(value: unknown, re: RegExp) { const v = text(value, 1, 128); if
 export const photoKey = (ownerUid: string, eventId: string, photoId: string) => `studio/${ownerUid}/${eventId}/${photoId}.jpg`;
 
 export class CloudService {
-  private store: Store; private signer: EntitlementSigner; private storage: PhotoStorage; private now: () => number;
-  constructor(options: { store: Store; signer: EntitlementSigner; storage: PhotoStorage; now?: () => number }) {
+  private store: Store; private signer: EntitlementSigner; private storage: PhotoStorage; private now: () => number; private origin: string; private secret: string;
+  constructor(options: { store: Store; signer: EntitlementSigner; storage: PhotoStorage; now?: () => number; origin: string; shareSecret: string }) {
+    if (options.shareSecret.length < 32) throw new Error("A share secret of at least 32 characters is required");
+    this.origin = options.origin.replace(/\/+$/, "");
+    this.secret = options.shareSecret;
     this.store = options.store; this.signer = options.signer; this.storage = options.storage; this.now = options.now ?? Date.now;
   }
 
@@ -197,5 +208,83 @@ export class CloudService {
     // The database is already authoritative; a failed file removal is retried by deleting again.
     if (result.removeFile) { try { await this.storage.remove(result.photo.key); } catch { throw new StudioError("storage_unavailable", 503); } }
     return { photoId, status: result.photo.status };
+  }
+
+  // ---------- share links ----------
+  /**
+   * Tokens are derived (HMAC) rather than stored, so asking again returns the same link without keeping the link
+   * itself in the database; only its hash is stored. Revoking bumps the generation, so a new link is never the old one.
+   */
+  private shareToken(ownerUid: string, scope: ShareScope, target: string, generation: number) {
+    return createHmac("sha256", this.secret).update(`share:${ownerUid}:${scope}:${target}:${generation}`).digest("base64url");
+  }
+  private shareUrl(token: string) { return `${this.origin}/s/${token}`; }
+
+  private async ensureShare(tx: Transaction, ownerUid: string, scope: ShareScope, target: string, eventId: string | null, days: number) {
+    const indexId = hash(`shareindex:${ownerUid}:${scope}:${target}`);
+    const index = await tx.get<ShareIndex>("studioShareIndex", indexId);
+    const current = index && !index.revoked ? this.shareToken(ownerUid, scope, target, index.generation) : null;
+    const existing = current ? await tx.get<ShareRecord>("studioShares", hash(current)) : null;
+    if (current && existing && !existing.revoked && Date.parse(existing.expiresAt) > this.now()) return { token: current, expiresAt: existing.expiresAt };
+    const generation = index ? index.generation + 1 : 1;
+    const token = this.shareToken(ownerUid, scope, target, generation);
+    const at = iso(this.now()); const expiresAt = iso(this.now() + days * 86400000);
+    tx.set<ShareIndex>("studioShareIndex", indexId, { id: indexId, ownerUid, scope, target, generation, revoked: false, updatedAt: at });
+    tx.set<ShareRecord>("studioShares", hash(token), { id: hash(token), ownerUid, scope, eventId, sessionId: scope === "session" ? target : null, createdAt: at, expiresAt, revoked: false, revokedAt: null });
+    return { token, expiresAt };
+  }
+
+  /** Desktop: the QR link for one capture session (one guest sees only that session). */
+  async createSessionShare(input: Input) {
+    const sessionId = pattern(input.sessionId, /^[A-Za-z0-9_-]{1,64}$/);
+    return this.store.transaction(async tx => {
+      const auth = await this.authorize(tx, input);
+      const made = await this.ensureShare(tx, auth.ownerUid, "session", sessionId, null, SESSION_SHARE_DAYS);
+      return { url: this.shareUrl(made.token), expiresAt: made.expiresAt };
+    });
+  }
+
+  /** Customer: link for a whole event (create returns the same link again), or cancel a link. */
+  async manageShare(ownerUid: string, input: Input) {
+    const action = input.action;
+    if (action !== "create" && action !== "revoke") throw new StudioError("invalid_request");
+    const bySession = input.sessionId !== undefined && input.sessionId !== null;
+    const scope: ShareScope = bySession ? "session" : "event";
+    const target = bySession ? pattern(input.sessionId, /^[A-Za-z0-9_-]{1,64}$/) : pattern(input.eventId, /^[0-9a-f]{32}$/);
+    return this.store.transaction(async tx => {
+      const event = scope === "event" ? await tx.get<CloudEvent>("studioEvents", target) : null;
+      if (scope === "event" && (!event || event.ownerUid !== ownerUid || event.status !== "active")) throw new StudioError("not_found", 404);
+      if (action === "create") {
+        const made = await this.ensureShare(tx, ownerUid, scope, target, event?.id ?? null, scope === "event" ? EVENT_SHARE_DAYS : SESSION_SHARE_DAYS);
+        return { url: this.shareUrl(made.token), expiresAt: made.expiresAt };
+      }
+      const indexId = hash(`shareindex:${ownerUid}:${scope}:${target}`);
+      const index = await tx.get<ShareIndex>("studioShareIndex", indexId);
+      if (!index || index.revoked) return { revoked: true };
+      const record = await tx.get<ShareRecord>("studioShares", hash(this.shareToken(ownerUid, scope, target, index.generation)));
+      const at = iso(this.now());
+      tx.set<ShareIndex>("studioShareIndex", indexId, { ...index, revoked: true, updatedAt: at });
+      if (record) tx.set<ShareRecord>("studioShares", record.id, { ...record, revoked: true, revokedAt: at });
+      return { revoked: true };
+    });
+  }
+
+  /** Public, no login. Missing, revoked and expired links all look the same so links cannot be probed. */
+  async viewShare(tokenInput: unknown) {
+    if (typeof tokenInput !== "string" || !TOKEN.test(tokenInput)) throw new StudioError("share_unavailable", 404);
+    const share = await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", hash(tokenInput)));
+    if (!share || share.revoked || Date.parse(share.expiresAt) <= this.now()) throw new StudioError("share_unavailable", 404);
+    const filter = share.scope === "event" ? { field: "eventId", value: share.eventId ?? "" } : { field: "sessionId", value: share.sessionId ?? "" };
+    const all = await this.store.list<CloudPhoto>("studioPhotos", filter, 100);
+    // The owner check keeps a share from ever showing photos of another account, even if ids collide.
+    const photos = all.filter(p => p.status === "ready" && p.ownerUid === share.ownerUid).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const eventId = share.eventId ?? photos[0]?.eventId ?? null;
+    const event = eventId ? await this.store.transaction(tx => tx.get<CloudEvent>("studioEvents", eventId)) : null;
+    const items = await Promise.all(photos.map(async (p, i) => ({
+      id: p.id, createdAt: p.createdAt,
+      url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS),
+      downloadUrl: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS, { downloadName: `KOKO-${String(i + 1).padStart(2, "0")}.jpg` }),
+    })));
+    return { scope: share.scope, eventName: event && event.ownerUid === share.ownerUid ? event.name : null, expiresAt: share.expiresAt, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
   }
 }

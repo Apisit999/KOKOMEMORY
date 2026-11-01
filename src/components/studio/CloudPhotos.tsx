@@ -25,6 +25,7 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
   const [events, setEvents] = useState<CloudEvent[]>([]);
   const [open, setOpen] = useState<EventView | null>(null);
   const [message, setMessage] = useState(""); const [busy, setBusy] = useState("");
+  const [shareLink, setShareLink] = useState<{ eventId: string; url: string; expiresAt: string } | null>(null);
   const t = (thai: string, english: string) => (th ? thai : english);
 
   const call = useCallback(async (path: string, init?: RequestInit) => {
@@ -47,6 +48,17 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
     loadEvents().catch(() => setMessage(t("โหลดรูปไม่สำเร็จ หรือบัญชีนี้ยังไม่ได้ใช้ที่เก็บรูปออนไลน์", "Could not load photos, or this account has no cloud storage yet.")));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signedIn, loadEvents]);
+
+  async function share(eventId: string, action: "create" | "revoke") {
+    if (action === "revoke" && !window.confirm(t("ยกเลิกลิงก์นี้? คนที่มีลิงก์เดิมจะเปิดรูปไม่ได้อีก", "Cancel this link? Anyone holding it will no longer see the photos."))) return;
+    setBusy(`share-${eventId}`); setMessage("");
+    try {
+      const result = await call("account/cloud/shares", { method: "POST", body: JSON.stringify({ action, eventId }) });
+      if (action === "create") { setShareLink({ eventId, url: result.url, expiresAt: result.expiresAt }); try { await navigator.clipboard.writeText(result.url); setMessage(t("สร้างลิงก์และคัดลอกแล้ว", "Link created and copied")); } catch { setMessage(t("สร้างลิงก์แล้ว คัดลอกจากช่องด้านล่าง", "Link created. Copy it from the box below.")); } }
+      else { setShareLink(null); setMessage(t("ยกเลิกลิงก์แล้ว", "Link cancelled")); }
+    } catch { setMessage(t("ทำรายการไม่สำเร็จ กรุณาลองใหม่", "Could not complete the action. Please retry.")); }
+    finally { setBusy(""); }
+  }
 
   async function manage(photo: PhotoView, action: "delete" | "hide" | "unhide") {
     if (action === "delete" && !window.confirm(t("ลบรูปนี้ถาวร? ลบแล้วกู้คืนไม่ได้", "Delete this photo permanently? This cannot be undone."))) return;
@@ -81,6 +93,15 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
       </button></li>)}</ul>
     {open && <div className="mt-6">
       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-bold">{open.event.name}</h3><button type="button" onClick={() => openEvent(open.event.id).catch(() => undefined)} className="rounded-full border px-4 py-1.5 text-sm">{t("รีเฟรชรูป", "Refresh")}</button></div>
+      {!admin && <div className="mt-3 rounded-2xl bg-[#F4F0E7] p-4">
+        <p className="text-sm font-bold">{t("แชร์ทั้งอีเวนต์", "Share the whole event")}</p>
+        <p className="mt-1 text-xs text-slate-600">{t("ลิงก์นี้เห็นรูปทุกคนในงาน ใช้กับเจ้าภาพหรือผู้จัดงาน ส่วนแขกแต่ละคนจะได้ลิงก์ของรอบตัวเองจากโปรแกรมที่ตู้ ซึ่งเห็นเฉพาะรูปของตัวเอง", "This link shows every photo of the event — for the host or organiser. Each guest gets a separate link for their own session from the booth and sees only their own photos.")}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => share(open.event.id, "create")} className="rounded-full bg-[#141516] px-4 py-2 text-sm font-bold text-[#F4F0E7] disabled:opacity-50">{t("สร้าง / คัดลอกลิงก์", "Create / copy link")}</button>
+          <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => share(open.event.id, "revoke")} className="rounded-full border border-[#141516]/30 px-4 py-2 text-sm disabled:opacity-50">{t("ยกเลิกลิงก์", "Cancel link")}</button>
+        </div>
+        {shareLink?.eventId === open.event.id && <div className="mt-3"><input readOnly aria-label={t("ลิงก์แชร์", "Share link")} value={shareLink.url} onFocus={event => event.currentTarget.select()} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" /><p className="mt-1 text-xs text-slate-500">{t("ใช้ได้ถึง", "Valid until")} {new Date(shareLink.expiresAt).toLocaleDateString(th ? "th-TH" : "en-GB")}</p></div>}
+      </div>}
       <p className="mt-1 text-xs text-slate-500">{t("ลิงก์รูปเปิดได้ชั่วคราวประมาณ 10 นาที กดรีเฟรชถ้ารูปไม่ขึ้น", "Photo links work for about 10 minutes; press Refresh if a photo does not load.")}</p>
       {open.photos.length === 0 && <p className="mt-3 text-sm text-slate-600">{t("อีเวนต์นี้ยังไม่มีรูปที่พร้อมแสดง", "This event has no photos to show yet.")}</p>}
       <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{open.photos.map(photo => <li key={photo.id} className="overflow-hidden rounded-2xl border-4 border-white bg-[#F4F0E7] shadow-[0_6px_18px_#14151620]">

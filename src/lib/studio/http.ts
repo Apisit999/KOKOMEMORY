@@ -41,7 +41,7 @@ export function createStudioHandler(dependencies: Dependencies) {
         if (path.startsWith("admin/") && !identity.admin) throw new StudioError("forbidden", 403);
       }
       // Only trust a proxy address when the hosting platform strips inbound spoofed headers.
-      const publicRead = path === "download" || path === "releases/latest" || path === "desktop/updates";
+      const publicRead = path === "download" || path === "releases/latest" || path === "desktop/updates" || path === "share/view";
       // Public download/update paths see far more traffic than license mutations; without a trusted proxy header every caller shares one bucket.
       await service.rateLimit(path, identity ? `uid:${identity.uid}` : dependencies.clientAddress(request), path === "account/link" ? 10 : publicRead ? 300 : 30);
       const url = new URL(request.url);
@@ -76,6 +76,12 @@ export function createStudioHandler(dependencies: Dependencies) {
         case "desktop/licenses/activate": result = await service.activate(input); break;
         case "desktop/leases/refresh": result = await service.refresh(input); break;
         case "desktop/licenses/deactivate": result = await service.deactivate(input); break;
+        case "share/view": {
+          // Public page: never cached and never leaks the link through the Referer header.
+          return Response.json(await (await cloud()).viewShare(input.token), { headers: { ...headers, "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
+        }
+        case "desktop/cloud/shares": result = await (await cloud()).createSessionShare(input); break;
+        case "account/cloud/shares": result = await (await cloud()).manageShare(identity!.uid, input); break;
         case "desktop/cloud/events": result = await (await cloud()).upsertEvent(input); break;
         case "desktop/cloud/photos/init": result = await (await cloud()).initPhoto(input); break;
         case "desktop/cloud/photos/confirm": result = await (await cloud()).confirmPhoto(input); break;
