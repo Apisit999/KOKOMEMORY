@@ -244,6 +244,27 @@ export class CloudService {
     });
   }
 
+  /** Cancels the current link of one target. Cancelling twice is harmless. */
+  private async revokeIn(tx: Transaction, ownerUid: string, scope: ShareScope, target: string) {
+    const indexId = hash(`shareindex:${ownerUid}:${scope}:${target}`);
+    const index = await tx.get<ShareIndex>("studioShareIndex", indexId);
+    if (!index || index.revoked) return { revoked: true };
+    const record = await tx.get<ShareRecord>("studioShares", hash(this.shareToken(ownerUid, scope, target, index.generation)));
+    const at = iso(this.now());
+    tx.set<ShareIndex>("studioShareIndex", indexId, { ...index, revoked: true, updatedAt: at });
+    if (record) tx.set<ShareRecord>("studioShares", record.id, { ...record, revoked: true, revokedAt: at });
+    return { revoked: true };
+  }
+
+  /** Desktop: cancel the QR link of one session, e.g. when a guest asks for their photos to be private again. */
+  async revokeSessionShare(input: Input) {
+    const sessionId = pattern(input.sessionId, /^[A-Za-z0-9_-]{1,64}$/);
+    return this.store.transaction(async tx => {
+      const auth = await this.authorize(tx, input);
+      return this.revokeIn(tx, auth.ownerUid, "session", sessionId);
+    });
+  }
+
   /** Customer: link for a whole event (create returns the same link again), or cancel a link. */
   async manageShare(ownerUid: string, input: Input) {
     const action = input.action;
@@ -258,14 +279,7 @@ export class CloudService {
         const made = await this.ensureShare(tx, ownerUid, scope, target, event?.id ?? null, scope === "event" ? EVENT_SHARE_DAYS : SESSION_SHARE_DAYS);
         return { url: this.shareUrl(made.token), expiresAt: made.expiresAt };
       }
-      const indexId = hash(`shareindex:${ownerUid}:${scope}:${target}`);
-      const index = await tx.get<ShareIndex>("studioShareIndex", indexId);
-      if (!index || index.revoked) return { revoked: true };
-      const record = await tx.get<ShareRecord>("studioShares", hash(this.shareToken(ownerUid, scope, target, index.generation)));
-      const at = iso(this.now());
-      tx.set<ShareIndex>("studioShareIndex", indexId, { ...index, revoked: true, updatedAt: at });
-      if (record) tx.set<ShareRecord>("studioShares", record.id, { ...record, revoked: true, revokedAt: at });
-      return { revoked: true };
+      return this.revokeIn(tx, ownerUid, scope, target);
     });
   }
 

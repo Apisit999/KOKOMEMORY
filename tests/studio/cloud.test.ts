@@ -288,6 +288,18 @@ test("revoked, expired, forged and malformed links are indistinguishable; a new 
   assert.notEqual(tokenOf((await later.createSessionShare({ ...f.input, sessionId: "s1" })).url), tokenOf(second.url));
 });
 
+test("the booth can cancel a session link; cancelling twice is harmless and other accounts' links are unaffected", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "s1");
+  const link = await f.cloud.createSessionShare({ ...f.input, sessionId: "s1" });
+  assert.equal((await f.cloud.viewShare(tokenOf(link.url))).photos.length, 1);
+  assert.deepEqual(await f.cloud.revokeSessionShare({ ...f.input, sessionId: "s1" }), { revoked: true });
+  assert.deepEqual(await f.cloud.revokeSessionShare({ ...f.input, sessionId: "s1" }), { revoked: true });
+  await assert.rejects(f.cloud.viewShare(tokenOf(link.url)), /share_unavailable/);
+  await assert.rejects(f.cloud.revokeSessionShare({ ...f.input, entitlement: "garbage", sessionId: "s1" }), /invalid_entitlement/);
+});
+
 test("event links can only be managed by the event owner, and booths need a cloud license to create session links", async () => {
   const f = setup();
   const eventId = await makeEvent(f);
