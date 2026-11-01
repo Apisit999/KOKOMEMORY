@@ -73,7 +73,7 @@ export default function ReleaseManager() {
         <label className="text-sm">Channel<select className={input} value={form.channel} onChange={e => setForm({ ...form, channel: e.target.value })}><option value="stable">stable</option><option value="beta">beta</option></select></label>
         <label className="text-sm sm:col-span-2">Release notes (หนึ่งบรรทัดต่อหนึ่งข้อ)<textarea rows={3} className={input} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></label>
         <label className="text-sm">เวอร์ชันต่ำสุดที่ยังใช้ได้ (ว่าง = ไม่บังคับอัปเดต)<input pattern="\d+\.\d+\.\d+" className={input} value={form.minimumSupportedVersion} onChange={e => setForm({ ...form, minimumSupportedVersion: e.target.value })} /></label>
-        <div className="flex items-end"><button disabled={Boolean(busy)} className="rounded-full bg-[#D93687] px-5 py-2.5 font-bold text-white disabled:opacity-50">สร้างฉบับร่าง</button></div>
+        <div className="flex items-end"><button disabled={Boolean(busy)} className="rounded-full bg-[#F2ADCA] px-5 py-2.5 font-bold text-[#141516] hover:bg-[#D5EE85] disabled:opacity-50">สร้างฉบับร่าง</button></div>
       </form>
       <ul className="mt-5 space-y-4">{releases.map(release => <li key={release.version} className="rounded-2xl border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-bold">v{release.version} <span className="text-sm font-normal text-slate-500">· {release.channel}</span></h3><span className="rounded-full bg-slate-100 px-3 py-1 text-sm">{statusLabel[release.status]}</span></div>
@@ -84,7 +84,7 @@ export default function ReleaseManager() {
             <button disabled={busy === release.version} onClick={() => act(release.version, { action: "verify" }, "ตรวจ checksum แล้ว")} className="rounded-full border px-4 py-2 text-sm font-bold">ตรวจ checksum</button></div>
           <p className="text-sm">{release.checks.checksumVerified ? "✓ server คำนวณ checksum จากไฟล์แล้ว" : "✗ ยังไม่ได้ตรวจ checksum"}</p>
           <div className="grid gap-1 text-sm">{gateLabels.map(([key, label]) => <label key={key} className="flex items-center gap-2"><input type="checkbox" checked={release.checks[key]} disabled={busy === release.version} onChange={e => act(release.version, { action: "set-checks", checks: { [key]: e.target.checked } }, "บันทึกแล้ว")} />{label}</label>)}</div>
-          <button disabled={busy === release.version || !baseOk} onClick={() => window.confirm(`เผยแพร่ v${release.version} ให้ผู้ใช้ดาวน์โหลด?`) && act(release.version, { action: "publish" }, "เผยแพร่แล้ว")} className="rounded-full bg-[#111114] px-5 py-2.5 font-bold text-white disabled:opacity-50">เผยแพร่</button>
+          <button disabled={busy === release.version || !baseOk} onClick={() => window.confirm(`เผยแพร่ v${release.version} ให้ผู้ใช้ดาวน์โหลด?`) && act(release.version, { action: "publish" }, "เผยแพร่แล้ว")} className="rounded-full bg-[#141516] px-5 py-2.5 font-bold text-white disabled:opacity-50">เผยแพร่</button>
         </div>}
         {release.status === "published" && <button disabled={busy === release.version} onClick={() => window.confirm(`ถอน v${release.version}? ผู้ใช้จะไม่เห็นรุ่นนี้อีก และระบบจะกลับไปใช้รุ่นก่อนหน้า`) && act(release.version, { action: "withdraw" }, "ถอนรุ่นแล้ว")} className="mt-3 rounded-full border border-red-300 px-4 py-2 text-sm font-bold text-red-700">ถอนรุ่น</button>}
       </li>)}{releases.length === 0 && <li className="text-sm text-slate-500">ยังไม่มีรุ่น</li>}</ul>

@@ -1,0 +1,4 @@
+/* KOKO Studio account and admin screens: shared focus style that matches the public Studio pages. */
+.studio-account a:focus-visible,.studio-account button:focus-visible,.studio-account select:focus-visible,.studio-account input:focus-visible,.studio-account textarea:focus-visible{outline:3px solid #141516;outline-offset:3px}
+.studio-account button{cursor:pointer}.studio-account button:disabled{cursor:not-allowed}
+@media(prefers-reduced-motion:reduce){.studio-account *{transition:none!important;animation:none!important}}

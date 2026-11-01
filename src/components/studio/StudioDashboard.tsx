@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase";
 import type { License, Plan } from "@/lib/studio/types";
 import { useI18n } from "@/i18n";
 import ReleaseManager from "./ReleaseManager";
+import "./studio-account.css";
 import CloudPhotos from "./CloudPhotos";
 type Data = { licenses: License[]; plans?: Plan[]; audit?: { id: string; action: string; actor: string; licenseId: string; createdAt: string }[] };
 export default function StudioDashboard({ admin = false }: { admin?: boolean }) {
@@ -39,9 +40,9 @@ export default function StudioDashboard({ admin = false }: { admin?: boolean }) 
     } catch { setMessage(th ? "อัปเดตไม่สำเร็จ กรุณาลองใหม่" : "Could not update. Please retry."); }
     finally { setBusy(false); }
   }
-  return <main className="min-h-[70vh] bg-[#F8F8FB] px-4 py-8 sm:px-8"><div className="mx-auto max-w-5xl space-y-6">
-    <section className="rounded-[28px] bg-[#111114] p-7 text-white sm:p-10"><p className="text-xs font-black tracking-[.2em] text-[#DFFF72]">KOKO STUDIO / {admin ? "ADMIN" : "ACCOUNT"}</p><h1 className="mt-3 text-3xl font-black">{admin ? "KOKO Studio" : th ? "KOKO Studio ของคุณ" : "Your KOKO Studio"}</h1><p className="mt-3 text-white/75">{th ? "เปิดให้เริ่มต้นด้วย Free · แพ็กเกจเสียเงิน: เร็ว ๆ นี้" : "Start with Free · Paid plans: coming soon"}</p></section>
-    <p className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950">{th ? "Desktop 0.1.27 ยังไม่มีหน้าจอเชื่อมบัญชีเว็บ บัญชีนี้จะแสดงสิทธิ์หลังยืนยันการเชื่อมกับ Desktop รุ่นที่รองรับเท่านั้น Free รวมถ่ายภาพ เทมเพลต และพิมพ์ในเครื่อง ไม่รวม Cloud album ของ Desktop" : "Desktop 0.1.27 does not yet have an account-linking screen. Licenses appear here after linking with a supported Desktop release. Free includes capture, templates and local printing; Desktop cloud albums are excluded."}</p>
+  return <main className="studio-account min-h-[70vh] bg-[#F4F0E7] px-5 py-8 sm:px-8"><div className="mx-auto max-w-5xl space-y-6">
+    <section className="rounded-3xl bg-[#141516] p-7 text-[#F4F0E7] sm:p-10"><p className="text-xs font-black tracking-[.2em] text-[#D5EE85]"><span aria-hidden="true">✱ </span>KOKO STUDIO / {admin ? "ADMIN" : "ACCOUNT"}</p><h1 className="mt-3 text-3xl font-black">{admin ? "KOKO Studio" : th ? "KOKO Studio ของคุณ" : "Your KOKO Studio"}</h1><p className="mt-3 text-white/75">{th ? "เปิดให้เริ่มต้นด้วย Free · แพ็กเกจเสียเงิน: เร็ว ๆ นี้" : "Start with Free · Paid plans: coming soon"}</p></section>
+    <p className="rounded-2xl border border-[#141516]/15 bg-[#EEE7D9] p-5 text-sm text-[#24251f]">{th ? "สิทธิ์จะแสดงที่นี่หลังคุณยืนยันรหัสเชื่อมอุปกรณ์จากโปรแกรม KOKO Studio Free รวมถ่ายภาพ เทมเพลต และพิมพ์ในเครื่อง ส่วนที่เก็บรูปออนไลน์ใช้ได้เฉพาะแพ็กเกจที่เปิดสิทธิ์ Cloud" : "Licenses appear here after you confirm the device code from KOKO Studio. Free includes capture, templates and local printing; online photo storage needs a plan with Cloud enabled."}</p>
     {message && <p role="status" className="rounded-xl bg-white p-4 text-sm text-slate-700">{message}</p>}
     {!data && !message && <p role="status">{th ? "กำลังโหลด…" : "Loading…"}</p>}
     {data && data.licenses.length === 0 && <section className="rounded-3xl border bg-white p-7"><h2 className="text-xl font-bold">{th ? "ยังไม่มีสิทธิ์ที่เชื่อมกับบัญชีนี้" : "No linked licenses yet"}</h2><p className="mt-2 text-sm text-slate-600">{th ? "เมื่อ Desktop รองรับการเชื่อมบัญชี ให้นำรหัสที่แสดงในโปรแกรมมายืนยันที่นี่" : "When Desktop supports account linking, confirm the code shown in the application here."}</p></section>}
@@ -50,6 +51,6 @@ export default function StudioDashboard({ admin = false }: { admin?: boolean }) 
     {admin && data && <ReleaseManager />}
     {admin && data?.plans && <section className="rounded-3xl bg-white p-6"><h2 className="text-xl font-bold">Plans</h2>{data.plans.map(plan => <p key={plan.id} className="mt-3">{plan.name} · v{plan.version} · {plan.features.join(", ")} · {plan.deviceLimit} devices</p>)}<p className="mt-3 text-sm text-slate-500">{th ? "ระบบซื้อยังปิดอยู่ · แสดงข้อมูลสูงสุด 50 รายการต่อหมวด" : "Purchases are disabled · Up to 50 records per section"}</p></section>}
     {admin && data?.audit && <section className="rounded-3xl bg-white p-6"><h2 className="text-xl font-bold">Audit log</h2><ul className="mt-4 space-y-3">{data.audit.map(event => <li key={event.id} className="break-all border-b pb-3 text-sm"><b>{event.action}</b><p className="text-xs text-slate-500">{event.createdAt} · {event.actor} · {event.licenseId}</p></li>)}</ul></section>}
-    <div className="flex flex-wrap gap-3"><Link href="/koko-studio" className="rounded-full bg-[#D93687] px-5 py-3 font-bold text-white">{th ? "ข้อมูลโปรแกรมและติดตั้ง" : "Product & installation"}</Link>{!admin && <Link href="/account/koko-studio/link" className="rounded-full border border-slate-300 px-5 py-3 font-bold">{th ? "ยืนยันรหัสเชื่อมอุปกรณ์" : "Confirm device code"}</Link>}</div>
+    <div className="flex flex-wrap gap-3"><Link href="/koko-studio" className="rounded-full bg-[#F2ADCA] px-5 py-3 font-bold text-[#141516] hover:bg-[#D5EE85]">{th ? "ข้อมูลโปรแกรมและติดตั้ง" : "Product & installation"}</Link>{!admin && <Link href="/account/koko-studio/link" className="rounded-full border border-[#141516]/30 px-5 py-3 font-bold hover:bg-[#141516] hover:text-[#F4F0E7]">{th ? "ยืนยันรหัสเชื่อมอุปกรณ์" : "Confirm device code"}</Link>}</div>
   </div></main>;
 }

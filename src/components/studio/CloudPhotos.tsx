@@ -64,11 +64,11 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
   if (!signedIn) return null;
   const percent = overview && overview.quotaBytes > 0 ? Math.min(100, Math.round((overview.usage.bytes / overview.quotaBytes) * 100)) : 0;
   return <section className="rounded-3xl border bg-white p-6" aria-labelledby="cloud-photos-title">
-    <p className="text-xs font-black tracking-[.2em] text-[#8a9a3a]">KOKO CLOUD</p>
+    <p className="text-xs font-black tracking-[.2em] text-[#5c6b1f]">KOKO CLOUD</p>
     <h2 id="cloud-photos-title" className="mt-1 text-xl font-bold">{admin ? t("รูปของลูกค้าทั้งหมด", "All customer photos") : t("รูปของฉัน", "My photos")}</h2>
     {overview && <div className="mt-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm"><span>{t("พื้นที่ที่ใช้", "Storage used")} {formatBytes(overview.usage.bytes)}{overview.quotaBytes > 0 && ` / ${formatBytes(overview.quotaBytes)}`}</span><span className="text-slate-500">{overview.usage.photos} {t("รูป", "photos")}</span></div>
-      {overview.quotaBytes > 0 && <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("พื้นที่ที่ใช้", "Storage used")} className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#F4F0E7]"><div className={`h-full rounded-full ${percent >= 90 ? "bg-[#D93687]" : "bg-[#D5EE85]"}`} style={{ width: `${percent}%` }} /></div>}
+      {overview.quotaBytes > 0 && <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("พื้นที่ที่ใช้", "Storage used")} className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#F4F0E7]"><div className={`h-full rounded-full ${percent >= 90 ? "bg-[#a0235f]" : "bg-[#D5EE85]"}`} style={{ width: `${percent}%` }} /></div>}
       {percent >= 90 && <p role="alert" className="mt-2 text-sm text-[#a0235f]">{t("พื้นที่ใกล้เต็ม รูปใหม่อาจอัปโหลดไม่ได้ ลบรูปที่ไม่ใช้หรือติดต่อทีมงานเพื่อเพิ่มพื้นที่", "Storage is almost full; new photos may fail to upload. Delete photos you do not need or contact us for more space.")}</p>}
     </div>}
     {message && <p role="status" className="mt-4 rounded-xl bg-[#F4F0E7] p-3 text-sm">{message}</p>}
@@ -83,7 +83,7 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-bold">{open.event.name}</h3><button type="button" onClick={() => openEvent(open.event.id).catch(() => undefined)} className="rounded-full border px-4 py-1.5 text-sm">{t("รีเฟรชรูป", "Refresh")}</button></div>
       <p className="mt-1 text-xs text-slate-500">{t("ลิงก์รูปเปิดได้ชั่วคราวประมาณ 10 นาที กดรีเฟรชถ้ารูปไม่ขึ้น", "Photo links work for about 10 minutes; press Refresh if a photo does not load.")}</p>
       {open.photos.length === 0 && <p className="mt-3 text-sm text-slate-600">{t("อีเวนต์นี้ยังไม่มีรูปที่พร้อมแสดง", "This event has no photos to show yet.")}</p>}
-      <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{open.photos.map(photo => <li key={photo.id} className="overflow-hidden rounded-2xl border bg-[#F4F0E7]">
+      <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{open.photos.map(photo => <li key={photo.id} className="overflow-hidden rounded-2xl border-4 border-white bg-[#F4F0E7] shadow-[0_6px_18px_#14151620]">
         <a href={photo.url} target="_blank" rel="noopener noreferrer" aria-label={t("เปิดรูปเต็ม", "Open full photo")}>
           {/* Signed short-lived storage URLs cannot go through next/image optimisation. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
