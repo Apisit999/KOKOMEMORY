@@ -4,10 +4,12 @@ import { FirestoreStore } from "./firestore-store.ts";
 import { createStudioHandler } from "./http.ts";
 import { StudioService } from "./service.ts";
 import { ReleaseService } from "./releases.ts";
+import { CloudService } from "./cloud.ts";
 import { createHash } from "node:crypto";
 import type { PublicRelease, ReleaseStorage } from "./types.ts";
 let service: StudioService | null = null;
 let releaseService: ReleaseService | null = null;
+let cloudService: CloudService | null = null;
 
 function r2Storage(): ReleaseStorage {
   return {
@@ -41,6 +43,15 @@ async function getReleases() {
   });
   return releaseService;
 }
+async function getCloud() {
+  if (cloudService) return cloudService;
+  await getService(); // same environment and project confirmation checks
+  const { adminDb } = await import("@/lib/firebase-admin");
+  const privatePem = (process.env.STUDIO_SIGNING_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
+  const trusted = JSON.parse(process.env.STUDIO_TRUSTED_PUBLIC_KEYS_JSON ?? "{}") as Record<string, string>;
+  cloudService = new CloudService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(process.env.STUDIO_SIGNING_KEY_ID ?? "", privatePem, trusted), storage: r2Storage() });
+  return cloudService;
+}
 async function getService() {
   if (service) return service;
   if (!["local", "staging", "production"].includes(process.env.STUDIO_ENV ?? "")) throw new Error("Studio environment required");
@@ -65,6 +76,7 @@ export async function studioRequest(request: Request, path: string) {
     origin: process.env.STUDIO_WEB_ORIGIN || new URL(request.url).origin,
     service: getService,
     releases: getReleases,
+    cloud: getCloud,
     authenticate: async req => {
       const { requireCustomerApi, isAdminToken } = await import("@/lib/customer-api-auth");
       const token = await requireCustomerApi(req);

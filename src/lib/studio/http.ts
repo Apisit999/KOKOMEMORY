@@ -2,8 +2,9 @@ import { randomUUID } from "node:crypto";
 import { StudioError, purchaseDisabled } from "./types.ts";
 import type { Input, StudioService } from "./service.ts";
 import type { ReleaseService } from "./releases.ts";
+import type { CloudService } from "./cloud.ts";
 type Identity = { uid: string; admin: boolean };
-type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService> };
+type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService> };
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 async function body(request: Request): Promise<Input> {
   if (!request.headers.get("content-type")?.startsWith("application/json")) throw new StudioError("invalid_request", 415);
@@ -45,6 +46,7 @@ export function createStudioHandler(dependencies: Dependencies) {
       await service.rateLimit(path, identity ? `uid:${identity.uid}` : dependencies.clientAddress(request), path === "account/link" ? 10 : publicRead ? 300 : 30);
       const url = new URL(request.url);
       const releases = async () => { if (!dependencies.releases) throw new StudioError("not_found", 404); return dependencies.releases(); };
+      const cloud = async () => { if (!dependencies.cloud) throw new StudioError("not_found", 404); return dependencies.cloud(); };
       if (request.method === "GET") {
         if (path === "releases/latest") return Response.json(await (await releases()).latest({ channel: url.searchParams.get("channel") }), { headers: { ...headers, "Cache-Control": "public, max-age=60" } });
         if (path === "download") {
@@ -70,6 +72,9 @@ export function createStudioHandler(dependencies: Dependencies) {
         case "desktop/licenses/activate": result = await service.activate(input); break;
         case "desktop/leases/refresh": result = await service.refresh(input); break;
         case "desktop/licenses/deactivate": result = await service.deactivate(input); break;
+        case "desktop/cloud/events": result = await (await cloud()).upsertEvent(input); break;
+        case "desktop/cloud/photos/init": result = await (await cloud()).initPhoto(input); break;
+        case "desktop/cloud/photos/confirm": result = await (await cloud()).confirmPhoto(input); break;
         case "desktop/photo-folders": result = await service.cloud(input); break;
         case "desktop/device-authorizations": result = await service.beginLink(input); break;
         case "desktop/device-authorizations/poll": result = await service.pollLink(input); break;
