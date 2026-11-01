@@ -1,0 +1,17 @@
+# Step 1 of 2: temporary HTTP-only vhost used to obtain the TLS certificate. Review before applying.
+# Copy to /etc/nginx/sites-available/studio-staging, symlink into sites-enabled, then:
+#   nginx -t && systemctl reload nginx
+#   certbot certonly --webroot -w /var/www/html -d studio-staging.kokomemory.com
+# Keep the existing production vhosts untouched; keep a copy of the current config for rollback.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name studio-staging.kokomemory.com;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}

@@ -1,0 +1,13 @@
+import { readFile } from "node:fs/promises";
+import { initializeApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import dotenv from "dotenv";
+const config = dotenv.config({ path: ".env.studio.local", quiet: true }).parsed;
+if (config?.STUDIO_ENV !== "local" || config.GCLOUD_PROJECT !== "demo-kokomemory-local" || config.FIREBASE_AUTH_EMULATOR_HOST !== "127.0.0.1:9099") throw new Error("Local Auth Emulator required");
+process.env.FIREBASE_AUTH_EMULATOR_HOST = config.FIREBASE_AUTH_EMULATOR_HOST;
+const fixture = JSON.parse(await readFile("output/studio/browser-fixture.json", "utf8"));
+const auth = getAuth(initializeApp({ projectId: "demo-kokomemory-local" }));
+const user = await auth.getUser(fixture.uid);
+if (!user.email?.endsWith("@studio-test.invalid")) throw new Error("Not a disposable test account");
+await auth.setCustomUserClaims(fixture.uid, { admin: true });
+console.log("Granted an admin claim to the disposable Auth Emulator fixture only.");

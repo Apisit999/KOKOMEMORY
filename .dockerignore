@@ -1,0 +1,13 @@
+.git
+.github
+.next
+.next-studio-local
+node_modules
+output
+.local-tools
+.playwright-cli
+coverage
+*.log
+.env*
+!.env.studio.example
+!.env.staging.example
