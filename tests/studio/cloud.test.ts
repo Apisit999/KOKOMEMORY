@@ -102,3 +102,18 @@ test("input validation rejects oversized, malformed and non-integer values", asy
     await assert.rejects(f.cloud.initPhoto({ ...f.input, eventId, photoId: ID("f"), size: 5, sha256: sha(photo), ...bad }), /invalid_request/);
   }
 });
+
+test("the Firestore store accepts every collection the cloud service uses (the in-memory store would not catch a missing one)", async () => {
+  const { FirestoreStore } = await import("../../src/lib/studio/firestore-store.ts");
+  const touched: string[] = [];
+  const fakeDb = {
+    collection: (name: string) => ({ doc: (id: string) => ({ name, id }) }),
+    runTransaction: async (work: (tx: unknown) => Promise<unknown>) => work({ get: async (ref: { name: string }) => { touched.push(ref.name); return { exists: false }; }, set: (ref: { name: string }) => { touched.push(ref.name); } }),
+  };
+  const store = new FirestoreStore(fakeDb as never);
+  for (const name of ["studioEvents", "studioPhotos", "studioUsage"]) {
+    await store.transaction(async tx => { await tx.get(name, "abc"); tx.set(name, "abc", { ok: true }); });
+  }
+  assert.deepEqual([...new Set(touched)].sort(), ["studioEvents", "studioPhotos", "studioUsage"]);
+  await assert.rejects(store.transaction(async tx => { await tx.get("notAStudioCollection", "abc"); }), /Invalid Studio document path/);
+});

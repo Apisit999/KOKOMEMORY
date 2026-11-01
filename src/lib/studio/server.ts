@@ -11,16 +11,18 @@ let service: StudioService | null = null;
 let releaseService: ReleaseService | null = null;
 let cloudService: CloudService | null = null;
 
-function r2Storage(): ReleaseStorage {
+/** `bucketEnv` picks the bucket: releases use the public one; customer photos must use the private one. */
+function r2Storage(bucketEnv: "R2_BUCKET_NAME" | "R2_PRIVATE_BUCKET_NAME" = "R2_BUCKET_NAME"): ReleaseStorage {
+  const bucket = () => { const name = (process.env[bucketEnv] ?? "").trim(); if (!name) throw new Error(`${bucketEnv} is not configured`); return name; };
   return {
     async presignUpload(key) {
-      const [{ PutObjectCommand }, { getSignedUrl }, { r2, R2_BUCKET_NAME }] = await Promise.all([import("@aws-sdk/client-s3"), import("@aws-sdk/s3-request-presigner"), import("@/lib/r2")]);
-      return getSignedUrl(r2, new PutObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key }), { expiresIn: 900 });
+      const [{ PutObjectCommand }, { getSignedUrl }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@aws-sdk/s3-request-presigner"), import("@/lib/r2")]);
+      return getSignedUrl(r2, new PutObjectCommand({ Bucket: bucket(), Key: key }), { expiresIn: 900 });
     },
     async inspect(key) {
-      const [{ GetObjectCommand }, { r2, R2_BUCKET_NAME }] = await Promise.all([import("@aws-sdk/client-s3"), import("@/lib/r2")]);
+      const [{ GetObjectCommand }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@/lib/r2")]);
       try {
-        const object = await r2.send(new GetObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key }));
+        const object = await r2.send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
         if (!object.Body) return null;
         const digest = createHash("sha256"); let size = 0;
         for await (const chunk of object.Body as AsyncIterable<Uint8Array>) { digest.update(chunk); size += chunk.length; }
@@ -49,7 +51,7 @@ async function getCloud() {
   const { adminDb } = await import("@/lib/firebase-admin");
   const privatePem = (process.env.STUDIO_SIGNING_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
   const trusted = JSON.parse(process.env.STUDIO_TRUSTED_PUBLIC_KEYS_JSON ?? "{}") as Record<string, string>;
-  cloudService = new CloudService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(process.env.STUDIO_SIGNING_KEY_ID ?? "", privatePem, trusted), storage: r2Storage() });
+  cloudService = new CloudService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(process.env.STUDIO_SIGNING_KEY_ID ?? "", privatePem, trusted), storage: r2Storage("R2_PRIVATE_BUCKET_NAME") });
   return cloudService;
 }
 async function getService() {
