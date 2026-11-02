@@ -197,7 +197,7 @@ export default function PortfolioDetailPage() {
                             transition-all
                             duration-300
                             hover:-translate-y-0.5
-                            hover:bg-pink-500
+                            hover:bg-[#141516]
                         "
                     >
                         กลับไปดูผลงาน
@@ -273,7 +273,7 @@ export default function PortfolioDetailPage() {
                         h-[500px]
                         w-[500px]
                         rounded-full
-                        bg-pink-500/10
+                        bg-[#141516]/10
                         blur-[130px]
                     "
                 />
@@ -357,7 +357,7 @@ export default function PortfolioDetailPage() {
                                     font-black
                                     uppercase
                                     tracking-[0.32em]
-                                    text-pink-300
+                                    text-[#C77A9B]
                                 "
                             >
                                 {portfolio.category}
@@ -551,7 +551,7 @@ export default function PortfolioDetailPage() {
                                     text-[10px]
                                     font-black
                                     tracking-[0.3em]
-                                    text-pink-500
+                                    text-[#A0235F]
                                 "
                             >
                                 THE STORY
@@ -633,7 +633,7 @@ export default function PortfolioDetailPage() {
                                         text-[10px]
                                         font-black
                                         tracking-[0.3em]
-                                        text-pink-500
+                                        text-[#A0235F]
                                     "
                                 >
                                     MOMENTS
@@ -800,9 +800,9 @@ export default function PortfolioDetailPage() {
                         overflow-hidden
                         rounded-[2.5rem]
                         bg-gradient-to-br
-                        from-pink-400
-                        via-pink-500
-                        to-pink-600
+                        from-[#141516]
+                        via-[#141516]
+                        to-[#2A2B2C]
                         px-6
                         py-16
                         text-center
@@ -853,7 +853,7 @@ export default function PortfolioDetailPage() {
                                 text-[10px]
                                 font-black
                                 tracking-[0.32em]
-                                text-pink-100
+                                text-[#C77A9B]
                             "
                         >
                             YOUR SPECIAL DAY
@@ -883,7 +883,7 @@ export default function PortfolioDetailPage() {
                                 max-w-xl
                                 text-sm
                                 leading-7
-                                text-pink-50
+                                text-[#C77A9B]
                                 sm:text-base
                             "
                         >
@@ -905,7 +905,7 @@ export default function PortfolioDetailPage() {
                                 py-4
                                 text-sm
                                 font-bold
-                                text-pink-500
+                                text-[#A0235F]
                                 shadow-xl
                                 transition-all
                                 duration-300

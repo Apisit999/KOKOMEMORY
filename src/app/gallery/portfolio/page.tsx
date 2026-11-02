@@ -245,7 +245,7 @@ export default function GalleryPage() {
                             h-[520px]
                             w-[520px]
                             rounded-full
-                            bg-pink-500/14
+                            bg-[#141516]/14
                             blur-[130px]
                             motion-safe:animate-[kokoGlow_12s_ease-in-out_infinite]
                         "
@@ -432,7 +432,7 @@ export default function GalleryPage() {
                                                 absolute
                                                 inset-0
                                                 rounded-full
-                                                bg-pink-400
+                                                bg-[#D5EE85]
                                                 blur-[3px]
                                             "
                                         />
@@ -443,7 +443,7 @@ export default function GalleryPage() {
                                                 h-2
                                                 w-2
                                                 rounded-full
-                                                bg-pink-400
+                                                bg-[#D5EE85]
                                             "
                                         />
 
@@ -491,8 +491,8 @@ export default function GalleryPage() {
                                         className="
                                             bg-gradient-to-r
                                             from-white
-                                            via-pink-200
-                                            to-pink-400
+                                            via-[#F2ADCA]
+                                            to-[#D5EE85]
                                             bg-clip-text
                                             text-transparent
                                             motion-safe:animate-[kokoGradient_8s_ease-in-out_infinite]
@@ -543,17 +543,17 @@ export default function GalleryPage() {
                                             items-center
                                             justify-center
                                             rounded-full
-                                            bg-pink-500
+                                            bg-[#D5EE85]
                                             px-7
                                             py-3.5
                                             text-sm
                                             font-bold
-                                            text-white
+                                            text-[#141516]
                                             shadow-[0_16px_45px_rgba(236,72,153,0.28)]
                                             transition-all
                                             duration-300
                                             hover:-translate-y-1
-                                            hover:bg-pink-400
+                                            hover:bg-[#F2ADCA]
                                             hover:shadow-[0_22px_55px_rgba(236,72,153,0.38)]
                                         "
                                     >
@@ -626,13 +626,13 @@ export default function GalleryPage() {
                                         {t("portfolio.realMoments")}
                                     </span>
 
-                                    <span className="h-1 w-1 rounded-full bg-pink-400/70" />
+                                    <span className="h-1 w-1 rounded-full bg-[#D5EE85]/70" />
 
                                     <span>
                                         {t("portfolio.madeWithCare")}
                                     </span>
 
-                                    <span className="h-1 w-1 rounded-full bg-pink-400/70" />
+                                    <span className="h-1 w-1 rounded-full bg-[#D5EE85]/70" />
 
                                     <span>
                                         KOKO MEMORY
@@ -735,8 +735,8 @@ export default function GalleryPage() {
                                             w-20
                                             rounded-full
                                             bg-gradient-to-r
-                                            from-pink-400
-                                            to-pink-300/20
+                                            from-[#141516]
+                                            to-[#F2ADCA]/20
                                             shadow-[0_0_20px_rgba(244,114,182,0.25)]
                                         "
                                     />
@@ -789,7 +789,7 @@ export default function GalleryPage() {
                                             h-1
                                             w-10
                                             rounded-full
-                                            bg-pink-400/40
+                                            bg-[#141516]/40
                                         "
                                     />
 
@@ -838,7 +838,7 @@ export default function GalleryPage() {
                                         right-[8%]
                                         bottom-[33%]
                                         text-sm
-                                        text-pink-200/50
+                                        text-[#C77A9B]/50
                                         motion-safe:animate-[kokoStar_6s_ease-in-out_infinite_reverse]
                                     "
                                 >
@@ -922,7 +922,7 @@ export default function GalleryPage() {
                                     top-0
                                     h-4
                                     w-px
-                                    bg-pink-400
+                                    bg-[#141516]
                                     motion-safe:animate-[kokoScroll_2.2s_ease-in-out_infinite]
                                 "
                             />
@@ -973,21 +973,21 @@ export default function GalleryPage() {
                                         gap-2.5
                                         rounded-full
                                         border
-                                        border-pink-100
-                                        bg-pink-50
+                                        border-[#E4DDCD]
+                                        bg-[#EEE7D9]
                                         px-4
                                         py-2
                                     "
                                 >
 
-                                    <span className="h-1.5 w-1.5 rounded-full bg-pink-500" />
+                                    <span className="h-1.5 w-1.5 rounded-full bg-[#141516]" />
 
                                     <span
                                         className="
                                             text-[10px]
                                             font-bold
                                             tracking-[0.28em]
-                                            text-pink-500
+                                            text-[#A0235F]
                                         "
                                     >
                                         {t("portfolio.momentsBadge")}
@@ -1014,7 +1014,7 @@ export default function GalleryPage() {
 
                                     <br />
 
-                                    <span className="text-pink-500">
+                                    <span className="text-[#A0235F]">
                                         {t("portfolio.introLine2")}
                                     </span>
 
@@ -1045,7 +1045,7 @@ export default function GalleryPage() {
                                 h-px
                                 w-full
                                 bg-gradient-to-r
-                                from-pink-200
+                                from-[#F2ADCA]
                                 via-slate-100
                                 to-transparent
                             "
@@ -1086,7 +1086,7 @@ export default function GalleryPage() {
                             w-[620px]
                             -translate-x-1/2
                             rounded-full
-                            bg-pink-50/70
+                            bg-[#EEE7D9]/70
                             blur-[140px]
                         "
                     />
@@ -1140,7 +1140,7 @@ export default function GalleryPage() {
                             h-[700px]
                             w-[700px]
                             rounded-full
-                            bg-pink-500/10
+                            bg-[#141516]/10
                             blur-[150px]
                             motion-safe:animate-[kokoGlow_13s_ease-in-out_infinite]
                         "
@@ -1195,7 +1195,7 @@ export default function GalleryPage() {
                                     text-[10px]
                                     font-black
                                     tracking-[0.32em]
-                                    text-pink-300
+                                    text-[#C77A9B]
                                 "
                             >
                                 {t("portfolio.storyBadge")}
@@ -1219,7 +1219,7 @@ export default function GalleryPage() {
 
                                 <br />
 
-                                <span className="text-pink-400">
+                                <span className="text-[#C77A9B]">
                                     {t("portfolio.storyLine2")}
                                 </span>
 
@@ -1268,7 +1268,7 @@ export default function GalleryPage() {
                                     className="
                                         h-px
                                         w-12
-                                        bg-pink-400
+                                        bg-[#F2ADCA]
                                     "
                                 />
 
@@ -1315,9 +1315,9 @@ export default function GalleryPage() {
                             overflow-hidden
                             rounded-[2.75rem]
                             bg-gradient-to-br
-                            from-pink-400
-                            via-pink-500
-                            to-pink-600
+                            from-[#141516]
+                            via-[#141516]
+                            to-[#2A2B2C]
                             px-6
                             py-16
                             text-center
@@ -1399,7 +1399,7 @@ export default function GalleryPage() {
                                     text-[10px]
                                     font-black
                                     tracking-[0.32em]
-                                    text-pink-100
+                                    text-[#C77A9B]
                                 "
                             >
                                 {t("portfolio.specialDay")}
@@ -1434,7 +1434,7 @@ export default function GalleryPage() {
                                     max-w-xl
                                     text-sm
                                     leading-7
-                                    text-pink-50
+                                    text-[#C77A9B]
                                     sm:text-base
                                 "
                             >
@@ -1458,7 +1458,7 @@ export default function GalleryPage() {
                                     py-4
                                     text-sm
                                     font-bold
-                                    text-pink-500
+                                    text-[#A0235F]
                                     shadow-xl
                                     transition-all
                                     duration-300

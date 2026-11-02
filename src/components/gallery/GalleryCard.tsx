@@ -96,7 +96,7 @@ export default function GalleryCard({
                     text-left
                     focus:outline-none
                     focus-visible:ring-2
-                    focus-visible:ring-pink-400
+                    focus-visible:ring-[#D5A9BE]
                     focus-visible:ring-offset-4
                 "
                 aria-label={title ? `${t("portfolio.viewDetails")}: ${title}` : `${t("portfolio.viewDetails")} ${index + 1}`}
@@ -250,7 +250,7 @@ export default function GalleryCard({
                                     <Star
                                         size={10}
                                         fill="currentColor"
-                                        className="text-pink-500"
+                                        className="text-[#A0235F]"
                                     />
 
                                     {t("portfolio.featured")}
@@ -317,7 +317,7 @@ export default function GalleryCard({
                                     font-black
                                     uppercase
                                     tracking-[0.22em]
-                                    text-pink-200
+                                    text-[#C77A9B]
                                 "
                             >
                                 {category}

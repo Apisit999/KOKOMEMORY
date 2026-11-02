@@ -145,7 +145,7 @@ export default function PortfolioLightbox({
                             aria-label={`${t("portfolio.viewImage")} ${index + 1}`}
                             className={`h-12 w-12 shrink-0 overflow-hidden rounded-lg border-2 transition ${
                                 index === activeIndex
-                                    ? "border-pink-400"
+                                    ? "border-[#D5A9BE]"
                                     : "border-transparent opacity-60 hover:opacity-100"
                             }`}
                         >

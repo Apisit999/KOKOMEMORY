@@ -262,7 +262,7 @@ export default function GalleryPage() {
 
                 <div className="mb-10 text-center">
 
-                    <p className="text-sm font-semibold tracking-[0.35em] text-pink-500">
+                    <p className="text-sm font-semibold tracking-[0.35em] text-[#A0235F]">
                         KOKO MEMORY
                     </p>
 
@@ -274,9 +274,9 @@ export default function GalleryPage() {
                         รูปภาพจากงานของคุณ
                     </p>
 
-                    <div className="mt-5 inline-block rounded-full bg-pink-50 px-5 py-2">
+                    <div className="mt-5 inline-block rounded-full bg-[#EEE7D9] px-5 py-2">
 
-                        <span className="text-sm text-pink-600">
+                        <span className="text-sm text-[#A0235F]">
 
                             Booking:{" "}
 
@@ -325,7 +325,7 @@ export default function GalleryPage() {
                             onClick={() =>
                                 window.location.reload()
                             }
-                            className="mt-5 rounded-xl bg-pink-500 px-5 py-3 text-sm font-semibold text-white hover:bg-pink-400"
+                            className="mt-5 rounded-xl bg-[#141516] px-5 py-3 text-sm font-semibold text-white hover:bg-[#141516]"
                         >
                             ลองใหม่
                         </button>
@@ -450,7 +450,7 @@ export default function GalleryPage() {
                                                             photo
                                                         )
                                                     }
-                                                    className="mt-2 w-full rounded-xl bg-pink-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    className="mt-2 w-full rounded-xl bg-[#141516] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#141516] disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
                                                     {downloadingId ===
                                                         photo.id

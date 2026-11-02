@@ -1016,7 +1016,7 @@ export default function GalleryGrid() {
                                             ${
                                                 active
                                                     ? "bg-slate-900 text-white shadow-md"
-                                                    : "text-slate-500 hover:bg-white hover:text-pink-500"
+                                                    : "text-slate-500 hover:bg-white hover:text-[#A0235F]"
                                             }
                                         `}
                                     >
@@ -1163,7 +1163,7 @@ export default function GalleryGrid() {
                             <button
                                 type="button"
                                 onClick={() => selectCategory("all")}
-                                className="font-semibold text-pink-500 underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400"
+                                className="font-semibold text-[#A0235F] underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D5A9BE]"
                             >
                                 {t("portfolio.viewAll")}
                             </button>
@@ -1322,13 +1322,13 @@ export default function GalleryGrid() {
                                         <span
                                             className="
                                                 rounded-full
-                                                bg-pink-50
+                                                bg-[#EEE7D9]
                                                 px-2.5
                                                 py-1
                                                 text-[9px]
                                                 font-black
                                                 tracking-[0.12em]
-                                                text-pink-500
+                                                text-[#A0235F]
                                             "
                                         >
                                             {
@@ -1445,7 +1445,7 @@ export default function GalleryGrid() {
                                     -translate-x-1/2
                                     -translate-y-1/2
                                     rounded-full
-                                    bg-pink-500/10
+                                    bg-[#141516]/10
                                     blur-[100px]
                                 "
                             />
@@ -1729,7 +1729,7 @@ export default function GalleryGrid() {
                                                     ${
                                                         currentImageIndex ===
                                                         index
-                                                            ? "scale-105 border-pink-500 shadow-lg"
+                                                            ? "scale-105 border-[#D5A9BE] shadow-lg"
                                                             : "border-transparent opacity-55 hover:opacity-100"
                                                     }
                                                 `}
