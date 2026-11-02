@@ -7,7 +7,7 @@ const cors = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET,PUT,DELETE,HEAD,OPTIONS",
   "access-control-allow-headers": "*",
-  "access-control-expose-headers": "etag",
+  "access-control-expose-headers": "etag,content-range,content-length,accept-ranges",
 };
 
 http.createServer((req, res) => {
@@ -27,10 +27,20 @@ http.createServer((req, res) => {
       res.writeHead(404, { ...cors, "content-type": "application/xml" });
       return res.end('<?xml version="1.0" encoding="UTF-8"?><Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message></Error>');
     }
-    const headers = { ...cors, "content-type": obj.type, "content-length": obj.body.length, etag: '"mock"' };
+    const headers = { ...cors, "content-type": obj.type, "accept-ranges": "bytes", etag: '"mock"', "cache-control": "private, max-age=300" };
     const cd = url.searchParams.get("response-content-disposition");
     if (cd) headers["content-disposition"] = cd;
-    res.writeHead(200, headers);
+    // Phones' download managers send Range requests; answer them properly (206) like real object storage does.
+    const range = /^bytes=([0-9]*)-([0-9]*)$/.exec(String(req.headers.range ?? ""));
+    if (range && (range[1] || range[2])) {
+      const size = obj.body.length;
+      const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+      if (start >= size || start > end) { res.writeHead(416, { ...cors, "content-range": `bytes */${size}` }); return res.end(); }
+      res.writeHead(206, { ...headers, "content-length": end - start + 1, "content-range": `bytes ${start}-${end}/${size}` });
+      return res.end(req.method === "HEAD" ? undefined : obj.body.subarray(start, end + 1));
+    }
+    res.writeHead(200, { ...headers, "content-length": obj.body.length });
     return res.end(req.method === "HEAD" ? undefined : obj.body);
   }
   res.writeHead(405, cors); res.end();
