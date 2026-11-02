@@ -3,7 +3,8 @@
  * (LINE, Facebook, Instagram) block them. So: share sheet with real files first ("Save Image" -> Photos on iOS,
  * Gallery on Android), then a normal download, and the long-press tip as the last resort.
  */
-export type SaveResult = "shared" | "downloaded" | "cancelled" | "failed";
+/** "manual": this phone cannot save from here in one tap (no share sheet; several downloads get blocked), so the page explains press-and-hold. */
+export type SaveResult = "shared" | "downloaded" | "cancelled" | "failed" | "manual";
 export type SaveItem = { url: string; downloadUrl: string; name: string };
 
 /** Name of an in-app browser that usually cannot save files, or null for a normal browser. */
@@ -29,8 +30,13 @@ function downloadViaLink(item: SaveItem) {
   document.body.appendChild(link); link.click(); link.remove();
 }
 
+export const isPhone = () => typeof navigator !== "undefined" && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent)));
+export const canUseShareSheet = () => typeof navigator !== "undefined" && typeof navigator.canShare === "function" && typeof navigator.share === "function";
+
 export async function savePhotos(items: SaveItem[]): Promise<SaveResult> {
   if (items.length === 0) return "failed";
+  // Phones without the share sheet (plain-HTTP pages, old browsers) block repeated downloads: do not fire eight at once.
+  if (items.length > 1 && isPhone() && !canUseShareSheet()) return "manual";
   try {
     if (typeof navigator !== "undefined" && typeof navigator.canShare === "function" && typeof navigator.share === "function") {
       const files = await Promise.all(items.map(toFile));

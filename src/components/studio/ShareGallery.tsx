@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n";
-import { inAppBrowserName, savePhotos, type SaveResult } from "./save-photo";
+import { canUseShareSheet, inAppBrowserName, savePhotos, type SaveResult } from "./save-photo";
 import "./share.css";
 
 type SharePhoto = { id: string; url: string; downloadUrl: string; loadedAt: number };
@@ -25,7 +25,8 @@ export default function ShareGallery({ token }: { token: string }) {
   const [saving, setSaving] = useState(false);
   const [saveNote, setSaveNote] = useState<SaveResult | null>(null);
   const [appName, setAppName] = useState<string | null>(null);
-  useEffect(() => { setAppName(inAppBrowserName(navigator.userAgent)); }, []);
+  const [noShare, setNoShare] = useState(false);
+  useEffect(() => { setAppName(inAppBrowserName(navigator.userAgent)); setNoShare(!canUseShareSheet()); }, []);
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
   const touchStart = useRef<number | null>(null);
@@ -107,6 +108,7 @@ export default function ShareGallery({ token }: { token: string }) {
 
     {appName && state === "ready" && <p className="koko-share-warn" role="note">{t(`คุณเปิดลิงก์ใน ${appName} ซึ่งอาจบันทึกรูปไม่ได้ แตะ ⋯ หรือ “เปิดในเบราว์เซอร์” (Safari / Chrome) เพื่อบันทึกรูป`, `You opened this in ${appName}, which may block saving. Tap ⋯ or “Open in browser” (Safari / Chrome) to save your photos.`)}</p>}
     {photos.length > 1 && <div className="koko-share-actions"><button type="button" className="koko-share-btn" disabled={saving} onClick={() => void save(photos)}>{saving ? t("กำลังเตรียมรูป…", "Preparing…") : t(`บันทึกทั้งหมด (${photos.length} รูป)`, `Save all (${photos.length})`)}</button></div>}
+    {saveNote === "manual" && <p className="koko-share-warn" role="status">{t("เครื่องนี้บันทึกพร้อมกันหลายรูปไม่ได้ กรุณาแตะรูปที่ต้องการ แล้วแตะค้างที่รูป เลือก “เพิ่มลงในรูปภาพ” / “บันทึกรูปภาพ” (หรือกดปุ่ม “บันทึกรูปนี้” ทีละรูป)", "This phone cannot save many photos at once. Tap a photo, then press and hold it and choose “Add to Photos” / “Save image” (or use “Save this photo” one at a time).")}</p>}
     {saveNote === "downloaded" && openIndex === null && <p className="koko-share-sub" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว ตรวจในโฟลเดอร์ดาวน์โหลดของเครื่อง", "Download started. Check your Downloads folder.")}</p>}
     {photos.length > 0 && <ul className="koko-share-grid">{photos.map((photo, index) => <li key={photo.id}>
       <button type="button" aria-label={t(`เปิดรูปที่ ${index + 1}`, `Open photo ${index + 1}`)} onClick={event => { opener.current = event.currentTarget; setOpenIndex(index); }}>
@@ -132,7 +134,7 @@ export default function ShareGallery({ token }: { token: string }) {
         {photos.length > 1 && <button type="button" onClick={() => step(1)} aria-label={t("รูปถัดไป", "Next photo")}>›</button>}
       </div>
       {saveNote === "downloaded" && <p className="koko-share-lightbox-tip" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว", "Download started.")}</p>}
-      <p className="koko-share-lightbox-tip">{t("ถ้าบันทึกไม่ได้ ให้แตะค้างที่รูปแล้วเลือก “เพิ่มลงในรูปภาพ”", "If saving does not work, press and hold the photo and choose “Add to Photos”.")}</p>
+      <p className={`koko-share-lightbox-tip${noShare ? " strong" : ""}`}>{t("ถ้าบันทึกไม่ได้ ให้แตะค้างที่รูปแล้วเลือก “เพิ่มลงในรูปภาพ”", "If saving does not work, press and hold the photo and choose “Add to Photos”.")}</p>
     </div>}
   </main>;
 }
