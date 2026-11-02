@@ -28,3 +28,9 @@
 .koko-share-lightbox-bar{display:flex;align-items:center;gap:16px}
 .koko-share-lightbox-tip{max-width:420px;text-align:center;color:#9a9b93;font-size:12px;line-height:1.6}
 @media(prefers-reduced-motion:reduce){.koko-share *{transition:none!important;animation:none!important}}
+.koko-share-warn{margin:0 0 16px;padding:14px 16px;border-radius:12px;background:#2a2417;border:1px solid #d5ee85;color:#f4f0e7;font-size:14px;line-height:1.7}
+.koko-share-actions{margin:0 0 18px}
+.koko-share-btn:disabled{opacity:.6;cursor:progress}
+/* Very small phones and landscape: keep the photo viewer usable. */
+@media(max-width:360px){.koko-share{padding-inline:12px}.koko-share-grid{gap:8px}.koko-share-btn{padding:0 18px;font-size:15px}}
+@media(max-height:480px) and (orientation:landscape){.koko-share-lightbox>img{max-height:calc(100dvh - 120px)}.koko-share-lightbox-tip{display:none}}

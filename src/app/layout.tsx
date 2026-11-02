@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { IBM_Plex_Sans_Thai } from "next/font/google";
 import brandLogo from "../../public/logo/logo.jpg";
 import "./globals.css";
 import I18nRoot from "@/components/layout/I18nRoot";
+
+// Self-hosted at build time by next/font: crisp Thai + Latin on every phone, no layout shift, no request to Google for visitors.
+const kokoSans = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["300", "400", "500", "600", "700"], display: "swap", variable: "--font-koko-thai" });
 
 
 export const metadata: Metadata = {
@@ -23,7 +27,7 @@ export default function RootLayout({
 
   return (
 
-    <html lang="th">
+    <html lang="th" className={kokoSans.variable}>
 
       <body
         className={`

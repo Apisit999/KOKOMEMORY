@@ -82,7 +82,7 @@
    ============================================================ */
 
 :root {
-  --font-koko-sans: Tahoma, Arial, sans-serif;
+  --font-koko-sans: var(--font-koko-thai), "IBM Plex Sans Thai", "Noto Sans Thai", Tahoma, system-ui, sans-serif;
   --font-koko-mono: "Courier New", monospace;
 }
 
@@ -506,6 +506,15 @@ body {
 
   html {
     font-family: var(--font-koko-sans);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-koko-sans);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 }
 

@@ -36,6 +36,21 @@ let client: S3Client | undefined;
 function getR2Client() {
     if (client) return client;
 
+    // Local-only override: a loopback S3 mock (scripts/local-s3-mock.mjs) for the isolated studio stack.
+    const localEndpoint = (process.env.R2_LOCAL_ENDPOINT ?? "").trim();
+    if (localEndpoint) {
+        if (!/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(localEndpoint)) {
+            throw new Error("R2_LOCAL_ENDPOINT must be a loopback http URL");
+        }
+        client = new S3Client({
+            region: "auto",
+            endpoint: localEndpoint,
+            forcePathStyle: true,
+            credentials: { accessKeyId: "local", secretAccessKey: "local" },
+        });
+        return client;
+    }
+
     const accountId = requiredEnv("R2_ACCOUNT_ID");
     const accessKeyId = requiredEnv("R2_ACCESS_KEY_ID");
     const secretAccessKey = requiredEnv("R2_SECRET_ACCESS_KEY");

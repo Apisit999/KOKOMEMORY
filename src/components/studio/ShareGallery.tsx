@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n";
+import { inAppBrowserName, savePhotos, type SaveResult } from "./save-photo";
 import "./share.css";
 
 type SharePhoto = { id: string; url: string; downloadUrl: string; loadedAt: number };
@@ -19,6 +20,10 @@ export default function ShareGallery({ token }: { token: string }) {
   const [state, setState] = useState<"loading" | "ready" | "unavailable" | "error">("loading");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveNote, setSaveNote] = useState<SaveResult | null>(null);
+  const [appName, setAppName] = useState<string | null>(null);
+  useEffect(() => { setAppName(inAppBrowserName(navigator.userAgent)); }, []);
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
   const touchStart = useRef<number | null>(null);
@@ -61,6 +66,12 @@ export default function ShareGallery({ token }: { token: string }) {
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previous; };
   }, [openIndex, close, step]);
 
+  async function save(list: SharePhoto[]) {
+    if (saving || list.length === 0) return;
+    setSaving(true); setSaveNote(null);
+    const result = await savePhotos(list.map(photo => ({ url: photo.url, downloadUrl: photo.downloadUrl, name: `KOKO-${String(photos.indexOf(photo) + 1).padStart(2, "0")}.jpg` })));
+    setSaving(false); setSaveNote(result);
+  }
   async function copyLink() {
     try { await navigator.clipboard.writeText(window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2500); } catch { /* the address bar still has the link */ }
   }
@@ -79,6 +90,9 @@ export default function ShareGallery({ token }: { token: string }) {
     {state === "error" && <section className="koko-share-note" role="alert"><p>{t("เชื่อมต่อไม่ได้ในตอนนี้ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง", "Could not connect. Check your internet and try again.")}</p><button type="button" className="koko-share-btn" onClick={() => { setState("loading"); void load(); }}>{t("ลองอีกครั้ง", "Try again")}</button></section>}
     {state === "ready" && photos.length === 0 && <section className="koko-share-note" role="status"><h2>{t("รูปกำลังเตรียมให้คุณ", "Your photos are on the way")}</h2><p>{t("รูปจะขึ้นที่นี่เองภายในไม่กี่วินาที ไม่ต้องรีเฟรชหน้า", "They will appear here in a few seconds — no need to refresh.")}</p></section>}
 
+    {appName && state === "ready" && <p className="koko-share-warn" role="note">{t(`คุณเปิดลิงก์ใน ${appName} ซึ่งอาจบันทึกรูปไม่ได้ แตะ ⋯ หรือ “เปิดในเบราว์เซอร์” (Safari / Chrome) เพื่อบันทึกรูป`, `You opened this in ${appName}, which may block saving. Tap ⋯ or “Open in browser” (Safari / Chrome) to save your photos.`)}</p>}
+    {photos.length > 1 && <div className="koko-share-actions"><button type="button" className="koko-share-btn" disabled={saving} onClick={() => void save(photos)}>{saving ? t("กำลังเตรียมรูป…", "Preparing…") : t(`บันทึกทั้งหมด (${photos.length} รูป)`, `Save all (${photos.length})`)}</button></div>}
+    {saveNote === "downloaded" && openIndex === null && <p className="koko-share-sub" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว ตรวจในโฟลเดอร์ดาวน์โหลดของเครื่อง", "Download started. Check your Downloads folder.")}</p>}
     {photos.length > 0 && <ul className="koko-share-grid">{photos.map((photo, index) => <li key={photo.id}>
       <button type="button" aria-label={t(`เปิดรูปที่ ${index + 1}`, `Open photo ${index + 1}`)} onClick={event => { opener.current = event.currentTarget; setOpenIndex(index); }}>
         {/* Signed short-lived storage links cannot use next/image optimisation. */}
@@ -99,9 +113,10 @@ export default function ShareGallery({ token }: { token: string }) {
       <img src={current.url} alt={t(`รูปที่ ${(openIndex ?? 0) + 1}`, `Photo ${(openIndex ?? 0) + 1}`)} />
       <div className="koko-share-lightbox-bar">
         {photos.length > 1 && <button type="button" onClick={() => step(-1)} aria-label={t("รูปก่อนหน้า", "Previous photo")}>‹</button>}
-        <a className="koko-share-btn" href={current.downloadUrl} download>{t("บันทึกรูปนี้", "Save this photo")}</a>
+        <button type="button" className="koko-share-btn" disabled={saving} onClick={() => void save([current])}>{saving ? t("กำลังเตรียมรูป…", "Preparing…") : t("บันทึกรูปนี้", "Save this photo")}</button>
         {photos.length > 1 && <button type="button" onClick={() => step(1)} aria-label={t("รูปถัดไป", "Next photo")}>›</button>}
       </div>
+      {saveNote === "downloaded" && <p className="koko-share-lightbox-tip" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว", "Download started.")}</p>}
       <p className="koko-share-lightbox-tip">{t("ถ้าบันทึกไม่ได้ ให้แตะค้างที่รูปแล้วเลือก “เพิ่มลงในรูปภาพ”", "If saving does not work, press and hold the photo and choose “Add to Photos”.")}</p>
     </div>}
   </main>;

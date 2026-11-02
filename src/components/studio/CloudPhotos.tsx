@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useI18n } from "@/i18n";
 import type { CloudEvent } from "@/lib/studio/cloud";
+import { savePhotos } from "./save-photo";
 
 type Overview = { events: CloudEvent[]; usage: { bytes: number; photos: number }; quotaBytes: number };
 type PhotoView = { id: string; status: "ready" | "hidden"; size: number; createdAt: string; url: string };
@@ -111,9 +112,10 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
           <img src={photo.url} alt={t("รูปจากอีเวนต์", "Event photo")} loading="lazy" className={`aspect-[3/4] w-full object-cover ${photo.status === "hidden" ? "opacity-40" : ""}`} />
         </a>
         <div className="flex flex-wrap items-center justify-between gap-1 p-2 text-xs"><span>{formatBytes(photo.size)}{photo.status === "hidden" && ` · ${t("ซ่อนอยู่", "hidden")}`}</span>
-          <span className="flex gap-2">
-            {admin && <button type="button" disabled={busy === photo.id} onClick={() => manage(photo, photo.status === "hidden" ? "unhide" : "hide")} className="underline disabled:opacity-50">{photo.status === "hidden" ? t("แสดง", "Show") : t("ซ่อน", "Hide")}</button>}
-            <button type="button" disabled={busy === photo.id} onClick={() => manage(photo, "delete")} className="text-[#a0235f] underline disabled:opacity-50">{t("ลบ", "Delete")}</button>
+          <span className="flex flex-wrap gap-1">
+            {!admin && <button type="button" disabled={busy === photo.id} onClick={() => { void savePhotos([{ url: photo.url, downloadUrl: photo.url, name: `KOKO-${photo.id.slice(0, 6)}.jpg` }]); }} className="inline-flex min-h-11 items-center px-2 font-bold underline disabled:opacity-50">{t("บันทึก", "Save")}</button>}
+            {admin && <button type="button" disabled={busy === photo.id} onClick={() => manage(photo, photo.status === "hidden" ? "unhide" : "hide")} className="inline-flex min-h-11 items-center px-2 underline disabled:opacity-50">{photo.status === "hidden" ? t("แสดง", "Show") : t("ซ่อน", "Hide")}</button>}
+            <button type="button" disabled={busy === photo.id} onClick={() => manage(photo, "delete")} className="inline-flex min-h-11 items-center px-2 text-[#a0235f] underline disabled:opacity-50">{t("ลบ", "Delete")}</button>
           </span></div>
       </li>)}</ul>
     </div>}
