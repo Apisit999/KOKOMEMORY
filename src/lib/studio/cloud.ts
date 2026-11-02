@@ -16,6 +16,8 @@ export interface PhotoStorage extends ReleaseStorage {
   /** With downloadName the browser is told to save the file instead of showing it. */
   presignDownload(key: string, expiresInSeconds: number, options?: { downloadName?: string }): Promise<string>;
   remove(key: string): Promise<void>;
+  /** Whole object as bytes (photos are capped at MAX_PHOTO_BYTES); null when missing. */
+  read(key: string): Promise<Uint8Array | null>;
 }
 /** Who is asking: a customer sees only their own photos; an admin sees everything. */
 export type CloudScope = { ownerUid: string } | { admin: true };
@@ -346,7 +348,8 @@ export class CloudService {
   }
 
   /** Public, no login. Missing, revoked and expired links all look the same so links cannot be probed. */
-  async viewShare(tokenInput: unknown, pinInput?: unknown) {
+  /** Validates a public link (and its PIN) and returns the photos it shows, oldest first. */
+  private async shareContents(tokenInput: unknown, pinInput?: unknown) {
     if (typeof tokenInput !== "string" || !TOKEN.test(tokenInput)) throw new StudioError("share_unavailable", 404);
     const share = await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", hash(tokenInput)));
     if (!share || share.revoked || Date.parse(share.expiresAt) <= this.now()) throw new StudioError("share_unavailable", 404);
@@ -355,6 +358,21 @@ export class CloudService {
     const all = await this.store.list<CloudPhoto>("studioPhotos", filter, 100);
     // The owner check keeps a share from ever showing photos of another account, even if ids collide.
     const photos = all.filter(p => p.status === "ready" && p.ownerUid === share.ownerUid).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    return { share, photos };
+  }
+
+  /** One photo through our own origin: no storage CORS needed, and the browser gets a same-site file it can always save. */
+  async sharePhoto(tokenInput: unknown, photoIdInput: unknown, pinInput?: unknown) {
+    const { photos } = await this.shareContents(tokenInput, pinInput);
+    const index = photos.findIndex(p => p.id === photoIdInput);
+    if (index < 0) throw new StudioError("share_unavailable", 404);
+    const bytes = await this.storage.read(photos[index].key);
+    if (!bytes) throw new StudioError("file_missing", 404);
+    return { bytes, name: `KOKO-${String(index + 1).padStart(2, "0")}.jpg` };
+  }
+
+  async viewShare(tokenInput: unknown, pinInput?: unknown) {
+    const { share, photos } = await this.shareContents(tokenInput, pinInput);
     const eventId = share.eventId ?? photos[0]?.eventId ?? null;
     const event = eventId ? await this.store.transaction(tx => tx.get<CloudEvent>("studioEvents", eventId)) : null;
     const items = await Promise.all(photos.map(async (p, i) => ({

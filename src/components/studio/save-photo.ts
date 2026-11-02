@@ -5,7 +5,8 @@
  */
 /** "manual": this phone cannot save from here in one tap (no share sheet; several downloads get blocked), so the page explains press-and-hold. */
 export type SaveResult = "shared" | "downloaded" | "cancelled" | "failed" | "manual";
-export type SaveItem = { url: string; downloadUrl: string; name: string };
+/** `load` fetches the file through our own site (preferred: same origin, no storage CORS); `url` is the direct link used when it is missing or fails. */
+export type SaveItem = { url: string; downloadUrl: string; name: string; load?: () => Promise<Blob> };
 
 /** Name of an in-app browser that usually cannot save files, or null for a normal browser. */
 export function inAppBrowserName(userAgent: string): string | null {
@@ -18,9 +19,13 @@ export function inAppBrowserName(userAgent: string): string | null {
 }
 
 async function toFile(item: SaveItem): Promise<File> {
-  const response = await fetch(item.url, { cache: "force-cache" });
-  if (!response.ok) throw new Error("fetch failed");
-  const blob = await response.blob();
+  let blob: Blob | null = null;
+  if (item.load) { try { blob = await item.load(); } catch { blob = null; } }
+  if (!blob) {
+    const response = await fetch(item.url, { cache: "force-cache" });
+    if (!response.ok) throw new Error("fetch failed");
+    blob = await response.blob();
+  }
   return new File([blob], item.name, { type: blob.type || "image/jpeg" });
 }
 

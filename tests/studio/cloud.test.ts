@@ -22,6 +22,7 @@ function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?
   const failures = { remove: false };
   const storage: PhotoStorage = {
     presignDownload: async (key, seconds, options) => `https://view.example.invalid/${key}?exp=${seconds}${options?.downloadName ? `&dl=${options.downloadName}` : ""}`,
+    read: async key => { const f = files.get(key); return f ? new Uint8Array(f) : null; },
     remove: async key => { if (failures.remove) throw new Error("r2 down"); removed.push(key); files.delete(key); },
     presignUpload: async key => `https://upload.example.invalid/${key}?sig=1`,
     inspect: async key => { const f = files.get(key); return f ? { size: f.length, sha256: sha(f) } : null; },
@@ -347,4 +348,19 @@ test("a PIN-protected link needs the PIN, locks after five wrong guesses, and ca
   assert.equal((await f.at(16 * 60_000).viewShare(token, "123456")).photos.length, 1);
   await f.cloud.manageShare("uid-a", { action: "clearPin", eventId });
   assert.equal((await f.cloud.viewShare(token)).photos.length, 1);
+});
+
+test("a share link serves its own photo bytes through our origin, honours the PIN, and never serves other photos", async () => {
+  const f = setup(); const eventId = await makeEvent(f);
+  const buf = Buffer.from("same origin bytes"); await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID("d"), sha256: sha(buf), size: buf.length });
+  f.files.set(photoKey("uid-a", eventId, ID("d")), buf); await f.cloud.confirmPhoto({ ...f.input, photoId: ID("d") });
+  const url = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url; const token = url.split("/s/")[1];
+  const view = await f.cloud.viewShare(token); const id = view.photos[0].id;
+  const file = await f.cloud.sharePhoto(token, id);
+  assert.equal(Buffer.from(file.bytes).toString(), "same origin bytes"); assert.equal(file.name, "KOKO-01.jpg");
+  await assert.rejects(() => f.cloud.sharePhoto(token, "0".repeat(32)), { code: "share_unavailable" });
+  await assert.rejects(() => f.cloud.sharePhoto("x".repeat(43), id), { code: "share_unavailable" });
+  await f.cloud.manageShare("uid-a", { action: "setPin", eventId, pin: "4321" });
+  await assert.rejects(() => f.cloud.sharePhoto(token, id), { code: "pin_required" });
+  assert.equal((await f.cloud.sharePhoto(token, id, "4321")).name, "KOKO-01.jpg");
 });

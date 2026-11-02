@@ -43,6 +43,13 @@ function r2PhotoStorage(): PhotoStorage {
       const [{ GetObjectCommand }, { getSignedUrl }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@aws-sdk/s3-request-presigner"), import("@/lib/r2")]);
       return getSignedUrl(r2, new GetObjectCommand({ Bucket: bucket(), Key: key, ...(options?.downloadName ? { ResponseContentDisposition: `attachment; filename="${options.downloadName.replace(/[^A-Za-z0-9._-]/g, "_")}"` } : {}) }), { expiresIn: expiresInSeconds });
     },
+    async read(key) {
+      const [{ GetObjectCommand }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@/lib/r2")]);
+      try {
+        const object = await r2.send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
+        return object.Body ? await object.Body.transformToByteArray() : null;
+      } catch (error) { if ((error as { name?: string }).name === "NoSuchKey") return null; throw error; }
+    },
     async remove(key) {
       const [{ DeleteObjectCommand }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@/lib/r2")]);
       await r2.send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));

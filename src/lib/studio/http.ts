@@ -41,7 +41,7 @@ export function createStudioHandler(dependencies: Dependencies) {
         if (path.startsWith("admin/") && !identity.admin) throw new StudioError("forbidden", 403);
       }
       // Only trust a proxy address when the hosting platform strips inbound spoofed headers.
-      const publicRead = path === "download" || path === "releases/latest" || path === "desktop/updates" || path === "share/view";
+      const publicRead = path === "download" || path === "releases/latest" || path === "desktop/updates" || path === "share/view" || path === "share/photo";
       // Public download/update paths see far more traffic than license mutations; without a trusted proxy header every caller shares one bucket.
       await service.rateLimit(path, identity ? `uid:${identity.uid}` : dependencies.clientAddress(request), path === "account/link" ? 10 : publicRead ? 300 : 30);
       const url = new URL(request.url);
@@ -79,6 +79,10 @@ export function createStudioHandler(dependencies: Dependencies) {
         case "share/view": {
           // Public page: never cached and never leaks the link through the Referer header.
           return Response.json(await (await cloud()).viewShare(input.token, input.pin), { headers: { ...headers, "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
+        }
+        case "share/photo": {
+          const file = await (await cloud()).sharePhoto(input.token, input.photoId, input.pin);
+          return new Response(file.bytes as BodyInit, { headers: { ...headers, "Content-Type": "image/jpeg", "Content-Length": String(file.bytes.length), "Content-Disposition": `attachment; filename="${file.name}"`, "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
         }
         case "desktop/cloud/shares/revoke": result = await (await cloud()).revokeSessionShare(input); break;
         case "desktop/cloud/shares": result = await (await cloud()).createSessionShare(input); break;

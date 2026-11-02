@@ -75,10 +75,15 @@ export default function ShareGallery({ token }: { token: string }) {
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previous; };
   }, [openIndex, close, step]);
 
+  async function loadOwnFile(photoId: string) {
+    const response = await fetch("/api/studio/share/photo", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, photoId, ...(pinRef.current ? { pin: pinRef.current } : {}) }) });
+    if (!response.ok) throw new Error("photo unavailable");
+    return response.blob();
+  }
   async function save(list: SharePhoto[]) {
     if (saving || list.length === 0) return;
     setSaving(true); setSaveNote(null);
-    const result = await savePhotos(list.map(photo => ({ url: photo.url, downloadUrl: photo.downloadUrl, name: `KOKO-${String(photos.indexOf(photo) + 1).padStart(2, "0")}.jpg` })));
+    const result = await savePhotos(list.map(photo => ({ url: photo.url, downloadUrl: photo.downloadUrl, load: () => loadOwnFile(photo.id), name: `KOKO-${String(photos.indexOf(photo) + 1).padStart(2, "0")}.jpg` })));
     setSaving(false); setSaveNote(result);
   }
   async function copyLink() {
@@ -109,7 +114,7 @@ export default function ShareGallery({ token }: { token: string }) {
     {appName && state === "ready" && <p className="koko-share-warn" role="note">{t(`คุณเปิดลิงก์ใน ${appName} ซึ่งอาจบันทึกรูปไม่ได้ แตะ ⋯ หรือ “เปิดในเบราว์เซอร์” (Safari / Chrome) เพื่อบันทึกรูป`, `You opened this in ${appName}, which may block saving. Tap ⋯ or “Open in browser” (Safari / Chrome) to save your photos.`)}</p>}
     {photos.length > 1 && <div className="koko-share-actions"><button type="button" className="koko-share-btn" disabled={saving} onClick={() => void save(photos)}>{saving ? t("กำลังเตรียมรูป…", "Preparing…") : t(`บันทึกทั้งหมด (${photos.length} รูป)`, `Save all (${photos.length})`)}</button></div>}
     {saveNote === "manual" && <p className="koko-share-warn" role="status">{t("เครื่องนี้บันทึกพร้อมกันหลายรูปไม่ได้ กรุณาแตะรูปที่ต้องการ แล้วแตะค้างที่รูป เลือก “เพิ่มลงในรูปภาพ” / “บันทึกรูปภาพ” (หรือกดปุ่ม “บันทึกรูปนี้” ทีละรูป)", "This phone cannot save many photos at once. Tap a photo, then press and hold it and choose “Add to Photos” / “Save image” (or use “Save this photo” one at a time).")}</p>}
-    {saveNote === "downloaded" && openIndex === null && <p className="koko-share-sub" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว ตรวจในโฟลเดอร์ดาวน์โหลดของเครื่อง", "Download started. Check your Downloads folder.")}</p>}
+    {saveNote === "downloaded" && openIndex === null && <p className="koko-share-sub" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว ถ้าไม่พบไฟล์ในเครื่อง ให้แตะค้างที่รูปแล้วเลือกบันทึกรูปภาพ", "Download started. If you cannot find the file, press and hold a photo and choose Save image.")}</p>}
     {photos.length > 0 && <ul className="koko-share-grid">{photos.map((photo, index) => <li key={photo.id}>
       <button type="button" aria-label={t(`เปิดรูปที่ ${index + 1}`, `Open photo ${index + 1}`)} onClick={event => { opener.current = event.currentTarget; setOpenIndex(index); }}>
         {/* Signed short-lived storage links cannot use next/image optimisation. */}
@@ -133,7 +138,7 @@ export default function ShareGallery({ token }: { token: string }) {
         <button type="button" className="koko-share-btn" disabled={saving} onClick={() => void save([current])}>{saving ? t("กำลังเตรียมรูป…", "Preparing…") : t("บันทึกรูปนี้", "Save this photo")}</button>
         {photos.length > 1 && <button type="button" onClick={() => step(1)} aria-label={t("รูปถัดไป", "Next photo")}>›</button>}
       </div>
-      {saveNote === "downloaded" && <p className="koko-share-lightbox-tip" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว", "Download started.")}</p>}
+      {saveNote === "downloaded" && <p className="koko-share-lightbox-tip" role="status">{t("ส่งคำสั่งดาวน์โหลดแล้ว ถ้าไม่พบไฟล์ ให้แตะค้างที่รูปแล้วเลือกบันทึกรูปภาพ", "Download started. If it does not appear, press and hold the photo and choose Save image.")}</p>}
       <p className={`koko-share-lightbox-tip${noShare ? " strong" : ""}`}>{t("ถ้าบันทึกไม่ได้ ให้แตะค้างที่รูปแล้วเลือก “เพิ่มลงในรูปภาพ”", "If saving does not work, press and hold the photo and choose “Add to Photos”.")}</p>
     </div>}
   </main>;
