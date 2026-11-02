@@ -146,3 +146,19 @@
 
 /* Readability: nothing below 12px, helper lines at 14px (masterplan asks 16px body on mobile). */
 .koko-studio .studio-card small{font-size:14px;line-height:1.7}.koko-studio .about-art-main figcaption{font-size:12px}.koko-studio .about-service-top span{font-size:12px}
+
+/* Pricing page */
+.pricing-toggle{display:inline-flex;gap:4px;margin:28px 0 8px;padding:4px;border:1px solid #3a3b36;border-radius:999px}
+.pricing-toggle button{min-height:44px;padding:0 20px;border:0;border-radius:999px;background:transparent;color:#f4f0e7;font-weight:700;font-size:15px;cursor:pointer}
+.pricing-toggle button[aria-pressed=true]{background:#d5ee85;color:#141516}
+.pricing-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:22px}
+.pricing-card{display:flex;flex-direction:column;gap:12px}
+.pricing-price{font-size:34px;font-weight:800;line-height:1.2}.pricing-price span{font-size:15px;font-weight:500;opacity:.7}
+.pricing-card ul{list-style:none;padding:0;margin:4px 0 12px;display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.6}
+.pricing-card li{display:flex;gap:8px;align-items:flex-start}.pricing-card li svg{flex:none;margin-top:5px}
+.pricing-card .studio-button{margin-top:auto;align-self:flex-start}
+@media(max-width:1000px){.pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.pricing-grid{grid-template-columns:1fr}}
+.pricing-card.studio-dark{background:#1f2020;border:1px solid #3a3b36;color:#f4f0e7}
+.pricing-card.studio-pink,.pricing-card.studio-lime,.pricing-card.studio-cream{color:#141516}
+.pricing-card.studio-lime .studio-button{background:#141516;color:#f4f0e7}
