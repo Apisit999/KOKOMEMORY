@@ -231,7 +231,7 @@ test("a session link shows only that guest's photos; the event link shows all; l
   const viewTwo = await f.cloud.viewShare(tokenOf(two.url));
   assert.deepEqual([viewOne.photos.length, viewTwo.photos.length], [2, 1]);
   assert.equal(viewOne.eventName, "งานแต่ง A");
-  assert.ok(viewOne.photos[0].downloadUrl.endsWith("&dl=KOKO-01.jpg"));
+  assert.ok(viewOne.photos[0].downloadUrl.includes("/api/studio/share/photo?t="));
   assert.ok(!viewOne.photos[0].url.includes("&dl="));
   const host = (await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string };
   assert.equal((await f.cloud.viewShare(tokenOf(host.url))).photos.length, 3);
@@ -363,4 +363,24 @@ test("a share link serves its own photo bytes through our origin, honours the PI
   await f.cloud.manageShare("uid-a", { action: "setPin", eventId, pin: "4321" });
   await assert.rejects(() => f.cloud.sharePhoto(token, id), { code: "pin_required" });
   assert.equal((await f.cloud.sharePhoto(token, id, "4321")).name, "KOKO-01.jpg");
+});
+
+test("download links are plain signed URLs: one photo each, expire, die with the share, and cannot be forged", async () => {
+  const f = setup(); const eventId = await makeEvent(f);
+  const upload = async (n: string, body: string) => { const buf = Buffer.from(body); await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID(n), sha256: sha(buf), size: buf.length }); f.files.set(photoKey("uid-a", eventId, ID(n)), buf); await f.cloud.confirmPhoto({ ...f.input, photoId: ID(n) }); };
+  await upload("e", "photo one"); await upload("f", "photo two");
+  const tokenOf = (u: string) => u.split("/s/")[1];
+  const link = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url;
+  const view = await f.cloud.viewShare(tokenOf(link));
+  const t = (u: string) => new URL(u).searchParams.get("t")!;
+  const [first, second] = view.photos;
+  assert.match(first.downloadUrl, /^https:\/\/studio\.example\.invalid\/api\/studio\/share\/photo\?t=/);
+  assert.equal(Buffer.from((await f.cloud.sharePhotoByToken(t(first.downloadUrl))).bytes).toString(), "photo one");
+  assert.equal((await f.cloud.sharePhotoByToken(t(second.downloadUrl))).name, "KOKO-02.jpg");
+  const [body, mac] = t(first.downloadUrl).split(".");
+  await assert.rejects(() => f.cloud.sharePhotoByToken(`${body}.${mac.slice(0, -2)}AA`), { code: "share_unavailable" });
+  await assert.rejects(() => f.cloud.sharePhotoByToken("garbage"), { code: "share_unavailable" });
+  await assert.rejects(() => f.at(11 * 60_000).sharePhotoByToken(t(first.downloadUrl)), { code: "share_unavailable" });
+  await f.cloud.manageShare("uid-a", { action: "revoke", eventId });
+  await assert.rejects(() => f.cloud.sharePhotoByToken(t(first.downloadUrl)), { code: "share_unavailable" });
 });

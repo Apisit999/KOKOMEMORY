@@ -69,7 +69,8 @@ export async function savePhotos(items: SaveItem[]): Promise<SaveResult> {
   }
   try {
     for (let i = 0; i < items.length; i++) {
-      try { await downloadViaBlob(items[i]); } catch { downloadViaLink(items[i]); }
+      // A plain same-site link with a download header is the most universal way; the blob route is the fallback.
+      try { downloadViaLink(items[i]); await new Promise(resolve => setTimeout(resolve, 800)); } catch { await downloadViaBlob(items[i]); }
       if (i < items.length - 1) await new Promise(resolve => setTimeout(resolve, 600));
     }
     return "downloaded";

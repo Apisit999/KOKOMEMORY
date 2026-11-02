@@ -361,6 +361,35 @@ export class CloudService {
     return { share, photos };
   }
 
+  /**
+   * Plain download links on our own site (a normal GET that any browser, LINE or a download manager can follow).
+   * The signed token is made only after the link (and its PIN) was accepted, expires with the page URLs, and names exactly one photo.
+   */
+  private downloadToken(shareId: string, photoId: string) {
+    const body = Buffer.from(JSON.stringify({ s: shareId, p: photoId, e: this.now() + VIEW_URL_SECONDS * 1000 })).toString("base64url");
+    return `${body}.${createHmac("sha256", this.secret).update(`download:${body}`).digest("base64url")}`;
+  }
+  async sharePhotoByToken(tokenInput: unknown) {
+    if (typeof tokenInput !== "string" || tokenInput.length > 400) throw new StudioError("share_unavailable", 404);
+    const [body, mac] = tokenInput.split(".");
+    if (!body || !mac) throw new StudioError("share_unavailable", 404);
+    const expected = createHmac("sha256", this.secret).update(`download:${body}`).digest();
+    const given = Buffer.from(mac, "base64url");
+    if (given.length !== expected.length || !timingSafeEqual(given, expected)) throw new StudioError("share_unavailable", 404);
+    let claim: { s?: string; p?: string; e?: number };
+    try { claim = JSON.parse(Buffer.from(body, "base64url").toString()); } catch { throw new StudioError("share_unavailable", 404); }
+    if (typeof claim.s !== "string" || typeof claim.p !== "string" || typeof claim.e !== "number" || claim.e <= this.now()) throw new StudioError("share_unavailable", 404);
+    const share = await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", claim.s!));
+    if (!share || share.revoked || Date.parse(share.expiresAt) <= this.now()) throw new StudioError("share_unavailable", 404);
+    const filter = share.scope === "event" ? { field: "eventId", value: share.eventId ?? "" } : { field: "sessionId", value: share.sessionId ?? "" };
+    const photos = (await this.store.list<CloudPhoto>("studioPhotos", filter, 100)).filter(p => p.status === "ready" && p.ownerUid === share.ownerUid).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const index = photos.findIndex(p => p.id === claim.p);
+    if (index < 0) throw new StudioError("share_unavailable", 404);
+    const bytes = await this.storage.read(photos[index].key);
+    if (!bytes) throw new StudioError("file_missing", 404);
+    return { bytes, name: `KOKO-${String(index + 1).padStart(2, "0")}.jpg` };
+  }
+
   /** One photo through our own origin: no storage CORS needed, and the browser gets a same-site file it can always save. */
   async sharePhoto(tokenInput: unknown, photoIdInput: unknown, pinInput?: unknown) {
     const { photos } = await this.shareContents(tokenInput, pinInput);
@@ -375,10 +404,10 @@ export class CloudService {
     const { share, photos } = await this.shareContents(tokenInput, pinInput);
     const eventId = share.eventId ?? photos[0]?.eventId ?? null;
     const event = eventId ? await this.store.transaction(tx => tx.get<CloudEvent>("studioEvents", eventId)) : null;
-    const items = await Promise.all(photos.map(async (p, i) => ({
+    const items = await Promise.all(photos.map(async p => ({
       id: p.id, createdAt: p.createdAt,
       url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS),
-      downloadUrl: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS, { downloadName: `KOKO-${String(i + 1).padStart(2, "0")}.jpg` }),
+      downloadUrl: `${this.origin}/api/studio/share/photo?t=${this.downloadToken(share.id, p.id)}`,
     })));
     return { scope: share.scope, pinProtected: Boolean(share.pinHash), eventName: event && event.ownerUid === share.ownerUid ? event.name : null, expiresAt: share.expiresAt, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
   }

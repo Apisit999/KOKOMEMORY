@@ -55,6 +55,10 @@ export function createStudioHandler(dependencies: Dependencies) {
           const result = await (await releases()).download({ channel: url.searchParams.get("channel"), version: url.searchParams.get("version") }, { ip: dependencies.clientAddress(request), userAgent: request.headers.get("user-agent") ?? "", referrer: request.headers.get("referer") ?? "", utm });
           return new Response(null, { status: 302, headers: { ...headers, Location: result.url } });
         }
+        if (path === "share/photo") {
+          const file = await (await cloud()).sharePhotoByToken(url.searchParams.get("t"));
+          return new Response(file.bytes as BodyInit, { headers: { ...headers, "Content-Type": "image/jpeg", "Content-Length": String(file.bytes.length), "Content-Disposition": `attachment; filename="${file.name}"`, "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
+        }
         if (path === "desktop/updates") return Response.json(await (await releases()).updateCheck({ version: url.searchParams.get("version"), channel: url.searchParams.get("channel"), deviceId: url.searchParams.get("deviceId") }), { headers });
         if (path === "admin/releases" && identity?.admin) return Response.json(await (await releases()).adminList(), { headers });
         if (path === "admin/stats" && identity?.admin) return Response.json(await (await releases()).adminStats({ from: url.searchParams.get("from") ?? undefined, to: url.searchParams.get("to") ?? undefined }), { headers });
