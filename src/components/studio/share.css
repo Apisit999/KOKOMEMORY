@@ -17,14 +17,14 @@
 .koko-share-foot{margin-top:32px;padding-top:20px;border-top:1px solid #3a3b36;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .koko-share-foot p{color:#9a9b93;font-size:13px;line-height:1.7}
 .koko-share-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 26px;border-radius:999px;border:0;background:#d5ee85;color:#141516;font-weight:700;font-size:16px;text-decoration:none;cursor:pointer}
-.koko-share-btn:hover{background:#f2adca}
+@media(hover:hover){.koko-share-btn:hover{background:#f2adca}}
 .koko-share-btn.secondary{background:transparent;color:#f4f0e7;border:1px solid #6b6c64}
-.koko-share-btn.secondary:hover{background:#f4f0e7;color:#141516}
+@media(hover:hover){.koko-share-btn.secondary:hover{background:#f4f0e7;color:#141516}}
 .koko-share a:focus-visible,.koko-share button:focus-visible{outline:3px solid #d5ee85;outline-offset:3px}
 .koko-share-lightbox{position:fixed;inset:0;z-index:50;background:#0c0d0dF2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
 .koko-share-lightbox>img{max-width:100%;max-height:calc(100dvh - 190px);object-fit:contain;border-radius:4px;touch-action:pan-y}
 .koko-share-lightbox-top{width:100%;max-width:900px;display:flex;justify-content:space-between;align-items:center;color:#bcbcb6;font-size:14px}
-.koko-share-lightbox-top button,.koko-share-lightbox-bar>button{width:48px;height:48px;border-radius:50%;border:1px solid #6b6c64;background:#1f2020;color:#f4f0e7;font-size:22px;cursor:pointer}
+.koko-share-lightbox-top button,.koko-share-lightbox-bar>button:not(.koko-share-btn){width:48px;height:48px;border-radius:50%;border:1px solid #6b6c64;background:#1f2020;color:#f4f0e7;font-size:22px;cursor:pointer}
 .koko-share-lightbox-bar{display:flex;align-items:center;gap:16px}
 .koko-share-lightbox-tip{max-width:420px;text-align:center;color:#9a9b93;font-size:12px;line-height:1.6}
 @media(prefers-reduced-motion:reduce){.koko-share *{transition:none!important;animation:none!important}}
@@ -37,3 +37,5 @@
 .koko-share-pin{min-height:48px;width:9rem;padding:0 16px;border-radius:999px;border:1px solid #6b6c64;background:#141516;color:#f4f0e7;font-size:20px;letter-spacing:6px;text-align:center}
 .koko-share-pin[aria-invalid=true]{border-color:#f2adca}
 .koko-share-lightbox-tip.strong{color:#f4f0e7;font-size:14px;background:#1f2020;border:1px solid #6b6c64;border-radius:12px;padding:10px 14px}
+.koko-share-lightbox-bar .koko-share-btn{white-space:nowrap;min-width:150px}
+.koko-share-lightbox-bar{flex-wrap:nowrap}
