@@ -87,6 +87,7 @@ export function createStudioHandler(dependencies: Dependencies) {
         case "desktop/cloud/photos/init": result = await (await cloud()).initPhoto(input); break;
         case "desktop/cloud/photos/confirm": result = await (await cloud()).confirmPhoto(input); break;
         case "account/cloud/photos/manage": result = await (await cloud()).managePhoto({ ownerUid: identity!.uid }, identity!.uid, input); break;
+        case "admin/cloud/retention-sweep": if (!identity?.admin) throw new StudioError("forbidden", 403); result = await (await cloud()).sweepExpiredPhotos(`admin:${identity.uid}`); break;
         case "admin/cloud/photos/manage": result = await (await cloud()).managePhoto({ admin: true }, identity!.uid, input); break;
         case "desktop/photo-folders": result = await service.cloud(input); break;
         case "desktop/device-authorizations": result = await service.beginLink(input); break;

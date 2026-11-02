@@ -311,3 +311,22 @@ test("event links can only be managed by the event owner, and booths need a clou
   await assert.rejects(f.cloud.createSessionShare({ ...f.input, sessionId: "bad id!" }), /invalid_request/);
   assert.throws(() => new CloudService({ store: f.store, signer, storage: {} as never, origin: "https://x.invalid", shareSecret: "too-short" }), /share secret/);
 });
+
+test("retention sweep deletes only photos older than the plan retention and frees quota", async () => {
+  const f = setup();
+  const plan = f.store.documents.get("studioPlans/pro") as Plan;
+  f.store.documents.set("studioPlans/pro", { ...plan, photoRetentionDays: 30 });
+  const eventId = await makeEvent(f);
+  const upload = async (service: CloudService, n: string, body: string) => {
+    const buf = Buffer.from(body); await service.initPhoto({ ...f.input, eventId, photoId: ID(n), sha256: sha(buf), size: buf.length });
+    f.files.set(photoKey("uid-a", eventId, ID(n)), buf); await service.confirmPhoto({ ...f.input, photoId: ID(n) });
+  };
+  await upload(f.cloud, "a", "old photo");
+  await upload(f.at(20 * 86_400_000), "b", "newer photo");
+  const result = await f.at(31 * 86_400_000).sweepExpiredPhotos();
+  assert.deepEqual(result, { deleted: 1, failed: 0 });
+  assert.equal(f.removed.length, 1);
+  assert.equal((f.store.documents.get("studioUsage/uid-a") as { photos: number }).photos, 1);
+  f.store.documents.set("studioPlans/pro", { ...plan, photoRetentionDays: undefined });
+  assert.equal((await f.at(400 * 86_400_000).sweepExpiredPhotos()).deleted, 0);
+});

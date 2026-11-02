@@ -210,6 +210,33 @@ export class CloudService {
     return { photoId, status: result.photo.status };
   }
 
+  /**
+   * Deletes photos older than the owner's plan retention (the longest among their active cloud licenses).
+   * Plans without a retention period keep photos. Safe to run repeatedly; a failed file removal is retried on the next run.
+   * Bounded by the store's list cap (100 licenses, 100 photos per owner per run), so schedule it often.
+   */
+  async sweepExpiredPhotos(actor = "system:retention") {
+    const cutoffOf = (days: number) => this.now() - days * 86_400_000;
+    const licenses = await this.store.list<License>("studioLicenses", undefined, 100);
+    const retentionByOwner = new Map<string, number>();
+    for (const license of licenses) {
+      if (license.status !== "active" || !license.ownerUid) continue;
+      const plan = await this.store.transaction(tx => tx.get<Plan>("studioPlans", license.planId));
+      if (!plan?.active || !plan.features.includes("cloud_sync") || !plan.photoRetentionDays) continue;
+      retentionByOwner.set(license.ownerUid, Math.max(retentionByOwner.get(license.ownerUid) ?? 0, plan.photoRetentionDays));
+    }
+    let deleted = 0, failed = 0;
+    for (const [ownerUid, days] of retentionByOwner) {
+      const cutoff = cutoffOf(days);
+      const photos = await this.store.list<CloudPhoto>("studioPhotos", { field: "ownerUid", value: ownerUid }, 100);
+      for (const photo of photos) {
+        if ((photo.status !== "ready" && photo.status !== "hidden") || Date.parse(photo.createdAt) >= cutoff) continue;
+        try { await this.managePhoto({ admin: true }, actor, { action: "delete", photoId: photo.id }); deleted += 1; } catch { failed += 1; }
+      }
+    }
+    return { deleted, failed };
+  }
+
   // ---------- share links ----------
   /**
    * Tokens are derived (HMAC) rather than stored, so asking again returns the same link without keeping the link
