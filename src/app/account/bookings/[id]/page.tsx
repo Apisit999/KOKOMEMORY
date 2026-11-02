@@ -562,7 +562,7 @@ export default function BookingDetailPage() {
 
                     <Loader2
                         size={21}
-                        className="animate-spin text-pink-500"
+                        className="animate-spin text-[#A0235F]"
                     />
 
                     กำลังโหลดรายละเอียดการจอง...
@@ -600,7 +600,7 @@ export default function BookingDetailPage() {
 
                         <Link
                             href="/account/bookings"
-                            className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-pink-500"
+                            className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-[#A0235F]"
                         >
                             <ArrowLeft size={18} />
                             กลับรายการจอง
@@ -626,7 +626,7 @@ export default function BookingDetailPage() {
 
                     <Link
                         href="/account/bookings"
-                        className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-pink-500 px-6 text-sm font-bold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-400"
+                        className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[#141516] px-6 text-sm font-bold text-white shadow-lg shadow-[#F2ADCA] transition hover:bg-[#141516]"
                     >
                         กลับไปการจองของฉัน
                     </Link>
@@ -681,7 +681,7 @@ export default function BookingDetailPage() {
 
                     <Link
                         href="/account/bookings"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-pink-500"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-[#A0235F]"
                     >
                         <ArrowLeft size={18} />
                         <span className="hidden sm:inline">
@@ -718,7 +718,7 @@ export default function BookingDetailPage() {
 
                     <div className="min-w-0">
 
-                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-pink-500">
+                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#A0235F]">
                             Booking Detail
                         </p>
 
@@ -798,7 +798,7 @@ export default function BookingDetailPage() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                     <CalendarDays size={21} />
                                 </div>
 
@@ -889,7 +889,7 @@ export default function BookingDetailPage() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                     <Package size={21} />
                                 </div>
 
@@ -943,7 +943,7 @@ export default function BookingDetailPage() {
 
                                     </div>
 
-                                    <p className="text-xl font-black text-pink-500">
+                                    <p className="text-xl font-black text-[#A0235F]">
                                         ฿{formatMoney(
                                             booking.package?.price ??
                                             booking.pricing?.packagePrice,
@@ -963,7 +963,7 @@ export default function BookingDetailPage() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                     <User size={21} />
                                 </div>
 
@@ -1048,7 +1048,7 @@ export default function BookingDetailPage() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                     <MapPin size={21} />
                                 </div>
 
@@ -1144,7 +1144,7 @@ export default function BookingDetailPage() {
                                         href={booking.venue.googleMaps}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 rounded-full bg-pink-50 px-5 py-3 text-sm font-bold text-pink-600 transition hover:bg-pink-100"
+                                        className="inline-flex items-center gap-2 rounded-full bg-[#EEE7D9] px-5 py-3 text-sm font-bold text-[#A0235F] transition hover:bg-[#EEE7D9]"
                                     >
                                         <MapPin size={17} />
                                         เปิด Google Maps
@@ -1165,7 +1165,7 @@ export default function BookingDetailPage() {
 
                                 <div className="flex items-center gap-3">
 
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                         <FileText size={21} />
                                     </div>
 
@@ -1196,7 +1196,7 @@ export default function BookingDetailPage() {
 
                         <section className="overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-100">
 
-                            <div className="bg-gradient-to-br from-pink-500 to-pink-400 p-6 text-white">
+                            <div className="bg-gradient-to-br from-[#141516] to-[#141516] p-6 text-white">
 
                                 <p className="text-xs font-semibold text-white/75">
                                     สถานะการชำระเงิน
@@ -1320,7 +1320,7 @@ export default function BookingDetailPage() {
                                             </p>
                                         </div>
 
-                                        <p className="text-3xl font-black text-pink-500">
+                                        <p className="text-3xl font-black text-[#A0235F]">
                                             ฿{formatMoney(
                                                 total,
                                             )}
@@ -1333,7 +1333,7 @@ export default function BookingDetailPage() {
 
                                 {/* DEPOSIT */}
 
-                                <div className="mt-6 rounded-2xl bg-pink-50 p-4">
+                                <div className="mt-6 rounded-2xl bg-[#EEE7D9] p-4">
 
                                     <div className="flex items-center justify-between gap-4">
 
@@ -1341,7 +1341,7 @@ export default function BookingDetailPage() {
                                             เงินมัดจำ
                                         </span>
 
-                                        <span className="font-black text-pink-600">
+                                        <span className="font-black text-[#A0235F]">
                                             {deposit > 0
                                                 ? `฿${formatMoney(deposit)}`
                                                 : "รอยืนยัน"
@@ -1353,7 +1353,7 @@ export default function BookingDetailPage() {
 
                                     {deposit > 0 && (
 
-                                        <div className="mt-3 flex items-center justify-between gap-4 border-t border-pink-100 pt-3">
+                                        <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#E4DDCD] pt-3">
 
                                             <span className="text-xs text-slate-500">
                                                 ยอดคงเหลือ
@@ -1390,16 +1390,16 @@ export default function BookingDetailPage() {
                                                 justify-center
                                                 gap-2
                                                 rounded-full
-                                                bg-pink-500
+                                                bg-[#141516]
                                                 px-6
                                                 text-sm
                                                 font-bold
                                                 text-white
                                                 shadow-lg
-                                                shadow-pink-200
+                                                shadow-[#F2ADCA]
                                                 transition
                                                 hover:-translate-y-0.5
-                                                hover:bg-pink-400
+                                                hover:bg-[#141516]
                                             "
                                         >
                                             <CreditCard size={19} />

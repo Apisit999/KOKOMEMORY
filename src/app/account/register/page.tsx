@@ -449,23 +449,23 @@ export default function RegisterPage() {
     ============================================================ */
 
     return (
-        <main className="min-h-screen overflow-x-hidden bg-[#FFF8FA] px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+        <main className="min-h-screen overflow-x-hidden bg-[#F4F0E7] px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
 
             <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[1080px] items-center sm:min-h-[calc(100vh-3rem)] lg:min-h-[640px]">
 
-                <div className="grid w-full overflow-hidden rounded-[24px] bg-white shadow-[0_40px_90px_-30px_rgba(234,78,128,0.35),0_4px_14px_rgba(60,36,48,0.06)] sm:rounded-[30px] lg:grid-cols-[1.05fr_0.95fr]">
+                <div className="grid w-full overflow-hidden rounded-[24px] bg-white shadow-[0_40px_90px_-30px_rgba(20, 21, 22,0.35),0_4px_14px_rgba(60,36,48,0.06)] sm:rounded-[30px] lg:grid-cols-[1.05fr_0.95fr]">
 
                     {/* ==================================================
                         VISUAL PANEL
                     ================================================== */}
 
-                    <section className="relative isolate min-h-[390px] overflow-hidden bg-[#E75B88] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:h-[640px] lg:min-h-[640px] lg:px-10 lg:py-10">
+                    <section className="relative isolate min-h-[390px] overflow-hidden bg-[#141516] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:h-[640px] lg:min-h-[640px] lg:px-10 lg:py-10">
 
                         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
 
-                            <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-[#FFDCE8]/70 blur-[100px]" />
+                            <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-[#F2ADCA]/70 blur-[100px]" />
 
-                            <div className="absolute -bottom-48 -right-32 h-[520px] w-[520px] rounded-full bg-[#7A1642]/40 blur-[110px]" />
+                            <div className="absolute -bottom-48 -right-32 h-[520px] w-[520px] rounded-full bg-[#1F2020]/40 blur-[110px]" />
 
                             <div className="absolute left-[25%] top-[35%] h-[260px] w-[260px] rounded-full bg-white/10 blur-[90px]" />
 
@@ -506,7 +506,7 @@ export default function RegisterPage() {
 
                             <Image src={brandLogo} alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
 
-                            <span className="hidden rounded-full border border-white/30 bg-[#7A1642]/20 px-4 py-2 text-[9px] font-medium tracking-[0.18em] text-white backdrop-blur-md sm:block">
+                            <span className="hidden rounded-full border border-white/30 bg-[#1F2020]/20 px-4 py-2 text-[9px] font-medium tracking-[0.18em] text-white backdrop-blur-md sm:block">
                                 PHOTOBOOTH & EVENT
                             </span>
 
@@ -558,17 +558,17 @@ export default function RegisterPage() {
 
                                 <div className="absolute left-1/2 top-1/2 -z-20 h-[82%] w-[86%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/25 blur-[55px]" />
 
-                                <div className="absolute bottom-[-5%] left-1/2 -z-20 h-[12%] w-[64%] -translate-x-1/2 rounded-full bg-[#641133]/45 blur-[25px]" />
+                                <div className="absolute bottom-[-5%] left-1/2 -z-20 h-[12%] w-[64%] -translate-x-1/2 rounded-full bg-[#1F2020]/45 blur-[25px]" />
 
 
-                                <div className="relative rounded-[18px] bg-gradient-to-br from-white via-[#F8E8EE] to-[#D7A5B7] p-[6px] shadow-[0_34px_45px_-20px_rgba(45,8,25,0.7)]">
+                                <div className="relative rounded-[18px] bg-gradient-to-br from-white via-[#EEE7D9] to-[#8A8A82] p-[6px] shadow-[0_34px_45px_-20px_rgba(45,8,25,0.7)]">
 
                                     <div className="absolute inset-[2px] rounded-[16px] border border-white/80" />
 
-                                    <div className="absolute inset-[6px] rounded-[12px] border border-[#B65D7D]/25" />
+                                    <div className="absolute inset-[6px] rounded-[12px] border border-[#1F2020]/25" />
 
 
-                                    <div className="relative overflow-hidden rounded-[11px] bg-[#25131C]">
+                                    <div className="relative overflow-hidden rounded-[11px] bg-[#1F2020]">
 
                                         <img
                                             src="/images/auth/KOKO-3D.webp"
@@ -577,7 +577,7 @@ export default function RegisterPage() {
                                         />
 
 
-                                        <div className="absolute inset-x-[8%] bottom-[9%] rounded-[12px] border border-white/35 bg-[#5F1738]/88 px-3 py-2.5 text-center shadow-[0_10px_22px_rgba(35,5,20,0.35)] backdrop-blur-[3px]">
+                                        <div className="absolute inset-x-[8%] bottom-[9%] rounded-[12px] border border-white/35 bg-[#1F2020]/88 px-3 py-2.5 text-center shadow-[0_10px_22px_rgba(35,5,20,0.35)] backdrop-blur-[3px]">
 
                                             <p className="font-serif text-[13px] font-medium leading-[1.35] text-white sm:text-[14px]">
                                                 เก็บทุกช่วงเวลา
@@ -597,11 +597,11 @@ export default function RegisterPage() {
 
                                     <div className="relative px-2 pb-1 pt-2 text-center">
 
-                                        <p className="font-serif text-[11px] font-medium tracking-[0.12em] text-[#6B3449] sm:text-[12px]">
+                                        <p className="font-serif text-[11px] font-medium tracking-[0.12em] text-[#1F2020] sm:text-[12px]">
                                             KOKO MEMORY
                                         </p>
 
-                                        <p className="mt-0.5 text-[7px] tracking-[0.18em] text-[#A66D80] sm:text-[8px]">
+                                        <p className="mt-0.5 text-[7px] tracking-[0.18em] text-[#1F2020] sm:text-[8px]">
                                             PHOTOBOOTH & EVENT
                                         </p>
 
@@ -622,9 +622,9 @@ export default function RegisterPage() {
                         </div>
 
 
-                        <div className="absolute inset-x-0 bottom-0 z-50 border-t border-white/10 bg-gradient-to-t from-[#9E315C]/30 to-transparent px-5 pb-6 pt-5 sm:px-8 sm:pb-8 sm:pt-6 lg:px-10 lg:pb-9 lg:pt-8">
+                        <div className="absolute inset-x-0 bottom-0 z-50 border-t border-white/10 bg-gradient-to-t from-[#1F2020]/30 to-transparent px-5 pb-6 pt-5 sm:px-8 sm:pb-8 sm:pt-6 lg:px-10 lg:pb-9 lg:pt-8">
 
-                            <div className="inline-flex max-w-[290px] flex-col rounded-[18px] border border-white/25 bg-[#651537]/35 px-4 py-3 shadow-[0_14px_35px_-18px_rgba(55,10,30,0.7)] backdrop-blur-md sm:max-w-[320px] sm:px-5 sm:py-3.5">
+                            <div className="inline-flex max-w-[290px] flex-col rounded-[18px] border border-white/25 bg-[#1F2020]/35 px-4 py-3 shadow-[0_14px_35px_-18px_rgba(55,10,30,0.7)] backdrop-blur-md sm:max-w-[320px] sm:px-5 sm:py-3.5">
 
                                 <div className="mb-2 h-px w-10 bg-white/80" />
 
@@ -646,17 +646,17 @@ export default function RegisterPage() {
                         FORM
                     ================================================== */}
 
-                    <section className="flex items-center justify-center bg-[#FFF8FA] px-5 py-10 sm:px-8 sm:py-12 md:px-12 lg:px-12 lg:py-14">
+                    <section className="flex items-center justify-center bg-[#F4F0E7] px-5 py-10 sm:px-8 sm:py-12 md:px-12 lg:px-12 lg:py-14">
 
                         <div className="w-full max-w-[350px]">
 
                             <div className="mb-7">
 
-                                <h1 className="font-serif text-[30px] font-medium leading-tight text-[#3C2430] sm:text-[32px]">
+                                <h1 className="font-serif text-[30px] font-medium leading-tight text-[#141516] sm:text-[32px]">
                                     สร้างบัญชีใหม่
                                 </h1>
 
-                                <p className="mt-2 text-sm leading-6 text-[#8C6B79]">
+                                <p className="mt-2 text-sm leading-6 text-[#5F5F58]">
                                     สมัครสมาชิกเพื่อดูและจัดการการจองของคุณ
                                 </p>
 
@@ -696,12 +696,12 @@ export default function RegisterPage() {
 
                                     <label
                                         htmlFor="name"
-                                        className="mb-2 block text-[13.5px] font-medium text-[#3C2430]"
+                                        className="mb-2 block text-[13.5px] font-medium text-[#141516]"
                                     >
                                         ชื่อ
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#FFD3E1] bg-white px-3.5 transition focus-within:border-[#FF6C99] focus-within:shadow-[0_0_0_4px_rgba(255,108,153,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="name"
@@ -722,7 +722,7 @@ export default function RegisterPage() {
                                                 loading ||
                                                 googleLoading
                                             }
-                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#3C2430] outline-none placeholder:text-[#C9AFB9] disabled:opacity-50"
+                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#141516] outline-none placeholder:text-[#8A8A82] disabled:opacity-50"
                                         />
 
                                     </div>
@@ -736,12 +736,12 @@ export default function RegisterPage() {
 
                                     <label
                                         htmlFor="email"
-                                        className="mb-2 block text-[13.5px] font-medium text-[#3C2430]"
+                                        className="mb-2 block text-[13.5px] font-medium text-[#141516]"
                                     >
                                         อีเมล
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#FFD3E1] bg-white px-3.5 transition focus-within:border-[#FF6C99] focus-within:shadow-[0_0_0_4px_rgba(255,108,153,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="email"
@@ -763,7 +763,7 @@ export default function RegisterPage() {
                                                 loading ||
                                                 googleLoading
                                             }
-                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#3C2430] outline-none placeholder:text-[#C9AFB9] disabled:opacity-50"
+                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#141516] outline-none placeholder:text-[#8A8A82] disabled:opacity-50"
                                         />
 
                                     </div>
@@ -777,12 +777,12 @@ export default function RegisterPage() {
 
                                     <label
                                         htmlFor="password"
-                                        className="mb-2 block text-[13.5px] font-medium text-[#3C2430]"
+                                        className="mb-2 block text-[13.5px] font-medium text-[#141516]"
                                     >
                                         รหัสผ่าน
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#FFD3E1] bg-white px-3.5 transition focus-within:border-[#FF6C99] focus-within:shadow-[0_0_0_4px_rgba(255,108,153,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="password"
@@ -807,7 +807,7 @@ export default function RegisterPage() {
                                                 loading ||
                                                 googleLoading
                                             }
-                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#3C2430] outline-none placeholder:text-[#C9AFB9] disabled:opacity-50"
+                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#141516] outline-none placeholder:text-[#8A8A82] disabled:opacity-50"
                                         />
 
                                         <button
@@ -829,7 +829,7 @@ export default function RegisterPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#8C6B79] hover:text-[#EA4E80]"
+                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#A0235F]"
                                         >
                                             {showPassword ? (
                                                 <EyeOff
@@ -857,12 +857,12 @@ export default function RegisterPage() {
 
                                     <label
                                         htmlFor="confirmPassword"
-                                        className="mb-2 block text-[13.5px] font-medium text-[#3C2430]"
+                                        className="mb-2 block text-[13.5px] font-medium text-[#141516]"
                                     >
                                         ยืนยันรหัสผ่าน
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#FFD3E1] bg-white px-3.5 transition focus-within:border-[#FF6C99] focus-within:shadow-[0_0_0_4px_rgba(255,108,153,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="confirmPassword"
@@ -889,7 +889,7 @@ export default function RegisterPage() {
                                                 loading ||
                                                 googleLoading
                                             }
-                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#3C2430] outline-none placeholder:text-[#C9AFB9] disabled:opacity-50"
+                                            className="min-w-0 flex-1 border-none bg-transparent py-3 text-sm text-[#141516] outline-none placeholder:text-[#8A8A82] disabled:opacity-50"
                                         />
 
                                         <button
@@ -911,7 +911,7 @@ export default function RegisterPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#8C6B79] hover:text-[#EA4E80]"
+                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#A0235F]"
                                         >
                                             {showConfirmPassword ? (
                                                 <EyeOff
@@ -941,7 +941,7 @@ export default function RegisterPage() {
                                         loading ||
                                         googleLoading
                                     }
-                                    className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[14px] border-none bg-gradient-to-br from-[#FF6C99] to-[#EA4E80] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_26px_-10px_rgba(234,78,128,0.55)] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[14px] border-none bg-gradient-to-br from-[#141516] to-[#141516] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_26px_-10px_rgba(20, 21, 22,0.55)] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
                                 >
 
                                     {loading ? (
@@ -966,15 +966,15 @@ export default function RegisterPage() {
 
                             {/* DIVIDER */}
 
-                            <div className="my-6 flex items-center gap-3 text-xs text-[#8C6B79]">
+                            <div className="my-6 flex items-center gap-3 text-xs text-[#5F5F58]">
 
-                                <div className="h-px flex-1 bg-[#FFD3E1]" />
+                                <div className="h-px flex-1 bg-[#EEE7D9]" />
 
                                 <span>
                                     หรือ
                                 </span>
 
-                                <div className="h-px flex-1 bg-[#FFD3E1]" />
+                                <div className="h-px flex-1 bg-[#EEE7D9]" />
 
                             </div>
 
@@ -990,7 +990,7 @@ export default function RegisterPage() {
                                     loading ||
                                     googleLoading
                                 }
-                                className="flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[14px] border-[1.5px] border-[#FFD3E1] bg-white px-4 py-3 text-sm font-medium text-[#3C2430] transition hover:border-[#FFB4CB] hover:bg-[#FFF8FA] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-4 py-3 text-sm font-medium text-[#141516] transition hover:border-[#141516] hover:bg-[#F4F0E7] disabled:cursor-not-allowed disabled:opacity-60"
                             >
 
                                 {googleLoading ? (
@@ -999,7 +999,7 @@ export default function RegisterPage() {
                                             size={
                                                 18
                                             }
-                                            className="animate-spin text-[#EA4E80]"
+                                            className="animate-spin text-[#A0235F]"
                                         />
 
                                         กำลังเชื่อมต่อ Google...
@@ -1017,13 +1017,13 @@ export default function RegisterPage() {
 
                             {/* LOGIN */}
 
-                            <p className="mt-[26px] text-center text-[13.5px] text-[#8C6B79]">
+                            <p className="mt-[26px] text-center text-[13.5px] text-[#5F5F58]">
 
                                 มีบัญชีอยู่แล้ว?{" "}
 
                                 <Link
                                     href={`/account/login?redirect=${encodeURIComponent(redirectTarget)}`}
-                                    className="font-semibold text-[#EA4E80] hover:underline"
+                                    className="font-semibold text-[#A0235F] hover:underline"
                                 >
                                     เข้าสู่ระบบ
                                 </Link>
@@ -1106,7 +1106,7 @@ export default function RegisterPage() {
                 button:focus-visible,
                 a:focus-visible,
                 input:focus-visible {
-                    outline: 2px solid #EA4E80;
+                    outline: 2px solid #A0235F;
                     outline-offset: 2px;
                 }
 
@@ -1175,7 +1175,7 @@ function FloatingCard({
                     />
                 )}
 
-                <span className="mt-2 block text-center font-serif text-[9px] italic text-[#6B5560] sm:text-[10px]">
+                <span className="mt-2 block text-center font-serif text-[9px] italic text-[#5F5F58] sm:text-[10px]">
                     {caption}
                 </span>
 

@@ -325,7 +325,7 @@ export default function AccountProfilePage() {
 
                     <Loader2
                         size={21}
-                        className="animate-spin text-pink-500"
+                        className="animate-spin text-[#A0235F]"
                     />
 
                     กำลังโหลดโปรไฟล์...
@@ -373,7 +373,7 @@ export default function AccountProfilePage() {
 
                     <Link
                         href="/account"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-pink-500"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-[#A0235F]"
                     >
                         <ArrowLeft size={18} />
                         <span className="hidden sm:inline">
@@ -406,7 +406,7 @@ export default function AccountProfilePage() {
 
                 <div>
 
-                    <p className="text-sm font-bold uppercase tracking-[0.18em] text-pink-500">
+                    <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#A0235F]">
                         My Profile
                     </p>
 
@@ -460,7 +460,7 @@ export default function AccountProfilePage() {
 
                         <div className="flex items-center gap-4">
 
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                 <User size={26} />
                             </div>
 
@@ -528,9 +528,9 @@ export default function AccountProfilePage() {
                                             outline-none
                                             transition
                                             placeholder:text-slate-400
-                                            focus:border-pink-300
+                                            focus:border-[#D5A9BE]
                                             focus:ring-4
-                                            focus:ring-pink-50
+                                            focus:ring-[#E4DDCD]
                                         "
                                     />
 
@@ -602,19 +602,19 @@ export default function AccountProfilePage() {
                                     justify-center
                                     gap-2
                                     rounded-full
-                                    bg-pink-500
+                                    bg-[#141516]
                                     px-6
                                     text-sm
                                     font-bold
                                     text-white
                                     shadow-lg
-                                    shadow-pink-200
+                                    shadow-[#F2ADCA]
                                     transition
                                     hover:-translate-y-0.5
-                                    hover:bg-pink-400
+                                    hover:bg-[#141516]
                                     hover:shadow-xl
                                     disabled:cursor-not-allowed
-                                    disabled:bg-pink-300
+                                    disabled:bg-[#F2ADCA]
                                     disabled:shadow-none
                                 "
                             >
@@ -705,19 +705,19 @@ export default function AccountProfilePage() {
                         </section>
 
 
-                        <section className="rounded-3xl border border-pink-100 bg-pink-50 p-5 sm:p-6">
+                        <section className="rounded-3xl border border-[#E4DDCD] bg-[#EEE7D9] p-5 sm:p-6">
 
-                            <p className="text-sm font-black text-pink-700">
+                            <p className="text-sm font-black text-[#A0235F]">
                                 ต้องการดูรายการจอง?
                             </p>
 
-                            <p className="mt-1 text-xs leading-5 text-pink-700/70">
+                            <p className="mt-1 text-xs leading-5 text-[#A0235F]/70">
                                 ตรวจสอบ Booking และสถานะการชำระเงินได้จากหน้ารายการจอง
                             </p>
 
                             <Link
                                 href="/account/bookings"
-                                className="mt-4 flex h-11 items-center justify-center rounded-full bg-pink-500 text-sm font-bold text-white transition hover:bg-pink-400"
+                                className="mt-4 flex h-11 items-center justify-center rounded-full bg-[#141516] text-sm font-bold text-white transition hover:bg-[#141516]"
                             >
                                 ดูการจองของฉัน
                             </Link>

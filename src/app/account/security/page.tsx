@@ -472,7 +472,7 @@ export default function AccountSecurityPage() {
                 <div className="flex items-center gap-3 text-sm font-semibold text-slate-500">
                     <Loader2
                         size={21}
-                        className="animate-spin text-pink-500"
+                        className="animate-spin text-[#A0235F]"
                     />
 
                     กำลังตรวจสอบความปลอดภัย...
@@ -526,7 +526,7 @@ export default function AccountSecurityPage() {
 
                     <Link
                         href="/account"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-pink-500"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-[#A0235F]"
                     >
                         <ArrowLeft size={18} />
 
@@ -559,7 +559,7 @@ export default function AccountSecurityPage() {
 
             <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
 
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-pink-500">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#A0235F]">
                     Security
                 </p>
 
@@ -615,7 +615,7 @@ export default function AccountSecurityPage() {
 
                         <div className="flex items-center gap-4">
 
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                 <Mail size={23} />
                             </div>
 
@@ -683,7 +683,7 @@ export default function AccountSecurityPage() {
                                 disabled={
                                     isSendingVerification
                                 }
-                                className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-pink-500 px-5 text-sm font-bold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:bg-pink-300 disabled:shadow-none"
+                                className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#141516] px-5 text-sm font-bold text-white shadow-lg shadow-[#F2ADCA] transition hover:bg-[#141516] disabled:cursor-not-allowed disabled:bg-[#F2ADCA] disabled:shadow-none"
                             >
 
                                 {isSendingVerification ? (
@@ -719,7 +719,7 @@ export default function AccountSecurityPage() {
 
                         <div className="flex items-center gap-4">
 
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
                                 <KeyRound size={23} />
                             </div>
 
@@ -821,7 +821,7 @@ export default function AccountSecurityPage() {
                                     disabled={
                                         isChanging
                                     }
-                                    className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-pink-500 px-5 text-sm font-bold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:bg-pink-300 disabled:shadow-none"
+                                    className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#141516] px-5 text-sm font-bold text-white shadow-lg shadow-[#F2ADCA] transition hover:bg-[#141516] disabled:cursor-not-allowed disabled:bg-[#F2ADCA] disabled:shadow-none"
                                 >
 
                                     {isChanging ? (
@@ -916,7 +916,7 @@ function PasswordInput({
                             ? "current-password"
                             : "new-password"
                     }
-                    className="h-13 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-12 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                    className="h-13 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-12 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#D5A9BE] focus:ring-4 focus:ring-[#E4DDCD]"
                 />
 
 

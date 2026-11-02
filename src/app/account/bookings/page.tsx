@@ -539,7 +539,7 @@ export default function MyBookingsPage() {
                 <div className="flex items-center gap-3 text-sm font-semibold text-slate-500">
                     <Loader2
                         size={20}
-                        className="animate-spin text-pink-500"
+                        className="animate-spin text-[#A0235F]"
                     />
                     กำลังตรวจสอบบัญชี...
                 </div>
@@ -556,7 +556,7 @@ export default function MyBookingsPage() {
                 <div className="text-center">
                     <LogIn
                         size={36}
-                        className="mx-auto text-pink-500"
+                        className="mx-auto text-[#A0235F]"
                     />
 
                     <h1 className="mt-4 text-xl font-black text-slate-900">
@@ -668,7 +668,7 @@ export default function MyBookingsPage() {
 
                     <div>
 
-                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-pink-500">
+                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#A0235F]">
                             My Bookings
                         </p>
 
@@ -694,16 +694,16 @@ export default function MyBookingsPage() {
                             justify-center
                             gap-2
                             rounded-full
-                            bg-pink-500
+                            bg-[#141516]
                             px-6
                             text-sm
                             font-bold
                             text-white
                             shadow-lg
-                            shadow-pink-200
+                            shadow-[#F2ADCA]
                             transition
                             hover:-translate-y-0.5
-                            hover:bg-pink-400
+                            hover:bg-[#141516]
                             hover:shadow-xl
                         "
                     >
@@ -769,7 +769,7 @@ export default function MyBookingsPage() {
 
                     <section className="mt-10 rounded-3xl bg-white px-6 py-14 text-center shadow-sm ring-1 ring-slate-100 sm:px-10">
 
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-pink-50 text-pink-500">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#EEE7D9] text-[#A0235F]">
                             <CalendarDays size={28} />
                         </div>
 
@@ -790,15 +790,15 @@ export default function MyBookingsPage() {
                                 items-center
                                 justify-center
                                 rounded-full
-                                bg-pink-500
+                                bg-[#141516]
                                 px-6
                                 text-sm
                                 font-bold
                                 text-white
                                 shadow-lg
-                                shadow-pink-200
+                                shadow-[#F2ADCA]
                                 transition
-                                hover:bg-pink-400
+                                hover:bg-[#141516]
                             "
                         >
                             เริ่มจองบริการ
@@ -846,7 +846,7 @@ export default function MyBookingsPage() {
 
                                     {/* CARD HEADER */}
 
-                                    <div className="bg-gradient-to-br from-pink-500 to-pink-400 p-5 text-white sm:p-6">
+                                    <div className="bg-gradient-to-br from-[#141516] to-[#141516] p-5 text-white sm:p-6">
 
                                         <div className="flex items-start justify-between gap-4">
 
@@ -953,7 +953,7 @@ export default function MyBookingsPage() {
                                                     ราคา
                                                 </div>
 
-                                                <p className="mt-2 text-lg font-black text-pink-500">
+                                                <p className="mt-2 text-lg font-black text-[#A0235F]">
                                                     ฿{formatMoney(total)}
                                                 </p>
 
@@ -997,14 +997,14 @@ export default function MyBookingsPage() {
                                                         )}`}
                                                         className="
                                                             rounded-full
-                                                            bg-pink-500
+                                                            bg-[#141516]
                                                             px-4
                                                             py-2.5
                                                             text-xs
                                                             font-bold
                                                             text-white
                                                             transition
-                                                            hover:bg-pink-400
+                                                            hover:bg-[#141516]
                                                         "
                                                     >
                                                         ชำระเงิน
