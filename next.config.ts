@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   distDir: process.env.STUDIO_ISOLATED_BUILD === "true" ? ".next-studio-local" : ".next",
   // Only the Docker image build asks for a self-contained server; local builds are unchanged.
   output: process.env.STUDIO_DOCKER_BUILD === "true" ? "standalone" : undefined,
+  // Phone testing over the home Wi-Fi (scripts/studio-start-lan.mjs) only; empty for every normal run.
+  allowedDevOrigins: process.env.STUDIO_LAN_HOST ? [process.env.STUDIO_LAN_HOST] : [],
   images: {
     remotePatterns: [
       {

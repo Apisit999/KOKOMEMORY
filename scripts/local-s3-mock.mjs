@@ -34,4 +34,4 @@ http.createServer((req, res) => {
     return res.end(req.method === "HEAD" ? undefined : obj.body);
   }
   res.writeHead(405, cors); res.end();
-}).listen(9199, "127.0.0.1", () => console.log("local S3 mock on http://127.0.0.1:9199"));
+}).listen(9199, process.env.S3_MOCK_HOST || "127.0.0.1", () => console.log(`local S3 mock on ${process.env.S3_MOCK_HOST || "127.0.0.1"}:9199`));

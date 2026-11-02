@@ -75,6 +75,8 @@ async function getCloud() {
     shareSecret: process.env.STUDIO_SHARE_SECRET || createHash("sha256").update(`share:${process.env.STUDIO_SIGNING_PRIVATE_KEY ?? ""}`).digest("hex") });
   return cloudService;
 }
+/** Demo-only: lets a phone on the home Wi-Fi reach the local stack over plain HTTP. Ignored unless the environment is `local` on a demo project. */
+function lanTestHost() { return process.env.STUDIO_ENV === "local" && (process.env.GCLOUD_PROJECT ?? "").startsWith("demo-") ? process.env.STUDIO_LAN_HOST || undefined : undefined; }
 async function getService() {
   if (service) return service;
   if (!["local", "staging", "production"].includes(process.env.STUDIO_ENV ?? "")) throw new Error("Studio environment required");
@@ -85,7 +87,7 @@ async function getService() {
   const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "";
   if (!process.env.STUDIO_FIREBASE_PROJECT_ID || projectId !== process.env.STUDIO_FIREBASE_PROJECT_ID) throw new Error("Studio Firebase project must be confirmed explicitly");
   if (process.env.STUDIO_ENV === "local" && (!projectId.startsWith("demo-") || !process.env.FIRESTORE_EMULATOR_HOST || !process.env.FIREBASE_AUTH_EMULATOR_HOST)) throw new Error("Local Studio requires demo emulators");
-  service = new StudioService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(keyId, privatePem, trusted), origin: process.env.STUDIO_WEB_ORIGIN ?? "" });
+  service = new StudioService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(keyId, privatePem, trusted), origin: process.env.STUDIO_WEB_ORIGIN ?? "", insecureHost: lanTestHost() });
   return service;
 }
 /** Used by server-rendered pages; returns null whenever the service is disabled or not ready. */

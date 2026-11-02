@@ -23,10 +23,11 @@ export class StudioService {
   private signer: EntitlementSigner;
   private now: () => number;
   private origin: string;
-  constructor(options: { store: Store; signer: EntitlementSigner; now?: () => number; origin: string }) {
+  /** `insecureHost` is only for demo phone testing over a home network (local environment); production never sets it. */
+  constructor(options: { store: Store; signer: EntitlementSigner; now?: () => number; origin: string; insecureHost?: string }) {
     this.store = options.store; this.signer = options.signer; this.now = options.now ?? Date.now; this.origin = options.origin;
     const url = new URL(this.origin);
-    if (url.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(url.hostname)) throw new Error("Studio requires HTTPS outside localhost");
+    if (url.protocol !== "https:" && !["localhost", "127.0.0.1", ...(options.insecureHost ? [options.insecureHost] : [])].includes(url.hostname)) throw new Error("Studio requires HTTPS outside localhost");
   }
   async ready() {
     const schema = await this.store.transaction(tx => tx.get<{ version: number }>("studioSchema", "current"));
