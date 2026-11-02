@@ -143,3 +143,6 @@
 .portfolio-detail-main .text-slate-900,.portfolio-detail-main .text-slate-800{color:#f4f0e7!important}
 .portfolio-detail-main .text-slate-500,.portfolio-detail-main .text-slate-400{color:#b5b6ad!important}
 .portfolio-detail-main>section:last-of-type .text-white{color:#20211d!important}
+
+/* Readability: nothing below 12px, helper lines at 14px (masterplan asks 16px body on mobile). */
+.koko-studio .studio-card small{font-size:14px;line-height:1.7}.koko-studio .about-art-main figcaption{font-size:12px}.koko-studio .about-service-top span{font-size:12px}
