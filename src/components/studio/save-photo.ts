@@ -24,19 +24,32 @@ async function toFile(item: SaveItem): Promise<File> {
   return new File([blob], item.name, { type: blob.type || "image/jpeg" });
 }
 
+/** Same-page blob download: works on Android Chrome even where a cross-site download link is refused, and on desktop. */
+async function downloadViaBlob(item: SaveItem) {
+  const file = await toFile(item);
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const link = document.createElement("a");
+    link.href = objectUrl; link.download = item.name; link.rel = "noopener";
+    document.body.appendChild(link); link.click(); link.remove();
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  } finally { URL.revokeObjectURL(objectUrl); }
+}
+
 function downloadViaLink(item: SaveItem) {
   const link = document.createElement("a");
   link.href = item.downloadUrl; link.download = item.name; link.rel = "noopener";
   document.body.appendChild(link); link.click(); link.remove();
 }
 
+export const isIOS = () => typeof navigator !== "undefined" && (/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent)));
 export const isPhone = () => typeof navigator !== "undefined" && (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/i.test(navigator.userAgent)));
 export const canUseShareSheet = () => typeof navigator !== "undefined" && typeof navigator.canShare === "function" && typeof navigator.share === "function";
 
 export async function savePhotos(items: SaveItem[]): Promise<SaveResult> {
   if (items.length === 0) return "failed";
   // Phones without the share sheet (plain-HTTP pages, old browsers) block repeated downloads: do not fire eight at once.
-  if (items.length > 1 && isPhone() && !canUseShareSheet()) return "manual";
+  if (items.length > 1 && isIOS() && !canUseShareSheet()) return "manual";
   try {
     if (typeof navigator !== "undefined" && typeof navigator.canShare === "function" && typeof navigator.share === "function") {
       const files = await Promise.all(items.map(toFile));
@@ -51,7 +64,7 @@ export async function savePhotos(items: SaveItem[]): Promise<SaveResult> {
   }
   try {
     for (let i = 0; i < items.length; i++) {
-      downloadViaLink(items[i]);
+      try { await downloadViaBlob(items[i]); } catch { downloadViaLink(items[i]); }
       if (i < items.length - 1) await new Promise(resolve => setTimeout(resolve, 600));
     }
     return "downloaded";
