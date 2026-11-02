@@ -26,6 +26,7 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
   const [events, setEvents] = useState<CloudEvent[]>([]);
   const [open, setOpen] = useState<EventView | null>(null);
   const [message, setMessage] = useState(""); const [busy, setBusy] = useState("");
+  const [pinInput, setPinInput] = useState("");
   const [shareLink, setShareLink] = useState<{ eventId: string; url: string; expiresAt: string } | null>(null);
   const t = (thai: string, english: string) => (th ? thai : english);
 
@@ -50,6 +51,13 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signedIn, loadEvents]);
 
+  async function setPin(eventId: string, clear: boolean) {
+    if (!clear && !/^[0-9]{4,8}$/.test(pinInput)) { setMessage(t("PIN ต้องเป็นตัวเลข 4-8 หลัก", "PIN must be 4-8 digits")); return; }
+    setBusy(`share-${eventId}`); setMessage("");
+    try { await call("account/cloud/shares", { method: "POST", body: JSON.stringify({ action: clear ? "clearPin" : "setPin", eventId, ...(clear ? {} : { pin: pinInput }) }) }); setMessage(clear ? t("เอา PIN ออกแล้ว", "PIN removed") : t("ตั้ง PIN แล้ว แขกที่เปิดลิงก์ต้องใส่รหัสนี้", "PIN set. Visitors must enter it.")); setPinInput(""); }
+    catch { setMessage(t("ตั้ง PIN ไม่สำเร็จ", "Could not update the PIN")); }
+    finally { setBusy(""); }
+  }
   async function share(eventId: string, action: "create" | "revoke") {
     if (action === "revoke" && !window.confirm(t("ยกเลิกลิงก์นี้? คนที่มีลิงก์เดิมจะเปิดรูปไม่ได้อีก", "Cancel this link? Anyone holding it will no longer see the photos."))) return;
     setBusy(`share-${eventId}`); setMessage("");
@@ -101,6 +109,9 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
           <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => share(open.event.id, "create")} className="rounded-full bg-[#141516] px-4 py-2 text-sm font-bold text-[#F4F0E7] disabled:opacity-50">{t("สร้าง / คัดลอกลิงก์", "Create / copy link")}</button>
           <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => share(open.event.id, "revoke")} className="rounded-full border border-[#141516]/30 px-4 py-2 text-sm disabled:opacity-50">{t("ยกเลิกลิงก์", "Cancel link")}</button>
         </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2"><input value={pinInput} onChange={event => setPinInput(event.target.value.replace(/[^0-9]/g, "").slice(0, 8))} inputMode="numeric" aria-label={t("PIN 4-8 หลัก", "PIN, 4-8 digits")} placeholder="PIN" className="min-h-11 w-28 rounded-xl border border-[#141516]/30 px-3 text-sm" />
+          <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => setPin(open.event.id, false)} className="min-h-11 rounded-full border border-[#141516]/30 px-4 text-sm disabled:opacity-50">{t("ตั้ง PIN", "Set PIN")}</button>
+          <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => setPin(open.event.id, true)} className="min-h-11 rounded-full border border-[#141516]/30 px-4 text-sm disabled:opacity-50">{t("เอา PIN ออก", "Remove PIN")}</button></div>
         {shareLink?.eventId === open.event.id && <div className="mt-3"><input readOnly aria-label={t("ลิงก์แชร์", "Share link")} value={shareLink.url} onFocus={event => event.currentTarget.select()} className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm" /><p className="mt-1 text-xs text-slate-500">{t("ใช้ได้ถึง", "Valid until")} {new Date(shareLink.expiresAt).toLocaleDateString(th ? "th-TH" : "en-GB")}</p></div>}
       </div>}
       <p className="mt-1 text-xs text-slate-500">{t("ลิงก์รูปเปิดได้ชั่วคราวประมาณ 10 นาที กดรีเฟรชถ้ารูปไม่ขึ้น", "Photo links work for about 10 minutes; press Refresh if a photo does not load.")}</p>

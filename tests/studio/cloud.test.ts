@@ -330,3 +330,21 @@ test("retention sweep deletes only photos older than the plan retention and free
   f.store.documents.set("studioPlans/pro", { ...plan, photoRetentionDays: undefined });
   assert.equal((await f.at(400 * 86_400_000).sweepExpiredPhotos()).deleted, 0);
 });
+
+test("a PIN-protected link needs the PIN, locks after five wrong guesses, and can be removed", async () => {
+  const f = setup(); const eventId = await makeEvent(f);
+  const buf = Buffer.from("pin photo"); await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID("c"), sha256: sha(buf), size: buf.length });
+  f.files.set(photoKey("uid-a", eventId, ID("c")), buf); await f.cloud.confirmPhoto({ ...f.input, photoId: ID("c") });
+  const token = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url.split("/s/")[1];
+  await assert.rejects(() => f.cloud.manageShare("uid-a", { action: "setPin", eventId, pin: "12" }), { code: "invalid_pin" });
+  await assert.rejects(() => f.cloud.manageShare("uid-b", { action: "setPin", eventId, pin: "123456" }), { code: "not_found" });
+  assert.equal(((await f.cloud.manageShare("uid-a", { action: "setPin", eventId, pin: "123456" })) as { pinProtected: boolean }).pinProtected, true);
+  await assert.rejects(() => f.cloud.viewShare(token), { code: "pin_required" });
+  assert.equal((await f.cloud.viewShare(token, "123456")).photos.length, 1);
+  for (let i = 0; i < 4; i++) await assert.rejects(() => f.cloud.viewShare(token, "000000"), { code: "pin_invalid" });
+  await assert.rejects(() => f.cloud.viewShare(token, "000000"), { code: "pin_locked" });
+  await assert.rejects(() => f.cloud.viewShare(token, "123456"), { code: "pin_locked" });
+  assert.equal((await f.at(16 * 60_000).viewShare(token, "123456")).photos.length, 1);
+  await f.cloud.manageShare("uid-a", { action: "clearPin", eventId });
+  assert.equal((await f.cloud.viewShare(token)).photos.length, 1);
+});

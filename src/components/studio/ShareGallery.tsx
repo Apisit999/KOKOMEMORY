@@ -17,7 +17,9 @@ export default function ShareGallery({ token }: { token: string }) {
   const { locale } = useI18n(); const th = locale !== "en";
   const t = (thai: string, english: string) => (th ? thai : english);
   const [view, setView] = useState<View | null>(null);
-  const [state, setState] = useState<"loading" | "ready" | "unavailable" | "error">("loading");
+  const [state, setState] = useState<"loading" | "ready" | "unavailable" | "error" | "pin" | "locked">("loading");
+  const [pin, setPin] = useState(""); const [pinWrong, setPinWrong] = useState(false);
+  const pinRef = useRef("");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -32,8 +34,14 @@ export default function ShareGallery({ token }: { token: string }) {
 
   const load = useCallback(async () => {
     try {
-      const response = await fetch("/api/studio/share/view", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
+      const response = await fetch("/api/studio/share/view", { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, ...(pinRef.current ? { pin: pinRef.current } : {}) }) });
       if (response.status === 404) { setState("unavailable"); return; }
+      if (response.status === 401 || response.status === 429) {
+        const code = (await response.json().catch(() => ({}))).code;
+        if (response.status === 429 || code === "pin_locked") { pinRef.current = ""; setState("locked"); return; }
+        if (code === "pin_invalid") setPinWrong(true);
+        pinRef.current = ""; setState("pin"); return;
+      }
       if (!response.ok) throw new Error();
       const body: { eventName: string | null; expiresAt: string; photos: ApiPhoto[] } = await response.json();
       const now = Date.now();
@@ -50,7 +58,7 @@ export default function ShareGallery({ token }: { token: string }) {
   useEffect(() => {
     void load();
     // New photos appear on their own while guests are still being photographed or uploads are finishing.
-    const timer = setInterval(() => { if (document.visibilityState === "visible" && stateRef.current !== "unavailable") void load(); }, POLL_MS);
+    const timer = setInterval(() => { if (document.visibilityState === "visible" && stateRef.current === "ready") void load(); }, POLL_MS);
     return () => clearInterval(timer);
   }, [load]);
 
@@ -86,6 +94,13 @@ export default function ShareGallery({ token }: { token: string }) {
     </header>
 
     {state === "loading" && <p className="koko-share-note" role="status">{t("กำลังโหลดรูปของคุณ…", "Loading your photos…")}</p>}
+    {state === "pin" && <section className="koko-share-note" role="group" aria-labelledby="pin-title"><h2 id="pin-title">{t("ใส่รหัส PIN เพื่อดูรูป", "Enter the PIN to see the photos")}</h2><p>{t("เจ้าของงานตั้งรหัสไว้ ขอรหัสได้จากผู้จัดงาน", "The host protected this gallery. Ask them for the PIN.")}</p>
+      <form onSubmit={event => { event.preventDefault(); if (pin.length < 4) return; pinRef.current = pin; setPinWrong(false); setState("loading"); void load(); }} style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <input value={pin} onChange={event => setPin(event.target.value.replace(/[^0-9]/g, "").slice(0, 8))} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" aria-label="PIN" aria-invalid={pinWrong} className="koko-share-pin" />
+        <button type="submit" className="koko-share-btn">{t("ดูรูป", "View photos")}</button>
+      </form>
+      {pinWrong && <p role="alert" style={{ marginTop: 10, color: "#f2adca" }}>{t("รหัสไม่ถูกต้อง ลองอีกครั้ง", "Wrong PIN. Try again.")}</p>}</section>}
+    {state === "locked" && <section className="koko-share-note" role="alert"><h2>{t("ลองผิดหลายครั้งเกินไป", "Too many wrong attempts")}</h2><p>{t("กรุณารอประมาณ 15 นาทีแล้วลองใหม่ หรือสอบถามผู้จัดงาน", "Please wait about 15 minutes and try again, or ask the host.")}</p></section>}
     {state === "unavailable" && <section className="koko-share-note" role="alert"><h2>{t("เปิดลิงก์นี้ไม่ได้", "This link cannot be opened")}</h2><p>{t("ลิงก์อาจหมดอายุหรือถูกยกเลิกโดยเจ้าของงาน กรุณาติดต่อผู้จัดงานหรือทีม KOKO Memory เพื่อขอลิงก์ใหม่", "The link may have expired or been cancelled by the host. Please ask the host or the KOKO Memory team for a new one.")}</p></section>}
     {state === "error" && <section className="koko-share-note" role="alert"><p>{t("เชื่อมต่อไม่ได้ในตอนนี้ ตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง", "Could not connect. Check your internet and try again.")}</p><button type="button" className="koko-share-btn" onClick={() => { setState("loading"); void load(); }}>{t("ลองอีกครั้ง", "Try again")}</button></section>}
     {state === "ready" && photos.length === 0 && <section className="koko-share-note" role="status"><h2>{t("รูปกำลังเตรียมให้คุณ", "Your photos are on the way")}</h2><p>{t("รูปจะขึ้นที่นี่เองภายในไม่กี่วินาที ไม่ต้องรีเฟรชหน้า", "They will appear here in a few seconds — no need to refresh.")}</p></section>}

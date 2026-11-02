@@ -34,3 +34,5 @@
 /* Very small phones and landscape: keep the photo viewer usable. */
 @media(max-width:360px){.koko-share{padding-inline:12px}.koko-share-grid{gap:8px}.koko-share-btn{padding:0 18px;font-size:15px}}
 @media(max-height:480px) and (orientation:landscape){.koko-share-lightbox>img{max-height:calc(100dvh - 120px)}.koko-share-lightbox-tip{display:none}}
+.koko-share-pin{min-height:48px;width:9rem;padding:0 16px;border-radius:999px;border:1px solid #6b6c64;background:#141516;color:#f4f0e7;font-size:20px;letter-spacing:6px;text-align:center}
+.koko-share-pin[aria-invalid=true]{border-color:#f2adca}

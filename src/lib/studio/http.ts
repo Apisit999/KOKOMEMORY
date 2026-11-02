@@ -78,7 +78,7 @@ export function createStudioHandler(dependencies: Dependencies) {
         case "desktop/licenses/deactivate": result = await service.deactivate(input); break;
         case "share/view": {
           // Public page: never cached and never leaks the link through the Referer header.
-          return Response.json(await (await cloud()).viewShare(input.token), { headers: { ...headers, "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
+          return Response.json(await (await cloud()).viewShare(input.token, input.pin), { headers: { ...headers, "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow" } });
         }
         case "desktop/cloud/shares/revoke": result = await (await cloud()).revokeSessionShare(input); break;
         case "desktop/cloud/shares": result = await (await cloud()).createSessionShare(input); break;

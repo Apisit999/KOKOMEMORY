@@ -1,4 +1,4 @@
-import { createHmac, randomUUID } from "node:crypto";
+import { createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { hash, type EntitlementSigner } from "./crypto.ts";
 import { PRODUCT_ID, StudioError, type License, type Plan, type ReleaseStorage, type Transaction, type Store } from "./types.ts";
 
@@ -23,8 +23,12 @@ export const VIEW_URL_SECONDS = 600;
 /** One link covers either a single capture session (one guest) or a whole event (the host). */
 export type ShareScope = "session" | "event";
 export type ShareIndex = { id: string; ownerUid: string; scope: ShareScope; target: string; generation: number; revoked: boolean; updatedAt: string };
-export type ShareRecord = { id: string; ownerUid: string; scope: ShareScope; eventId: string | null; sessionId: string | null; createdAt: string; expiresAt: string; revoked: boolean; revokedAt: string | null };
+export type ShareRecord = { id: string; ownerUid: string; scope: ShareScope; eventId: string | null; sessionId: string | null; createdAt: string; expiresAt: string; revoked: boolean; revokedAt: string | null; pinSalt?: string | null; pinHash?: string | null; pinFailures?: number; pinLockedUntil?: string | null };
 export const SESSION_SHARE_DAYS = 30;
+const PIN = /^[0-9]{4,8}$/;
+const PIN_MAX_FAILURES = 5;
+const PIN_LOCK_MS = 15 * 60_000;
+const pinDigest = (pin: string, salt: string) => scryptSync(pin, salt, 32).toString("hex");
 export const EVENT_SHARE_DAYS = 90;
 const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 
@@ -295,7 +299,8 @@ export class CloudService {
   /** Customer: link for a whole event (create returns the same link again), or cancel a link. */
   async manageShare(ownerUid: string, input: Input) {
     const action = input.action;
-    if (action !== "create" && action !== "revoke") throw new StudioError("invalid_request");
+    if (action !== "create" && action !== "revoke" && action !== "setPin" && action !== "clearPin") throw new StudioError("invalid_request");
+    const pin = action === "setPin" ? (typeof input.pin === "string" && PIN.test(input.pin) ? input.pin : (() => { throw new StudioError("invalid_pin"); })()) : null;
     const bySession = input.sessionId !== undefined && input.sessionId !== null;
     const scope: ShareScope = bySession ? "session" : "event";
     const target = bySession ? pattern(input.sessionId, /^[A-Za-z0-9_-]{1,64}$/) : pattern(input.eventId, /^[0-9a-f]{32}$/);
@@ -306,15 +311,46 @@ export class CloudService {
         const made = await this.ensureShare(tx, ownerUid, scope, target, event?.id ?? null, scope === "event" ? EVENT_SHARE_DAYS : SESSION_SHARE_DAYS);
         return { url: this.shareUrl(made.token), expiresAt: made.expiresAt };
       }
+      if (action === "setPin" || action === "clearPin") {
+        const made = await this.ensureShare(tx, ownerUid, scope, target, event?.id ?? null, scope === "event" ? EVENT_SHARE_DAYS : SESSION_SHARE_DAYS);
+        const record = await tx.get<ShareRecord>("studioShares", hash(made.token));
+        if (!record) throw new StudioError("not_found", 404);
+        if (action === "setPin") { const salt = randomBytes(16).toString("hex"); tx.set<ShareRecord>("studioShares", record.id, { ...record, pinSalt: salt, pinHash: pinDigest(pin!, salt), pinFailures: 0, pinLockedUntil: null }); }
+        else tx.set<ShareRecord>("studioShares", record.id, { ...record, pinSalt: null, pinHash: null, pinFailures: 0, pinLockedUntil: null });
+        return { url: this.shareUrl(made.token), expiresAt: made.expiresAt, pinProtected: action === "setPin" };
+      }
       return this.revokeIn(tx, ownerUid, scope, target);
     });
   }
 
+  /** Checks the optional PIN of a link. Five wrong guesses lock that link for 15 minutes, so a short PIN cannot be brute-forced. */
+  private async checkPin(share: ShareRecord, pinInput: unknown) {
+    if (!share.pinHash || !share.pinSalt) return;
+    if (share.pinLockedUntil && Date.parse(share.pinLockedUntil) > this.now()) throw new StudioError("pin_locked", 429);
+    if (typeof pinInput !== "string" || pinInput === "") throw new StudioError("pin_required", 401);
+    const given = Buffer.from(PIN.test(pinInput) ? pinDigest(pinInput, share.pinSalt) : "0".repeat(64), "hex");
+    const ok = PIN.test(pinInput) && timingSafeEqual(given, Buffer.from(share.pinHash, "hex"));
+    const outcome = await this.store.transaction(async tx => {
+      const fresh = await tx.get<ShareRecord>("studioShares", share.id);
+      if (!fresh || fresh.revoked) return "gone" as const;
+      if (fresh.pinLockedUntil && Date.parse(fresh.pinLockedUntil) > this.now()) return "locked" as const;
+      if (ok) { if (fresh.pinFailures) tx.set<ShareRecord>("studioShares", fresh.id, { ...fresh, pinFailures: 0, pinLockedUntil: null }); return "ok" as const; }
+      const failures = (fresh.pinFailures ?? 0) + 1;
+      const locked = failures >= PIN_MAX_FAILURES;
+      tx.set<ShareRecord>("studioShares", fresh.id, { ...fresh, pinFailures: locked ? 0 : failures, pinLockedUntil: locked ? iso(this.now() + PIN_LOCK_MS) : null });
+      return locked ? "locked" as const : "bad" as const;
+    });
+    if (outcome === "gone") throw new StudioError("share_unavailable", 404);
+    if (outcome === "locked") throw new StudioError("pin_locked", 429);
+    if (outcome === "bad") throw new StudioError("pin_invalid", 401);
+  }
+
   /** Public, no login. Missing, revoked and expired links all look the same so links cannot be probed. */
-  async viewShare(tokenInput: unknown) {
+  async viewShare(tokenInput: unknown, pinInput?: unknown) {
     if (typeof tokenInput !== "string" || !TOKEN.test(tokenInput)) throw new StudioError("share_unavailable", 404);
     const share = await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", hash(tokenInput)));
     if (!share || share.revoked || Date.parse(share.expiresAt) <= this.now()) throw new StudioError("share_unavailable", 404);
+    await this.checkPin(share, pinInput);
     const filter = share.scope === "event" ? { field: "eventId", value: share.eventId ?? "" } : { field: "sessionId", value: share.sessionId ?? "" };
     const all = await this.store.list<CloudPhoto>("studioPhotos", filter, 100);
     // The owner check keeps a share from ever showing photos of another account, even if ids collide.
@@ -326,6 +362,6 @@ export class CloudService {
       url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS),
       downloadUrl: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS, { downloadName: `KOKO-${String(i + 1).padStart(2, "0")}.jpg` }),
     })));
-    return { scope: share.scope, eventName: event && event.ownerUid === share.ownerUid ? event.name : null, expiresAt: share.expiresAt, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
+    return { scope: share.scope, pinProtected: Boolean(share.pinHash), eventName: event && event.ownerUid === share.ownerUid ? event.name : null, expiresAt: share.expiresAt, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
   }
 }
