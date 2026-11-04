@@ -1,13 +1,13 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
-import { requireCustomerApi, safeId } from "@/lib/customer-api-auth";
+import { requireCustomerApi, requireVerifiedCustomerApi, safeId } from "@/lib/customer-api-auth";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
     try {
-        const user = await requireCustomerApi(request);
+        const user = await requireVerifiedCustomerApi(request);
         const id = safeId((await context.params).id);
         if (!id) return NextResponse.json({ success: false, error: "NOT_FOUND" }, { status: 404 });
         const quoteRef = adminDb.collection("3dQuotes").doc(id);

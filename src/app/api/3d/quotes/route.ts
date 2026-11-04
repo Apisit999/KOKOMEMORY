@@ -1,7 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
-import { requireCustomerApi } from "@/lib/customer-api-auth";
+import { requireCustomerApi, requireVerifiedCustomerApi } from "@/lib/customer-api-auth";
 import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 import { findThreeDQuoteMaterial } from "@/lib/threeDQuoteOptions";
 
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
-        const user = await requireCustomerApi(request);
+        const user = await requireVerifiedCustomerApi(request);
         if (!(await allowRequest("3d-quote", user.uid, 10, 3600))) return tooManyRequests(3600);
         const body = await request.json() as Record<string, unknown>;
         const forbiddenFields = ["status", "price", "total", "subtotal", "shippingFee", "discount", "userId", "quoteId", "adminNote"];

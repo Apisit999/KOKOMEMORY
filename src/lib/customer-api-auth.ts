@@ -18,3 +18,10 @@ export function safeId(value: unknown) {
     const id = typeof value === "string" ? value.trim() : "";
     return /^[A-Za-z0-9_-]{1,128}$/.test(id) ? id : "";
 }
+
+/** Like requireCustomerApi, but the account's email must be verified (used by routes that create or change data). */
+export async function requireVerifiedCustomerApi(request: Request): Promise<DecodedIdToken> {
+    const decoded = await requireCustomerApi(request);
+    if (decoded.email_verified !== true) throw new Error("EMAIL_NOT_VERIFIED");
+    return decoded;
+}
