@@ -5,4 +5,5 @@
 .legal a{color:#d5ee85;text-decoration:underline}
 .legal-meta{font-size:14px;color:#a6a79d}
 .legal-toc{margin:24px 0;padding:18px 22px;border:1px solid #ffffff22;border-radius:16px;font-size:15px}
-.legal-toc ol{margin:0;padding-left:22px}
+.legal-toc ol{margin:0;padding-left:22px;list-style:decimal}
+.legal-toc li::marker{color:#d5ee85}
