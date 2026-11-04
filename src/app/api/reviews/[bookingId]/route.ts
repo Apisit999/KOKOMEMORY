@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 import { getReviewForBooking, getReviewRequest, submitReview } from "@/lib/review-service";
 
 export const runtime = "nodejs";
@@ -50,6 +51,7 @@ export async function GET(request: Request, context: Context) {
 export async function POST(request: Request, context: Context) {
     try {
         const decoded = await customer(request);
+        if (!(await allowRequest("review-submit", decoded.uid, 10, 3600))) return tooManyRequests(3600);
         const { bookingId } = await context.params;
         await ownedBooking(bookingId, decoded.uid);
         const body = (await request.json()) as { rating?: unknown; comment?: unknown };
