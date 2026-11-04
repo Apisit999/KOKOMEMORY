@@ -10,6 +10,7 @@ import { randomUUID } from "crypto";
 
 import { adminDb } from "@/lib/firebase-admin";
 import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
+import { matchesDeclaredType } from "@/lib/file-signature";
 import { isBookingHoldExpired } from "@/lib/booking-lifecycle";
 
 export const runtime = "nodejs";
@@ -306,6 +307,10 @@ export async function POST(
                 },
                 { status: 415 }
             );
+        }
+
+        if (!(await matchesDeclaredType(file))) {
+            return NextResponse.json({ success: false, error: "เนื้อหาไฟล์ไม่ตรงกับประเภทที่ระบุ" }, { status: 415 });
         }
 
         if (file.size <= 0) {

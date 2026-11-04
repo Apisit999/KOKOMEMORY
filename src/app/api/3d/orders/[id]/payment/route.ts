@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
+import { matchesDeclaredType } from "@/lib/file-signature";
 import { requireCustomerApi, requireVerifiedCustomerApi, safeId } from "@/lib/customer-api-auth";
 import { r2 } from "@/lib/r2";
 
@@ -40,6 +41,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
         if (!(proof instanceof File) || proof.size <= 0 || proof.size > MAX_PROOF_SIZE) throw new Error("INVALID_PROOF");
         const extension = proof.name.toLowerCase().split(".").pop() || "";
         if (!IMAGE_EXTENSIONS.has(extension) || !IMAGE_TYPES.has(proof.type)) throw new Error("INVALID_PROOF_TYPE");
+        if (!(await matchesDeclaredType(proof))) throw new Error("INVALID_PROOF_TYPE");
 
         const orderRef = adminDb.collection("threeDOrders").doc(id);
         const orderSnapshot = await orderRef.get();
