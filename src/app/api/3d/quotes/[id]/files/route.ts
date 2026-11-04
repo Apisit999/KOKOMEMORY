@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { requireCustomerApi, safeId } from "@/lib/customer-api-auth";
 import { r2 } from "@/lib/r2";
+import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 import { FieldValue } from "firebase-admin/firestore";
 
 export const runtime = "nodejs";
@@ -26,7 +27,7 @@ function hasModelSignature(buffer: Buffer, extension: string) {
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
     try {
-        const user = await requireCustomerApi(request); const id = safeId((await context.params).id); if (!id) throw new Error("NOT_FOUND"); const ref = adminDb.collection("3dQuotes").doc(id); const quote = await ref.get(); if (!quote.exists || quote.data()?.userId !== user.uid) throw new Error("NOT_FOUND"); if (quote.data()?.status !== "inquiry") throw new Error("QUOTE_LOCKED");
+        const user = await requireCustomerApi(request); if (!(await allowRequest("3d-file", user.uid, 30, 3600))) return tooManyRequests(3600); const id = safeId((await context.params).id); if (!id) throw new Error("NOT_FOUND"); const ref = adminDb.collection("3dQuotes").doc(id); const quote = await ref.get(); if (!quote.exists || quote.data()?.userId !== user.uid) throw new Error("NOT_FOUND"); if (quote.data()?.status !== "inquiry") throw new Error("QUOTE_LOCKED");
         const form = await request.formData(); const file = form.get("file"); const kind = form.get("kind") === "reference" ? "reference" : "model"; if (!(file instanceof File) || !file.name) throw new Error("INVALID_FILE"); const extension = file.name.toLowerCase().split(".").pop() || ""; const validType = kind === "model" ? ["stl", "3mf"].includes(extension) && (MODEL_TYPES.has(file.type) || !file.type) : ["jpg", "jpeg", "png", "webp"].includes(extension) && IMAGE_TYPES.has(file.type); if (!validType) throw new Error("INVALID_FILE_TYPE"); if (file.size <= 0 || file.size > (kind === "model" ? MAX_MODEL : MAX_REFERENCE)) throw new Error("FILE_TOO_LARGE");
         const bucket = privateBucket(); const fileId = randomUUID(); const safeExtension = extension === "jpeg" ? "jpg" : extension; const key = `3d-quotes/${id}/${kind}/${fileId}.${safeExtension}`; const buffer = Buffer.from(await file.arrayBuffer()); if (kind === "model" && !hasModelSignature(buffer, extension)) throw new Error("INVALID_FILE_CONTENT");
         try {

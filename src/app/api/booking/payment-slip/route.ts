@@ -9,6 +9,7 @@ import { getAuth } from "firebase-admin/auth";
 import { randomUUID } from "crypto";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 import { isBookingHoldExpired } from "@/lib/booking-lifecycle";
 
 export const runtime = "nodejs";
@@ -234,6 +235,7 @@ export async function POST(
         const userRecord = await getAuth().getUser(decodedToken.uid);
         if (userRecord.disabled) throw new Error("USER_DISABLED");
         if (!userRecord.emailVerified) throw new Error("EMAIL_NOT_VERIFIED");
+        if (!(await allowRequest("booking-slip", userRecord.uid, 10, 3600))) return tooManyRequests(3600);
 
         /* =====================================================
            1. FORM DATA

@@ -6,6 +6,7 @@ import { getAuth } from "firebase-admin/auth";
 import { FieldValue, Timestamp, type DocumentReference } from "firebase-admin/firestore";
 
 import { adminDb } from "@/lib/firebase-admin";
+import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 import { todayBangkok } from "@/lib/bangkok-date";
 import {
     getPackageById,
@@ -132,6 +133,7 @@ async function getAuthenticatedCustomer(request: Request) {
 export async function POST(request: Request) {
     try {
         const authUser = await getAuthenticatedCustomer(request);
+        if (!(await allowRequest("booking-create", authUser.uid, 10, 3600))) return tooManyRequests(3600);
 
         let body: unknown;
         try {

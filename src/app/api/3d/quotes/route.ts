@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
 import { requireCustomerApi } from "@/lib/customer-api-auth";
+import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 import { findThreeDQuoteMaterial } from "@/lib/threeDQuoteOptions";
 
 export const runtime = "nodejs";
@@ -34,6 +35,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const user = await requireCustomerApi(request);
+        if (!(await allowRequest("3d-quote", user.uid, 10, 3600))) return tooManyRequests(3600);
         const body = await request.json() as Record<string, unknown>;
         const forbiddenFields = ["status", "price", "total", "subtotal", "shippingFee", "discount", "userId", "quoteId", "adminNote"];
         if (forbiddenFields.some((field) => Object.prototype.hasOwnProperty.call(body, field))) throw new Error("INVALID_QUOTE");

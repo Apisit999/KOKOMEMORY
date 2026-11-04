@@ -2,6 +2,7 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebase-admin";
+import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 import { requireCustomerApi, safeId } from "@/lib/customer-api-auth";
 import { r2 } from "@/lib/r2";
 
@@ -31,6 +32,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     let key = "";
     try {
         const user = await requireCustomerApi(request);
+        if (!(await allowRequest("3d-proof", user.uid, 10, 3600))) return tooManyRequests(3600);
         const id = safeId((await context.params).id);
         if (!id) throw new Error("NOT_FOUND");
         const form = await request.formData();
