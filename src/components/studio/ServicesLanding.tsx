@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { ArrowRight, Box, Camera, Code2, Monitor } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
@@ -18,6 +19,7 @@ export default function ServicesLanding() {
   const {locale}=useI18n(); const en=locale==="en"; const t=(a:string,b:string)=>en?b:a; const [selected,setSelected]=useState("rental"); const choice=choices.find(x=>x.id===selected)!;
   return <div className="koko-studio"><Navbar/><main className="studio-services-page">
     <header className="services-intro studio-wrap"><p className="studio-eyebrow">KOKO MEMORY / OUR SERVICES</p><h1>{t("เริ่มจากสิ่งที่คุณอยากทำ", "Start with what you want to make.")}</h1><p>{t("เลือกบริการที่ตรงกับไอเดีย แล้วดูขั้นตอนและรายละเอียดที่ต้องเตรียม", "Choose the service that fits your idea, then see what to expect and prepare.")}</p></header>
+    <Image className="studio-wrap" src="/illustrations/services-hero.svg" alt="ภาพรวมบริการ KOKO: บูธถ่ายภาพ โปรแกรม งานพิมพ์ 3D และซอฟต์แวร์" width={1100} height={360} unoptimized style={{ display: "block", height: "auto", borderRadius: 28, marginBottom: 40 }} />
     <section className="studio-wrap services-choice"><p className="studio-eyebrow">01 / CHOOSE YOUR DIRECTION</p><div className="services-choice-grid">{choices.map(({id,title,summary,Icon,color})=><button key={id} onClick={()=>setSelected(id)} aria-pressed={selected===id} className={`services-choice-card studio-${color}`}><Icon size={25}/><span>{title[en?1:0]}</span><small>{summary[en?1:0]}</small></button>)}</div>
       <article className={`services-next studio-${choice.color}`}><div><p className="studio-eyebrow">02 / YOUR NEXT STEP</p><h2>{choice.title[en?1:0]}</h2><p>{choice.detail[en?1:0]}</p><Link href={choice.href}>{choice.action[en?1:0]}<ArrowRight size={17}/></Link></div><div><h3>{t("เตรียมข้อมูลเหล่านี้", "A few details to prepare")}</h3><ul>{choice.prep.map(item=><li key={item}>{item}</li>)}</ul><Link className="services-enquiry" href={`/enquiry?service=${choice.id}`}>{t("ยังไม่แน่ใจ? สอบถามทีมงาน", "Not sure? Ask our team")}<ArrowRight size={16}/></Link></div></article>
     </section>

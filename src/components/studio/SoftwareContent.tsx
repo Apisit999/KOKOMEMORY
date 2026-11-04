@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -23,6 +24,7 @@ export default function SoftwareContent({ photobooth = false }: { photobooth?: b
     <p className="studio-eyebrow" style={{ marginTop: 35 }}>KOKO / {photobooth ? "PHOTOBOOTH SOFTWARE" : "SOFTWARE SOLUTIONS"}</p>
     <h1 style={{ whiteSpace: "pre-line" }}>{photobooth ? t("โปรแกรมสำหรับ\nบูธของคุณ", "Software for your booth.") : t("เครื่องมือสำหรับ\nไอเดียของคุณ", "Tools for your ideas.")}</h1>
     <p>{photobooth ? t("มีบูธและอุปกรณ์อยู่แล้ว? เริ่มจากรายละเอียดเครื่องและสิ่งที่อยากให้โปรแกรมทำ ทีมจะช่วยให้ข้อมูลก่อนตัดสินใจซื้อ", "Already have a booth? Start with your equipment and desired workflow. Our team will help you assess the software before purchase.") : t("พื้นที่สำหรับสอบถามซอฟต์แวร์และโปรแกรม Photobooth เลือกหัวข้อที่สนใจ แล้วคุยรายละเอียดกับทีม KOKO", "Explore software and photobooth enquiries. Choose a topic and discuss the details with KOKO.")}</p>
+    {photobooth && <Image src="/illustrations/photobooth-software.svg" alt="โปรแกรม Photobooth บนจอทัชสกรีนพร้อมแถบภาพถ่าย" width={1000} height={520} unoptimized style={{ width: "100%", maxWidth: 1000, height: "auto", borderRadius: 28, margin: "10px 0 40px" }} />}
     <div className="studio-grid">{topics.map(([th,en,detail,english], i) => <article key={en} className={`studio-card ${i % 2 ? "studio-cream" : "studio-lime"}`}><p className="studio-eyebrow">0{i+1} / SOFTWARE</p><h3>{t(th,en)}</h3><p>{t(detail,english)}</p><small>{t("สอบถามรายละเอียดกับทีม", "Discuss with our team")}</small><Link href={!photobooth && i === 0 ? "/software/photobooth" : "/contact"}>{!photobooth && i === 0 ? t("ดูโปรแกรม Photobooth", "Explore photobooth software") : t("สอบถามรายละเอียด", "Enquire now")}<ArrowUpRight size={18} /></Link></article>)}</div>
     {photobooth && <div className="studio-actions"><Link className="studio-button" href="/software/photobooth/pricing">{t("ดูแผนราคา Cloud", "See Cloud plans")}<ArrowUpRight size={18} /></Link><Link className="studio-button" href="/koko-studio">{t("ดู KOKO Studio Free และสถานะดาวน์โหลด", "KOKO Studio Free & release status")}<ArrowUpRight size={18} /></Link></div>}
     <div className="studio-product-note">{t("ขณะนี้รับสอบถามผ่านทีมงาน รายการสินค้า ราคา คุณสมบัติที่รองรับ และเงื่อนไขไลเซนส์ต้องยืนยันก่อนสั่งซื้อ ระบบชำระเงิน ดาวน์โหลด และเปิดใช้งานไลเซนส์อัตโนมัติยังไม่เปิดให้บริการ", "Enquiries are handled by our team. Products, pricing, supported features and licence terms must be confirmed before purchase. Automated payments, downloads and licence activation are not available yet.")}</div>
