@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { adminDb } from "@/lib/firebase-admin";
+import { allowRequest, clientKey, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,6 +17,7 @@ const enquirySchema = z.object({
 
 export async function POST(request: Request) {
     try {
+        if (!(await allowRequest("enquiry", clientKey(request), 10, 600))) return tooManyRequests(600);
         const parsed = enquirySchema.safeParse(await request.json());
         if (!parsed.success) return NextResponse.json({ success: false, error: "INVALID_ENQUIRY" }, { status: 400 });
         // Quietly accept honeypot submissions without storing them.

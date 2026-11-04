@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminAuth } from "@/lib/firebase-admin";
 import { Resend } from "resend";
+import { allowRequest, clientKey, tooManyRequests } from "@/lib/rate-limit";
 
 const FROM_EMAIL =
     process.env.RESEND_FROM_EMAIL ||
@@ -18,6 +19,8 @@ export async function POST(
         /* ========================================================
            CHECK RESEND KEY
         ======================================================== */
+
+        if (!(await allowRequest("pwreset-ip", clientKey(request), 20, 900))) return tooManyRequests(900);
 
         if (!process.env.RESEND_API_KEY) {
             console.error(
@@ -69,6 +72,11 @@ export async function POST(
         /* ========================================================
            GENERATE FIREBASE PASSWORD RESET LINK
         ======================================================== */
+
+        // Same generic answer as a successful send, so the limit does not reveal whether the account exists.
+        if (!(await allowRequest("pwreset-email", email, 3, 900))) {
+            return NextResponse.json({ success: true, message: "If the account exists, a reset email has been sent." });
+        }
 
         let resetLink: string;
 

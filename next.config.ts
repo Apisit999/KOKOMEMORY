@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   distDir: process.env.STUDIO_ISOLATED_BUILD === "true" ? ".next-studio-local" : ".next",
   // Only the Docker image build asks for a self-contained server; local builds are unchanged.
   output: process.env.STUDIO_DOCKER_BUILD === "true" ? "standalone" : undefined,
@@ -21,6 +22,9 @@ const nextConfig: NextConfig = {
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "X-Frame-Options", value: "SAMEORIGIN" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+        { key: "Strict-Transport-Security", value: "max-age=31536000" },
+        { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
       ],
     }];
   },

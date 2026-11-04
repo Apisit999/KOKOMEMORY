@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { adminAuth } from "@/lib/firebase-admin";
+import { allowRequest, tooManyRequests } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -59,6 +60,8 @@ export async function POST(request: Request) {
             await adminAuth.getUser(decodedToken.uid);
 
         if (user.disabled) return NextResponse.json({ error: "USER_DISABLED" }, { status: 403 });
+
+        if (!(await allowRequest("verify-email", decodedToken.uid, 3, 600))) return tooManyRequests(600);
 
         if (!user.email) {
             return NextResponse.json(

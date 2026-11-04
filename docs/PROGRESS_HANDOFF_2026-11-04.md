@@ -32,3 +32,24 @@
 - สแตกทดสอบ: emulator (`firebase emulators:start --only firestore,auth --project demo-kokomemory-local`), `scripts/local-s3-mock.mjs`, `npm run studio:dev` (3040) บัญชีทดสอบอยู่ใน `output/studio/*.json` (นอก git) การรัน Chrome headless ผ่าน CDP: `--remote-debugging-port` แล้วใช้สคริปต์ WebSocket (ดู `scripts/device-matrix.mjs`)
 - `.env.studio.local` มี `STUDIO_CRON_SECRET` สำหรับทดสอบ (ไม่อยู่ใน git)
 - Git Bash แปลง `/path` เป็นพาธ Windows: ถ้าส่งพาธเป็นอาร์กิวเมนต์ให้ใช้ `MSYS_NO_PATHCONV=1`
+
+## ตรวจความปลอดภัย (4 พ.ย. ช่วงบ่าย) — แก้แล้วในเครื่อง ยังไม่ commit และยังไม่ได้ตรวจรอบสุดท้าย
+**ทดสอบโจมตีกับสแตกในเครื่อง (emulator):** API แอดมินทุกเส้น 401 เมื่อไม่มี token / 403 เมื่อใช้บัญชีลูกค้า, API ลูกค้า 401 เมื่อไม่มี token, ขอ id ของคนอื่นได้ 404/403 (ไม่มี IDOR), id แบบ path traversal ถูกปฏิเสธ, Studio: origin แปลก 403 / ไม่มี token 401 / cron ไม่มี secret 403 / admin grant ด้วยบัญชีลูกค้า 403 — ส่วนนี้ผ่านหมด
+
+**ช่องโหว่ที่เจอและแก้ (ยังไม่ commit):**
+1. `/api/enquiries` ไม่มี rate limit (ยิง 25/25 สำเร็จ → สแปม Firestore/ค่าใช้จ่าย) → จำกัด 10 ครั้ง/10 นาที
+2. `/api/auth/send-verification` ไม่มีขีดจำกัด (ส่งอีเมลซ้ำได้ไม่จำกัด) → 3 ครั้ง/10 นาที/ผู้ใช้
+3. `/api/auth/send-password-reset` ไม่มีขีดจำกัด (ยิงอีเมลใส่ที่อยู่ใครก็ได้ได้ไม่จำกัด) → 20 ครั้ง/15 นาที/IP และ 3 ครั้ง/15 นาที/อีเมล (ตอบแบบเดียวกับส่งสำเร็จ เพื่อไม่เปิดเผยว่าบัญชีมีอยู่ไหม) **ขีดจำกัดต่ออีเมลยังไม่ได้ทดสอบ** เพราะในเครื่องไม่มี `RESEND_API_KEY` (ขีดจำกัดต่อ IP ทดสอบแล้ว: 20 ผ่านแล้ว 429)
+- ตัวจำกัดใหม่: `src/lib/rate-limit.ts` (นับใน Firestore คอลเลกชัน `rateLimits`, ปิดจากไคลเอนต์ด้วย rules อยู่แล้ว) ทดสอบแล้ว: enquiries 10 ผ่าน/15 ถูกบล็อก, send-verification 3 ผ่าน/22 ถูกบล็อก **ต้องตั้ง Firestore TTL policy ที่ฟิลด์ `expiresAt` ของ `rateLimits`** ไม่งั้นเอกสารนับค้างสะสม และถ้าไม่ตั้ง `TRUSTED_CLIENT_IP_HEADER` (หรือ `STUDIO_TRUSTED_CLIENT_IP_HEADER`) ทุกคนจะใช้ถังเดียวกัน (ปลอดภัยแต่หยาบ: ฟอร์ม enquiry จะรับได้รวม 10 ครั้ง/10 นาทีทั้งเว็บ) ถ้าเกิดข้อผิดพลาดของ Firestore ตัวจำกัดจะปล่อยผ่าน (fail open)
+4. ไลบรารี: ย้าย `shadcn` ไป `devDependencies` (Dockerfile เป็น multi-stage อิมเมจ runtime ไม่มีตัวนี้) + `npm audit fix` แบบไม่ force → ช่องโหว่ production 37 → **4** (critical 2 → 0) `next` 16.4.5, `sharp` 0.35.5, `zod` 4.6.7 หลังอัปเดต: `tsc` 0 error, `test:studio` 54 ผ่าน, `test:auth` 3 ผ่าน, `npm run build` ผ่าน
+   - เหลือ 4 รายการ (high): `firebase` (ไคลเอนต์) → `@firebase/firestore` → `@grpc/grpc-js` ตัวแก้ที่ npm เสนอคือถอยไป firebase 9.14 (breaking) จึงไม่ทำ; ผมประเมินว่าฝั่งเบราว์เซอร์ไม่ใช้ gRPC แบบเซิร์ฟเวอร์ แต่ **ยังไม่ได้ตรวจยืนยันละเอียด**
+5. Headers ใน `next.config.ts`: เพิ่ม `Permissions-Policy` (ปิดกล้อง/ไมค์/ตำแหน่ง/payment — ค้นแล้วไม่มีโค้ดใช้), `Strict-Transport-Security` (max-age 1 ปี ไม่ includeSubDomains), `X-Permitted-Cross-Domain-Policies`, ปิด `X-Powered-By` **ยังไม่ได้ตรวจ header จริงบน dev server** (รีสตาร์ทถูกขัดจังหวะ)
+
+**ยังไม่ได้ทำ/ไม่ได้ตรวจ:**
+- รีสตาร์ท dev server แล้วรันชุดทดสอบโจมตีซ้ำเพื่อยืนยันหลังอัปเดต `next` (สคริปต์เก็บไว้ที่ `C:\Users\User\AppData\Local\Temp\claude\1f3a8c31270aa849\dbc20532-d3f4-453a-9fb0-6d5d656ab326\scratchpad\_tmp_sec.mjs` ต้องคัดลอกเข้า repo ถึงจะรันได้ เพราะ import แพ็กเกจ) และตรวจ header จริง
+- CSP (ยังไม่มี; ควรเริ่มแบบ report-only ก่อน)
+- ยังไม่ได้ตรวจ: `booking/create` และ endpoint จองด้วยผู้ใช้ที่ยืนยันอีเมลแล้ว, การตรวจชนิดไฟล์จากเนื้อไฟล์ (หลักฐานชำระเงิน 3D ตรวจแค่นามสกุล+MIME ที่ไคลเอนต์ส่ง; จำกัดเป็น jpeg/png/webp และส่งกลับด้วย `nosniff` จึงเสี่ยงต่ำ), rate limit ของ `booking/*` และ `3d/*`, ฟอร์ม contact อื่นๆ
+- ยังไม่ได้ทดสอบเจาะระบบจริง/บนเซิร์ฟเวอร์จริง ผลทั้งหมดมาจากสแตกในเครื่อง
+- ค้างเดิม: หมุนคีย์ที่หลุดในแชต, ลบ SSH key ชั่วคราวใน hPanel, แยกคีย์ production
+
+**ข้อควรระวังตอน commit:** `CLAUDE.md` ในเครื่องถูกเปลี่ยนเป็นแม่แบบเปล่า (เนื้อหาเดิมหาย) — อย่า `git add -A` โดยไม่ดู; กู้ด้วย `git checkout -- CLAUDE.md` ถ้าไม่ได้ตั้งใจ; `AGENTS.md` เปลี่ยนเพราะ `next dev` เขียนใหม่ (ไม่ใช่ปัญหา)
