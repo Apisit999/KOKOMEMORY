@@ -542,7 +542,7 @@ export default function LoginPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] transition hover:text-[#A0235F] focus-visible:outline-2 focus-visible:outline-[#A0235F]"
+                                            className="-mr-2 flex shrink-0 items-center justify-center rounded-md p-2.5 text-[#5F5F58] transition hover:text-[#A0235F] focus-visible:outline-2 focus-visible:outline-[#A0235F]"
                                         >
                                             {showPassword ? (
                                                 <EyeOff size={19} />
@@ -556,7 +556,7 @@ export default function LoginPage() {
                                 <div className="mb-[26px] flex items-center justify-end text-[13px] sm:text-[13.5px]">
                                     <Link
                                         href={`/account/forgot-password?redirect=${encodeURIComponent(redirectTarget)}`}
-                                        className="text-[#A0235F] hover:underline"
+                                        className="inline-flex min-h-11 items-center text-[#A0235F] hover:underline"
                                     >
                                         ลืมรหัสผ่าน?
                                     </Link>
@@ -613,7 +613,7 @@ export default function LoginPage() {
                                 ยังไม่มีบัญชี?{" "}
                                 <Link
                                     href={`/account/register?redirect=${encodeURIComponent(redirectTarget)}`}
-                                    className="font-semibold text-[#A0235F] hover:underline"
+                                    className="inline-flex min-h-11 items-center font-semibold text-[#A0235F] hover:underline"
                                 >
                                     สมัครสมาชิกใหม่
                                 </Link>

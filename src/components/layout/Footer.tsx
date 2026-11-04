@@ -75,7 +75,7 @@ export default function Footer() {
                                     className="text-[#FF8CC4]"
                                 />
 
-                                <a href="tel:+66800819933" className="text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">080-081-9933</a>
+                                <a href="tel:+66800819933" className="inline-flex min-h-11 items-center text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">080-081-9933</a>
 
                             </div>
 
@@ -86,7 +86,7 @@ export default function Footer() {
                                     className="text-green-400"
                                 />
 
-                                <a href={socialLinks.line} target="_blank" rel="noopener noreferrer" className="text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">@024ppzhh</a>
+                                <a href={socialLinks.line} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">@024ppzhh</a>
 
                             </div>
 
@@ -97,7 +97,7 @@ export default function Footer() {
                                     className="text-[#FF8CC4]"
                                 />
 
-                                <a href="mailto:kokomemory@gmail.com" className="break-all text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">kokomemory@gmail.com</a>
+                                <a href="mailto:kokomemory@gmail.com" className="inline-flex min-h-11 items-center break-all text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">kokomemory@gmail.com</a>
 
                             </div>
 
@@ -119,7 +119,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/"
-                                    className="flex items-center gap-2 text-white/70 transition hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 transition hover:text-pink-300"
                                 >
 
                                     <ChevronRight size={16} />
@@ -134,7 +134,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/about"
-                                    className="flex items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
                                 >
 
                                     <ChevronRight size={16} />
@@ -149,7 +149,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/gallery/portfolio"
-                                    className="flex items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
                                 >
 
                                     <ChevronRight size={16} />
@@ -164,7 +164,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/packages"
-                                    className="flex items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
                                 >
 
                                     <ChevronRight size={16} />
@@ -175,15 +175,15 @@ export default function Footer() {
 
                             </li>
 
-                            <li><Link href="/photobooth" className="flex items-center gap-2 text-white/70 hover:text-[#D5EE85]"><ChevronRight size={16} />Photobooth</Link></li>
+                            <li><Link href="/photobooth" className="flex min-h-10 items-center gap-2 text-white/70 hover:text-[#D5EE85]"><ChevronRight size={16} />Photobooth</Link></li>
 
-                            <li><Link href="/software" className="flex items-center gap-2 text-white/70 hover:text-[#D5EE85]"> <ChevronRight size={16} />Software</Link></li>
+                            <li><Link href="/software" className="flex min-h-10 items-center gap-2 text-white/70 hover:text-[#D5EE85]"> <ChevronRight size={16} />Software</Link></li>
 
                             <li>
 
                                 <Link
                                     href="/contact"
-                                    className="flex items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
                                 >
 
                                     <ChevronRight size={16} />
@@ -305,7 +305,7 @@ export default function Footer() {
 
                         </p>
 
-                        <p className="text-center text-sm sm:text-base text-white/60"><Link href="/terms" className="underline hover:text-white">ข้อกำหนดการใช้บริการ</Link> · <Link href="/privacy" className="underline hover:text-white">นโยบายความเป็นส่วนตัว</Link></p>
+                        <p className="text-center text-sm sm:text-base text-white/60"><Link href="/terms" className="inline-block py-2 underline hover:text-white">ข้อกำหนดการใช้บริการ</Link> · <Link href="/privacy" className="inline-block py-2 underline hover:text-white">นโยบายความเป็นส่วนตัว</Link></p>
 
                         <p className="text-center text-sm sm:text-base text-white/40">
 

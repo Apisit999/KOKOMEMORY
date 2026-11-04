@@ -38,7 +38,7 @@ export default function EnquiryForm() {
       setReference(result.reference || ""); setState("sent"); setName(""); setContact(""); setEventDate(""); setDetails("");
     } catch { setState("error"); }
   }
-  return <section className="studio-enquiry studio-wrap"><div><p className="studio-eyebrow">{words.eyebrow}</p><h2>{words.title}</h2><p>{words.intro}</p><a href="mailto:kokomemory@gmail.com">kokomemory@gmail.com <ArrowUpRight size={15} /></a></div><form onSubmit={submit} aria-busy={state === "sending"}>
+  return <section className="studio-enquiry studio-wrap"><div><p className="studio-eyebrow">{words.eyebrow}</p><h2>{words.title}</h2><p>{words.intro}</p><a href="mailto:kokomemory@gmail.com" className="inline-flex min-h-11 items-center gap-1">kokomemory@gmail.com <ArrowUpRight size={15} /></a></div><form onSubmit={submit} aria-busy={state === "sending"}>
     {state === "sent" && <p role="status" className="studio-form-success"><CheckCircle2 size={18} />{words.sent}{reference && <> · {words.reference}: {reference.slice(0, 8).toUpperCase()}</>}</p>}
     {state === "error" && <p role="alert" className="studio-form-error">{words.error}</p>}
     <label className="studio-honeypot" aria-hidden="true" tabIndex={-1}>Website<input name="website" autoComplete="off" tabIndex={-1} /></label>
