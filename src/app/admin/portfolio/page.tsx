@@ -1360,7 +1360,7 @@ export default function AdminPortfolioPage() {
 
                                                 {image.url ===
                                                     previewItem.coverImage && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-pink-500">
+                                                    <span className="inline-flex items-center gap-1 text-[12px] font-black text-pink-500">
                                                         <Star
                                                             size={
                                                                 11
@@ -1417,7 +1417,7 @@ function StatCard({
             </p>
 
             {description && (
-                <p className="mt-1 text-[11px] font-semibold text-slate-400">
+                <p className="mt-1 text-[12px] font-semibold text-slate-400">
                     {description}
                 </p>
             )}
@@ -1475,7 +1475,7 @@ function PortfolioCard({
                 <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
                     <div className="flex flex-wrap gap-2">
                         <span
-                            className={`rounded-full px-2.5 py-1 text-[10px] font-black shadow-sm backdrop-blur ${
+                            className={`rounded-full px-2.5 py-1 text-[12px] font-black shadow-sm backdrop-blur ${
                                 item.status ===
                                 "active"
                                     ? "bg-emerald-500/95 text-white"
@@ -1489,7 +1489,7 @@ function PortfolioCard({
                         </span>
 
                         {item.featured && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-[10px] font-black text-white shadow-sm">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-[12px] font-black text-white shadow-sm">
                                 <Star
                                     size={
                                         11
@@ -1501,7 +1501,7 @@ function PortfolioCard({
                         )}
                     </div>
 
-                    <span className="rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur">
+                    <span className="rounded-full bg-black/50 px-2.5 py-1 text-[12px] font-bold text-white backdrop-blur">
                         {
                             item.images
                                 .length
@@ -1532,7 +1532,7 @@ function PortfolioCard({
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         {item.category && (
-                            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-pink-500">
+                            <p className="text-[12px] font-black uppercase tracking-[0.14em] text-pink-500">
                                 {
                                     item.category
                                 }
@@ -1645,7 +1645,7 @@ function PortfolioCard({
                             deleting ||
                             toggling
                         }
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-[11px] font-bold text-slate-600 transition hover:bg-white disabled:opacity-50"
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 text-[12px] font-bold text-slate-600 transition hover:bg-white disabled:opacity-50"
                     >
                         {toggling ? (
                             <Loader2
@@ -1685,7 +1685,7 @@ function PortfolioCard({
                             deleting ||
                             toggling
                         }
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 text-[11px] font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 text-[12px] font-bold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                     >
                         {deleting ? (
                             <Loader2

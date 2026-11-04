@@ -112,7 +112,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
 
     return <div data-account-shell className="min-h-screen bg-[#F4F0E7] text-[#111116]"><style jsx global>{`[data-account-shell] main.bg-slate-50 > header{display:none}[data-account-shell] main.bg-slate-50{background:#F4F0E7;min-height:calc(100vh - 72px)}`}</style>
         <aside className="fixed inset-y-0 left-0 z-50 hidden w-[264px] flex-col border-r border-[#E4DDCD] bg-white px-4 py-6 lg:flex">
-            <Link href="/account" className="mb-8 flex items-center gap-3 px-2"><Image src={brandLogo} alt="KOKO Memory" width={44} height={44} className="h-10 w-10 rounded-full object-cover" priority /><span><b className="block text-base tracking-tight">KOKO Memory</b><small className="text-[10px] uppercase tracking-[.2em] text-slate-400">{locale === "th" ? "บัญชีของฉัน" : "My account"}</small></span></Link>
+            <Link href="/account" className="mb-8 flex items-center gap-3 px-2"><Image src={brandLogo} alt="KOKO Memory" width={44} height={44} className="h-10 w-10 rounded-full object-cover" priority /><span><b className="block text-base tracking-tight">KOKO Memory</b><small className="text-[12px] uppercase tracking-[.2em] text-slate-400">{locale === "th" ? "บัญชีของฉัน" : "My account"}</small></span></Link>
             {navigation()}
             <div className="mt-auto">{secondary()}</div>
         </aside>
@@ -126,7 +126,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
     </div>;
 }
 
-function NavGroup({ title, children, accent = false }: { title: string; children: ReactNode; accent?: boolean }) { return <div><p className={`mb-2 px-3 text-[10px] font-black uppercase tracking-[.2em] ${accent ? "text-[#A0235F]" : "text-slate-400"}`}>{title}</p><div className="space-y-1">{children}</div></div>; }
+function NavGroup({ title, children, accent = false }: { title: string; children: ReactNode; accent?: boolean }) { return <div><p className={`mb-2 px-3 text-[12px] font-black uppercase tracking-[.2em] ${accent ? "text-[#A0235F]" : "text-slate-400"}`}>{title}</p><div className="space-y-1">{children}</div></div>; }
 
 function breadcrumb(pathname: string, locale: "th" | "en") {
     const parts = pathname.split("/").filter(Boolean);

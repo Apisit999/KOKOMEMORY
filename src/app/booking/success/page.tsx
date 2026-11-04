@@ -168,7 +168,7 @@ function SuccessContent() {
                         {steps.map((step, index) => (
                             <li key={step} aria-current={index === 5 ? "step" : undefined} className="flex items-center gap-2 sm:gap-3">
                                 <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold sm:px-4 sm:text-sm ${index === 5 ? "bg-pink-500 text-white shadow-sm" : "bg-green-50 text-green-700"}`}>
-                                    <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${index === 5 ? "bg-white/20" : "bg-green-100"}`}>{index === 5 ? "✓" : index + 1}</span>
+                                    <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] ${index === 5 ? "bg-white/20" : "bg-green-100"}`}>{index === 5 ? "✓" : index + 1}</span>
                                     {translate(step)}
                                 </span>
                                 {index < steps.length - 1 && <span aria-hidden="true" className="text-slate-300">→</span>}

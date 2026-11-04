@@ -1415,7 +1415,7 @@ export default function AdminBookingsPage() {
                                                                     booking.bookingStatus
                                                                 )}
                                                                 {booking.archiveStatus === "archived" && (
-                                                                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">Archived</span>
+                                                                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[12px] font-bold text-slate-600">Archived</span>
                                                                 )}
                                                             </span>
                                                         </td>
@@ -1548,7 +1548,7 @@ export default function AdminBookingsPage() {
                                                         {getStatusLabel(
                                                             booking.bookingStatus
                                                         )}
-                                                        {booking.archiveStatus === "archived" && <span className="ml-1 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-600">Archived</span>}
+                                                        {booking.archiveStatus === "archived" && <span className="ml-1 rounded-full bg-slate-200 px-2 py-0.5 text-[12px] font-bold text-slate-600">Archived</span>}
                                                     </span>
 
                                                 </div>

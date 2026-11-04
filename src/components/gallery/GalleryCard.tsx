@@ -238,7 +238,7 @@ export default function GalleryCard({
                                         bg-white/90
                                         px-3
                                         py-1.5
-                                        text-[9px]
+                                        text-[12px]
                                         font-black
                                         tracking-[0.08em]
                                         text-slate-800
@@ -276,7 +276,7 @@ export default function GalleryCard({
                                     bg-black/35
                                     px-3
                                     py-1.5
-                                    text-[10px]
+                                    text-[12px]
                                     font-bold
                                     text-white
                                     shadow-lg
@@ -313,7 +313,7 @@ export default function GalleryCard({
 
                             <p
                                 className="
-                                    text-[9px]
+                                    text-[12px]
                                     font-black
                                     uppercase
                                     tracking-[0.22em]
@@ -368,7 +368,7 @@ export default function GalleryCard({
                                     bg-white/10
                                     px-3.5
                                     py-2
-                                    text-[10px]
+                                    text-[12px]
                                     font-bold
                                     text-white
                                     backdrop-blur-md

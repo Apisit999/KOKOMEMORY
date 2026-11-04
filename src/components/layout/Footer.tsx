@@ -305,6 +305,8 @@ export default function Footer() {
 
                         </p>
 
+                        <p className="text-center text-sm sm:text-base text-white/60"><Link href="/terms" className="underline hover:text-white">ข้อกำหนดการใช้บริการ</Link> · <Link href="/privacy" className="underline hover:text-white">นโยบายความเป็นส่วนตัว</Link></p>
+
                         <p className="text-center text-sm sm:text-base text-white/40">
 
                             Designed with ❤️ by KOKO Memory

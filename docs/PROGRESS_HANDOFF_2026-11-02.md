@@ -45,3 +45,15 @@
 - ควรแก้: ปุ่ม/ลิงก์สูงหรือกว้างต่ำกว่า 32px: /photobooth 22 จุด, /3d-printing 17, หน้าอื่น ~10
 - หน้าแชร์รูป `/s/…` เนื้อหาน้อย (183 ตัวอักษร) เป็นปกติ ไม่ใช่บั๊ก
 - ยังไม่ได้ทดสอบ: Safari จริง, มือถือ/แท็บเล็ตจริง, หน้าหลังล็อกอิน (booking/account) ในทุกขนาดจอ, สลับภาษาอังกฤษ
+
+## 2026-11-03: Pilot (free trial) phase 1, local only, uncommitted
+- Plan `pilot` (everything incl. cloud, 20 GB, 30-day photo retention, 2 devices), 60 days, cap 30 (`PILOT_*` in `migration.ts`). Customer starts it from the account page (`account/pilot/start`); admin grants any plan (`admin/licenses/grant`, audited). Expiry never locks the booth: `effectivePlanId` drops to Free; photos stay 14 days then purge.
+- Retention sweep now reads up to 1000 licenses and purges lapsed accounts. Scheduler hook: `POST /api/studio/cron/retention-sweep` with header `x-cron-secret` = env `STUDIO_CRON_SECRET` (32+ chars). VPS cron must call it daily (not set up yet).
+- Tests: `tests/studio/pilot.test.ts`; 48 pass. Not yet checked in a real logged-in browser. Text minimum 12px done.
+- Still to do: expiry/quota emails, ToS + privacy (PDPA), pricing-page banner, phase 2 (PromptPay + slip orders).
+
+## 2026-11-03 (later): terms, privacy, trial maxed, notification emails (local, uncommitted)
+- Pilot plan v2 = Studio-level limits (200 GB, 180-day retention, 5 devices, 60 days, cap 30). Lower these before the pilot ends (bump plan `version` so migrate updates it).
+- `/terms`, `/privacy` (drafts written by Claude, NOT lawyer-reviewed; legal entity name/address still missing). Pilot start requires `acceptTerms === LEGAL_VERSION` (types.ts), recorded on the license.
+- `src/lib/studio/notifications.ts`: emails at 7d/1d before expiry, after expiry (grace 14 days), quota 80%/90%; once each, retried on failure, re-armed on renewal. Runs inside `POST /api/studio/cron/retention-sweep` (response includes `notices`). Needs `RESEND_API_KEY` (+ `RESEND_FROM_EMAIL`); never sent for real yet, tests use a fake mailer.
+- Still open: VPS cron (daily), real Resend send test, lawyer review.

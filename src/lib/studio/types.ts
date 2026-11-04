@@ -9,7 +9,7 @@ export type Plan = {
 export type Device = { status: "active" | "deactivated"; name: string; activatedAt: string; lastSeenAt: string; deactivatedAt: string | null; appVersion?: string; appSeenAt?: string };
 export type License = {
   id: string; ownerUid: string | null; productId: string; planId: string; status: "active" | "revoked" | "expired";
-  startsAt: string; expiresAt: string | null; createdAt: string; linkedAt: string | null;
+  startsAt: string; expiresAt: string | null; createdAt: string; linkedAt: string | null; planExpiresAt?: string | null; pilotUsed?: boolean; termsAccepted?: { version: string; at: string; uid: string }; notified?: Record<string, string>;
   maxDevices: number; devices: Record<string, Device>;
 };
 export type Claims = {
@@ -53,3 +53,8 @@ export class StudioError extends Error {
   constructor(code: string, status = 400) { super(code); this.code = code; this.status = status; }
 }
 export function purchaseDisabled(): never { throw new StudioError("purchase_unavailable", 503); }
+/** Paid/pilot plans lapse back to Free (the license itself stays valid so the booth keeps working). */
+export const effectivePlanId = (license: { planId: string; planExpiresAt?: string | null }, nowMs: number) =>
+  license.planId !== "free" && license.planExpiresAt && Date.parse(license.planExpiresAt) <= nowMs ? "free" : license.planId;
+/** Bump when the terms or privacy text changes in a way users must re-accept. Recorded with every pilot start. */
+export const LEGAL_VERSION = "2026-11-03";

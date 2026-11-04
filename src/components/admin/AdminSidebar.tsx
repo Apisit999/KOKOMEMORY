@@ -277,7 +277,7 @@ export default function AdminSidebar({
 
                 {/* Navigation */}
                 <nav className="flex-1 overflow-y-auto px-4 py-6">
-                    <div className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                    <div className="mb-3 px-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-400">
                         Management
                     </div>
 
@@ -313,7 +313,7 @@ export default function AdminSidebar({
                                                 {translate(item.label)}
                                             </div>
 
-                                            <div className="mt-0.5 text-[10px] text-slate-400">
+                                            <div className="mt-0.5 text-[12px] text-slate-400">
                                                 กำลังพัฒนา
                                             </div>
                                         </div>
@@ -324,7 +324,7 @@ export default function AdminSidebar({
                             return (
                                 <div key={item.href}>
                                     {item.href === "/admin/3d-printing" && (
-                                        <div className="mb-2 mt-5 px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                        <div className="mb-2 mt-5 px-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-pink-500">
                                             KOKO 3D
                                         </div>
                                     )}
@@ -377,7 +377,7 @@ export default function AdminSidebar({
                         KOKO Memory Admin
                     </div>
 
-                    <div className="mt-1 text-[11px] text-slate-300">
+                    <div className="mt-1 text-[12px] text-slate-300">
                         Management System
                     </div>
                 </div>

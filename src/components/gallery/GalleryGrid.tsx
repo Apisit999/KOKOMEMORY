@@ -929,7 +929,7 @@ export default function GalleryGrid() {
                             flex
                             items-center
                             gap-2
-                            text-[10px]
+                            text-[12px]
                             font-black
                             tracking-[0.25em]
                             text-slate-400
@@ -1079,7 +1079,7 @@ export default function GalleryGrid() {
                     <div
                         className="
                             hidden
-                            text-[10px]
+                            text-[12px]
                             font-bold
                             tracking-[0.15em]
                             text-slate-300
@@ -1325,7 +1325,7 @@ export default function GalleryGrid() {
                                                 bg-[#EEE7D9]
                                                 px-2.5
                                                 py-1
-                                                text-[9px]
+                                                text-[12px]
                                                 font-black
                                                 tracking-[0.12em]
                                                 text-[#A0235F]
@@ -1348,7 +1348,7 @@ export default function GalleryGrid() {
                                                 bg-slate-100
                                                 px-2.5
                                                 py-1
-                                                text-[9px]
+                                                text-[12px]
                                                 font-bold
                                                 text-slate-500
                                                 sm:inline-flex
@@ -1588,7 +1588,7 @@ export default function GalleryGrid() {
                                     bg-black/35
                                     px-4
                                     py-2
-                                    text-[10px]
+                                    text-[12px]
                                     font-bold
                                     text-white/75
                                     backdrop-blur-md
@@ -1775,7 +1775,7 @@ export default function GalleryGrid() {
                             -translate-x-1/2
                             items-center
                             gap-2
-                            text-[9px]
+                            text-[12px]
                             font-medium
                             tracking-wide
                             text-white/25

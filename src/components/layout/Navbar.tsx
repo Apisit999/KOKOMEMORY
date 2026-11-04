@@ -127,7 +127,7 @@ export default function Navbar() {
     const isServiceActive = serviceItems.some((item) => isActive(item.href));
     const isSoftwareActive = softwareItems.some((item) => isActive(item.href));
     const drawerItem = "flex min-h-11 items-center gap-3 rounded-xl border-l-2 border-transparent px-4 py-3 text-sm text-[#EDEDF0] transition [&_svg]:text-[#8F8F99] hover:bg-[#FF4FA3]/10 hover:text-white hover:[&_svg]:text-[#FF4FA3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]";
-    const drawerSectionLabel = "mb-2 px-4 text-[11px] font-bold uppercase tracking-[.15em] text-[#8F8F99]";
+    const drawerSectionLabel = "mb-2 px-4 text-[12px] font-bold uppercase tracking-[.15em] text-[#8F8F99]";
     const renderDrawerLink = (item: { title: string; href: string }, nested = false) => <Link key={item.href} href={item.href} onClick={close} aria-current={isActive(item.href) ? "page" : undefined} className={`${drawerItem} ${nested ? "ml-3 w-[calc(100%-0.75rem)]" : ""} ${isActive(item.href) ? "border-[#FF4FA3] bg-gradient-to-r from-[#FF4FA3]/[.18] to-[#FF4FA3]/[.06] font-semibold text-white [&_svg]:text-[#FF4FA3]" : "font-medium"}`}>{menuLabel(item)}</Link>;
 
     return <>
@@ -137,7 +137,7 @@ export default function Navbar() {
                     <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full sm:h-12 sm:w-12">
                         <Image src={brandLogo} alt="KOKO Memory" fill sizes="(max-width: 639px) 44px, 48px" priority className="object-cover" />
                     </span>
-                    <div className="hidden whitespace-nowrap sm:block"><h1 className="text-xl font-bold xl:text-2xl">KOKO Memory</h1><p className="hidden text-[10px] uppercase tracking-[.18em] text-white/55 lg:block">Photobooth &amp; Event</p></div>
+                    <div className="hidden whitespace-nowrap sm:block"><h1 className="text-xl font-bold xl:text-2xl">KOKO Memory</h1><p className="hidden text-[12px] uppercase tracking-[.18em] text-white/55 lg:block">Photobooth &amp; Event</p></div>
                 </Link>
 
                 <nav aria-label={t("common.menu")} className="hidden shrink-0 items-center gap-1 xl:flex 2xl:gap-2">

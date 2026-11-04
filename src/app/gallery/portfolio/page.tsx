@@ -452,7 +452,7 @@ export default function GalleryPage() {
 
                                     <span
                                         className="
-                                            text-[10px]
+                                            text-[12px]
                                             font-bold
                                             tracking-[0.32em]
                                             text-white/75
@@ -615,7 +615,7 @@ export default function GalleryPage() {
                                         items-center
                                         gap-x-5
                                         gap-y-2
-                                        text-[10px]
+                                        text-[12px]
                                         font-medium
                                         tracking-[0.08em]
                                         text-white/35
@@ -714,7 +714,7 @@ export default function GalleryPage() {
                                             absolute
                                             left-10
                                             top-12
-                                            text-[9px]
+                                            text-[12px]
                                             font-bold
                                             tracking-[0.35em]
                                             text-white/25
@@ -894,7 +894,7 @@ export default function GalleryPage() {
 
                         <span
                             className="
-                                text-[8px]
+                                text-[12px]
                                 font-bold
                                 uppercase
                                 tracking-[0.45em]
@@ -984,7 +984,7 @@ export default function GalleryPage() {
 
                                     <span
                                         className="
-                                            text-[10px]
+                                            text-[12px]
                                             font-bold
                                             tracking-[0.28em]
                                             text-[#A0235F]
@@ -1192,7 +1192,7 @@ export default function GalleryPage() {
 
                             <p
                                 className="
-                                    text-[10px]
+                                    text-[12px]
                                     font-black
                                     tracking-[0.32em]
                                     text-[#C77A9B]
@@ -1274,7 +1274,7 @@ export default function GalleryPage() {
 
                                 <span
                                     className="
-                                        text-[10px]
+                                        text-[12px]
                                         font-bold
                                         tracking-[0.25em]
                                         text-white/30
@@ -1396,7 +1396,7 @@ export default function GalleryPage() {
 
                             <p
                                 className="
-                                    text-[10px]
+                                    text-[12px]
                                     font-black
                                     tracking-[0.32em]
                                     text-[#C77A9B]

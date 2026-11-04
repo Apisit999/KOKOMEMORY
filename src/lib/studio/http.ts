@@ -1,10 +1,11 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { StudioError, purchaseDisabled } from "./types.ts";
 import type { Input, StudioService } from "./service.ts";
 import type { ReleaseService } from "./releases.ts";
 import type { CloudService } from "./cloud.ts";
+import type { NotificationService } from "./notifications.ts";
 type Identity = { uid: string; admin: boolean };
-type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService> };
+type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService>; notifications?: () => Promise<NotificationService> };
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 async function body(request: Request): Promise<Input> {
   if (!request.headers.get("content-type")?.startsWith("application/json")) throw new StudioError("invalid_request", 415);
@@ -105,6 +106,14 @@ export function createStudioHandler(dependencies: Dependencies) {
           result = input.action === "approve" ? await service.approveLink(identity!.uid, input.userCode) : await service.inspectLink(identity!.uid, input.userCode); break;
         case "account/licenses/manage": result = await service.manage(identity!.uid, false, input); break;
         case "admin/releases": result = await (await releases()).adminAction(identity!.uid, input); break;
+        case "account/pilot/start": result = await service.startPilot(identity!.uid, input); break;
+        case "admin/licenses/grant": result = await service.grantPlan(identity!.uid, input); break;
+        case "cron/retention-sweep": {
+          const secret = process.env.STUDIO_CRON_SECRET ?? ""; const given = request.headers.get("x-cron-secret") ?? "";
+          const a = createHash("sha256").update(secret).digest(), b = createHash("sha256").update(given).digest();
+          if (secret.length < 32 || !timingSafeEqual(a, b)) throw new StudioError("forbidden", 403);
+          { const swept = await (await cloud()).sweepExpiredPhotos("system:cron"); const notices = dependencies.notifications ? await (await dependencies.notifications()).run() : null; result = { ...swept, notices }; } break;
+        }
         case "admin/licenses/manage": result = await service.manage(identity!.uid, true, input); break;
         default: throw new StudioError("not_found", 404);
       }

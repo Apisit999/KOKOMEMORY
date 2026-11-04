@@ -349,7 +349,7 @@ function PackageCard({
             {/* Selected */}
 
             {selected && (
-                <div className="absolute left-3 top-3 z-10 rounded-full bg-slate-900 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg sm:left-5 sm:top-5 sm:text-xs">
+                <div className="absolute left-3 top-3 z-10 rounded-full bg-slate-900 px-3 py-1.5 text-[12px] font-bold text-white shadow-lg sm:left-5 sm:top-5 sm:text-xs">
                     ✓ {translate("แพ็กเกจที่เลือก")}
                 </div>
             )}
@@ -358,7 +358,7 @@ function PackageCard({
             {/* Popular */}
 
             {item.popular && (
-                <div className="absolute right-3 top-3 z-10 rounded-full bg-pink-500 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg sm:right-5 sm:top-5 sm:text-xs">
+                <div className="absolute right-3 top-3 z-10 rounded-full bg-pink-500 px-3 py-1.5 text-[12px] font-bold text-white shadow-lg sm:right-5 sm:top-5 sm:text-xs">
                     ⭐ {translate("แนะนำ")}
                 </div>
             )}

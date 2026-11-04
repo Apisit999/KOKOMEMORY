@@ -353,7 +353,7 @@ export default function PortfolioDetailPage() {
 
                             <p
                                 className="
-                                    text-[10px]
+                                    text-[12px]
                                     font-black
                                     uppercase
                                     tracking-[0.32em]
@@ -548,7 +548,7 @@ export default function PortfolioDetailPage() {
 
                             <p
                                 className="
-                                    text-[10px]
+                                    text-[12px]
                                     font-black
                                     tracking-[0.3em]
                                     text-[#A0235F]
@@ -630,7 +630,7 @@ export default function PortfolioDetailPage() {
 
                                 <p
                                     className="
-                                        text-[10px]
+                                        text-[12px]
                                         font-black
                                         tracking-[0.3em]
                                         text-[#A0235F]
@@ -850,7 +850,7 @@ export default function PortfolioDetailPage() {
 
                         <p
                             className="
-                                text-[10px]
+                                text-[12px]
                                 font-black
                                 tracking-[0.32em]
                                 text-[#C77A9B]

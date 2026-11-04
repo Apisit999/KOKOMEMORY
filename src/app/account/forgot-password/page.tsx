@@ -192,11 +192,11 @@ export default function ForgotPasswordPage() {
 
                         <div className="mt-5 rounded-[14px] border border-[#F2ADCA] bg-[#F4F0E7] px-4 py-3">
 
-                            <p className="text-[10px] font-semibold text-[#3C3C37] sm:text-[11px]">
+                            <p className="text-[12px] font-semibold text-[#3C3C37] sm:text-[12px]">
                                 อีเมลที่ใช้รีเซ็ตรหัสผ่าน
                             </p>
 
-                            <p className="mt-1 break-all text-[11px] leading-5 text-[#6B6B64] sm:text-[12px]">
+                            <p className="mt-1 break-all text-[12px] leading-5 text-[#6B6B64] sm:text-[12px]">
                                 {email.trim()}
                             </p>
 
@@ -205,11 +205,11 @@ export default function ForgotPasswordPage() {
 
                         <div className="mt-3 rounded-[14px] border border-[#E4DDCD] bg-[#FCFAFB] px-4 py-3">
 
-                            <p className="text-[11px] font-semibold text-[#3C3C37] sm:text-[12px]">
+                            <p className="text-[12px] font-semibold text-[#3C3C37] sm:text-[12px]">
                                 ยังไม่พบอีเมล?
                             </p>
 
-                            <ul className="mt-1 space-y-0.5 text-[10px] leading-5 text-[#6B6B64] sm:text-[11px]">
+                            <ul className="mt-1 space-y-0.5 text-[12px] leading-5 text-[#6B6B64] sm:text-[12px]">
                                 <li>
                                     • ตรวจสอบโฟลเดอร์ Spam หรือ Junk
                                 </li>
@@ -289,7 +289,7 @@ export default function ForgotPasswordPage() {
 
                             <Image src={brandLogo} alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
 
-                            <span className="rounded-full border border-white/25 bg-white/10 px-2.5 py-1.5 text-[7px] font-semibold tracking-[0.12em] text-white/90 backdrop-blur-md sm:px-3.5 sm:text-[8px] lg:px-4 lg:py-2 lg:text-[9px]">
+                            <span className="rounded-full border border-white/25 bg-white/10 px-2.5 py-1.5 text-[12px] font-semibold tracking-[0.12em] text-white/90 backdrop-blur-md sm:px-3.5 sm:text-[12px] lg:px-4 lg:py-2 lg:text-[12px]">
                                 PHOTOBOOTH & EVENT
                             </span>
 
@@ -432,7 +432,7 @@ export default function ForgotPasswordPage() {
                             {error && (
                                 <div
                                     role="alert"
-                                    className="mb-4 rounded-[13px] border border-red-100 bg-red-50 px-3.5 py-3 text-[11px] leading-5 text-red-600 sm:text-xs"
+                                    className="mb-4 rounded-[13px] border border-red-100 bg-red-50 px-3.5 py-3 text-[12px] leading-5 text-red-600 sm:text-xs"
                                 >
                                     {error}
                                 </div>
@@ -503,7 +503,7 @@ export default function ForgotPasswordPage() {
 
                             <div className="mt-5 rounded-[13px] border border-[#E4DDCD] bg-white px-3.5 py-3">
 
-                                <p className="text-[10px] leading-5 text-[#6B6B64] sm:text-[11px]">
+                                <p className="text-[12px] leading-5 text-[#6B6B64] sm:text-[12px]">
                                     เพื่อความปลอดภัย ระบบจะไม่แจ้งว่าอีเมลนี้มีบัญชีอยู่หรือไม่
                                 </p>
 

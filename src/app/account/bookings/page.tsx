@@ -879,7 +879,7 @@ export default function MyBookingsPage() {
 
                                         </div>
 
-                                        <p className="mt-4 break-all text-[11px] font-medium text-white/70">
+                                        <p className="mt-4 break-all text-[12px] font-medium text-white/70">
                                             Booking ID: {booking.id}
                                         </p>
 

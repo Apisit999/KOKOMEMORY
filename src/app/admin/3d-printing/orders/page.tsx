@@ -1330,7 +1330,7 @@ export default function ThreeDOrdersPage() {
 
                             <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
 
-                                <p className="text-[11px] font-medium text-slate-500">
+                                <p className="text-[12px] font-medium text-slate-500">
                                     เดือนนี้
                                 </p>
 
@@ -1385,7 +1385,7 @@ export default function ThreeDOrdersPage() {
                                                     {month.value >
                                                         0 && (
 
-                                                        <div className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-950 px-2 py-1 text-[10px] font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                                                        <div className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-950 px-2 py-1 text-[12px] font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
 
                                                             ฿
                                                             {formatMoney(
@@ -1400,7 +1400,7 @@ export default function ThreeDOrdersPage() {
                                             </div>
 
 
-                                            <p className="mt-2 text-center text-[11px] font-medium text-slate-500">
+                                            <p className="mt-2 text-center text-[12px] font-medium text-slate-500">
                                                 {
                                                     month.label
                                                 }

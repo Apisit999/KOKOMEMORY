@@ -1,7 +1,8 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { EntitlementSigner, hash } from "./crypto.ts";
+import { PILOT_PLAN_ID, PILOT_DAYS, PILOT_CAP } from "./migration.ts";
 import { SCHEMA_VERSION } from "./migration.ts";
-import { FREE_FEATURES, PRODUCT_ID, StudioError, type Claims, type Device, type StatsDaily, type License, type LinkRequest, type Plan, type Store, type Transaction } from "./types.ts";
+import { FREE_FEATURES, PRODUCT_ID, LEGAL_VERSION, effectivePlanId, StudioError, type Claims, type Device, type StatsDaily, type License, type LinkRequest, type Plan, type Store, type Transaction } from "./types.ts";
 
 export type Input = Record<string, unknown>;
 export const freeLicenseId = (deviceId: string) => `free-${hash(`${PRODUCT_ID}:${deviceId}`)}`;
@@ -64,7 +65,7 @@ export class StudioService {
     const now = this.now();
     const deadline = license.expiresAt ? Date.parse(license.expiresAt) : Infinity;
     return { schemaVersion: 1, keyId: this.signer.keyId, licenseId: license.id, deviceId, productId: PRODUCT_ID, issuedAt: iso(now), startsAt: license.startsAt, expiresAt: license.expiresAt,
-      refreshAfter: iso(Math.min(now + 24 * 3600000, deadline)), offlineUntil: iso(Math.min(now + 72 * 3600000, deadline)), features: license.planId === "free" ? [...FREE_FEATURES] : plan.features.filter(feature => ["capture", "printing", "templates", "cloud_sync"].includes(feature)) };
+      refreshAfter: iso(Math.min(now + 24 * 3600000, deadline)), offlineUntil: iso(Math.min(now + 72 * 3600000, deadline)), features: plan.id === "free" ? [...FREE_FEATURES] : plan.features.filter(feature => ["capture", "printing", "templates", "cloud_sync"].includes(feature)) };
   }
   private token(license: License, plan: Plan, deviceId: string) { return { entitlement: this.signer.sign(this.claims(license, plan, deviceId)) }; }
   private activateDevice(license: License, plan: Plan, deviceId: string) {
@@ -109,7 +110,7 @@ export class StudioService {
       const mapping = await tx.get<{ licenseId: string }>("studioLicenseKeys", keyHash);
       if (!mapping) throw new StudioError("invalid_license", 401);
       const license = this.live(await tx.get<License>("studioLicenses", mapping.licenseId));
-      const plan = await this.plan(tx, license.planId);
+      const plan = await this.plan(tx, effectivePlanId(license, this.now()));
       const idemId = hash(`activate:${license.id}:${deviceId}:${requestKey}`);
       const previous = await tx.get<{ done: boolean }>("studioIdempotency", idemId);
       if (previous) {
@@ -135,9 +136,9 @@ export class StudioService {
     try {
       return await this.store.transaction(async tx => {
         const license = this.live(await tx.get<License>("studioLicenses", claims.licenseId));
-        const plan = await this.plan(tx, license.planId);
+        const plan = await this.plan(tx, effectivePlanId(license, this.now()));
         this.active(license, deviceId);
-        if (Object.values(license.devices).filter(d => d.status === "active").length > Math.min(license.maxDevices, plan.deviceLimit)) throw new StudioError("device_limit", 403);
+        if (Object.values(license.devices).filter(d => d.status === "active").length > Math.min(license.maxDevices, plan.deviceLimit) && effectivePlanId(license, this.now()) === license.planId) throw new StudioError("device_limit", 403);
         license.devices[deviceId].lastSeenAt = iso(this.now());
         tx.set("studioLicenses", license.id, license);
         return this.token(license, plan, deviceId);
@@ -168,9 +169,9 @@ export class StudioService {
     const { deviceId, claims } = this.proof(input);
     const hasCloud = await this.store.transaction(async tx => {
       const license = this.live(await tx.get<License>("studioLicenses", claims.licenseId));
-      const plan = await this.plan(tx, license.planId);
+      const plan = await this.plan(tx, effectivePlanId(license, this.now()));
       this.active(license, deviceId);
-      return license.planId !== "free" && plan.features.includes("cloud_sync") && claims.features.includes("cloud_sync");
+      return effectivePlanId(license, this.now()) !== "free" && plan.features.includes("cloud_sync") && claims.features.includes("cloud_sync");
     });
     throw new StudioError(hasCloud ? "cloud_unavailable" : "feature_not_in_plan", hasCloud ? 503 : 403);
   }
@@ -242,7 +243,7 @@ export class StudioService {
       if (link.status === "consumed") throw new StudioError("code_used", 409);
       if (link.status === "pending") return { status: "pending" };
       const license = this.live(await tx.get<License>("studioLicenses", link.licenseId));
-      const plan = await this.plan(tx, license.planId);
+      const plan = await this.plan(tx, effectivePlanId(license, this.now()));
       this.active(license, link.deviceId);
       if (!link.ownerUid || (license.ownerUid && license.ownerUid !== link.ownerUid)) throw new StudioError("forbidden", 403);
       license.ownerUid = link.ownerUid; license.linkedAt = iso(this.now()); license.devices[link.deviceId].name = link.deviceName;
@@ -273,6 +274,44 @@ export class StudioService {
       tx.set("studioLicenses", id, license);
       this.audit(tx, admin ? `admin.${action}` : "account.deactivate", id, deviceId, uid);
       return { ok: true };
+    });
+  }
+  /** Admin: set a license's plan. days=0 means no end date; "free" resets. Audited. */
+  async grantPlan(adminUid: string, input: Input) {
+    const id = safeId(input.licenseId); const planId = text(input.planId, 1, 64);
+    const days = Number(input.days ?? 0);
+    if (!Number.isInteger(days) || days < 0 || days > 3650) throw new StudioError("invalid_request");
+    return this.store.transaction(async tx => {
+      const license = await tx.get<License>("studioLicenses", id);
+      if (!license) throw new StudioError("not_found", 404);
+      const plan = await this.plan(tx, planId);
+      const base = license.planExpiresAt && Date.parse(license.planExpiresAt) > this.now() && license.planId === planId ? Date.parse(license.planExpiresAt) : this.now();
+      license.planId = planId; license.maxDevices = plan.deviceLimit; license.notified = {};
+      license.planExpiresAt = planId === "free" || days === 0 ? null : iso(base + days * 86_400_000);
+      tx.set("studioLicenses", id, license);
+      this.audit(tx, "admin.grant_plan:" + planId, id, null, adminUid);
+      return { ok: true, planExpiresAt: license.planExpiresAt };
+    });
+  }
+  /** Customer: start the one-time free pilot on a booth license linked to their account. Capped. */
+  async startPilot(uid: string, input: Input) {
+    const id = safeId(input.licenseId);
+    // Explicit acceptance of the current terms + privacy notice is required and recorded.
+    if (input.acceptTerms !== LEGAL_VERSION) throw new StudioError("terms_required", 400);
+    return this.store.transaction(async tx => {
+      const license = await tx.get<License>("studioLicenses", id);
+      if (!license || license.ownerUid !== uid) throw new StudioError("not_found", 404);
+      if (license.planId !== "free" || license.pilotUsed) throw new StudioError("pilot_unavailable", 409);
+      const counter = await tx.get<{ count: number }>("studioPilot", "current");
+      const count = counter?.count ?? 0;
+      if (count >= PILOT_CAP) throw new StudioError("pilot_full", 409);
+      const plan = await this.plan(tx, PILOT_PLAN_ID);
+      license.planId = PILOT_PLAN_ID; license.pilotUsed = true; license.notified = {}; license.termsAccepted = { version: LEGAL_VERSION, at: iso(this.now()), uid }; license.maxDevices = plan.deviceLimit;
+      license.planExpiresAt = iso(this.now() + PILOT_DAYS * 86_400_000);
+      tx.set("studioLicenses", id, license);
+      tx.set("studioPilot", "current", { count: count + 1 });
+      this.audit(tx, "account.start_pilot", id, null, uid);
+      return { ok: true, planExpiresAt: license.planExpiresAt };
     });
   }
   async admin() {

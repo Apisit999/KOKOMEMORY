@@ -1,6 +1,6 @@
 import type { Firestore, Transaction as FirebaseTransaction, DocumentData, Query } from "firebase-admin/firestore";
 import type { Store, Transaction } from "./types.ts";
-const collections = new Set(["studioPlans", "studioLicenses", "studioLicenseKeys", "studioDeviceAuthorizations", "studioLinkCodes", "studioIdempotency", "studioAuditLogs", "studioRateLimits", "studioSchema", "studioOrders", "studioPaymentEvents", "studioReleases", "studioDownloads", "studioStatsDaily", "studioEvents", "studioPhotos", "studioUsage", "studioShareIndex", "studioShares"]);
+const collections = new Set(["studioPlans", "studioLicenses", "studioLicenseKeys", "studioDeviceAuthorizations", "studioLinkCodes", "studioIdempotency", "studioAuditLogs", "studioRateLimits", "studioSchema", "studioPilot", "studioOrders", "studioPaymentEvents", "studioReleases", "studioDownloads", "studioStatsDaily", "studioEvents", "studioPhotos", "studioUsage", "studioShareIndex", "studioShares"]);
 export class FirestoreStore implements Store {
   private db: Firestore;
   constructor(db: Firestore) { this.db = db; }

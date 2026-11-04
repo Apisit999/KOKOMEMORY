@@ -506,7 +506,7 @@ export default function RegisterPage() {
 
                             <Image src={brandLogo} alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
 
-                            <span className="hidden rounded-full border border-white/30 bg-[#1F2020]/20 px-4 py-2 text-[9px] font-medium tracking-[0.18em] text-white backdrop-blur-md sm:block">
+                            <span className="hidden rounded-full border border-white/30 bg-[#1F2020]/20 px-4 py-2 text-[12px] font-medium tracking-[0.18em] text-white backdrop-blur-md sm:block">
                                 PHOTOBOOTH & EVENT
                             </span>
 
@@ -583,7 +583,7 @@ export default function RegisterPage() {
                                                 เก็บทุกช่วงเวลา
                                             </p>
 
-                                            <p className="mt-0.5 text-[8px] tracking-[0.12em] text-white/80 sm:text-[9px]">
+                                            <p className="mt-0.5 text-[12px] tracking-[0.12em] text-white/80 sm:text-[12px]">
                                                 KEEP YOUR MEMORIES
                                             </p>
 
@@ -597,11 +597,11 @@ export default function RegisterPage() {
 
                                     <div className="relative px-2 pb-1 pt-2 text-center">
 
-                                        <p className="font-serif text-[11px] font-medium tracking-[0.12em] text-[#1F2020] sm:text-[12px]">
+                                        <p className="font-serif text-[12px] font-medium tracking-[0.12em] text-[#1F2020] sm:text-[12px]">
                                             KOKO MEMORY
                                         </p>
 
-                                        <p className="mt-0.5 text-[7px] tracking-[0.18em] text-[#1F2020] sm:text-[8px]">
+                                        <p className="mt-0.5 text-[12px] tracking-[0.18em] text-[#1F2020] sm:text-[12px]">
                                             PHOTOBOOTH & EVENT
                                         </p>
 
@@ -1175,7 +1175,7 @@ function FloatingCard({
                     />
                 )}
 
-                <span className="mt-2 block text-center font-serif text-[9px] italic text-[#5F5F58] sm:text-[10px]">
+                <span className="mt-2 block text-center font-serif text-[12px] italic text-[#5F5F58] sm:text-[12px]">
                     {caption}
                 </span>
 

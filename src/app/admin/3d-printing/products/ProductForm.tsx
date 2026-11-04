@@ -751,7 +751,7 @@ function FormSection({
 }) {
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <p className="text-[10px] font-black tracking-[0.22em] text-pink-500">
+            <p className="text-[12px] font-black tracking-[0.22em] text-pink-500">
                 {eyebrow}
             </p>
 

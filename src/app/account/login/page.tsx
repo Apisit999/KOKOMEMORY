@@ -289,7 +289,7 @@ export default function LoginPage() {
 
                             {registrationProvider === "email" &&
                                 registrationEmail && (
-                                    <p className="mt-1 truncate text-[11px] text-[#91A197]">
+                                    <p className="mt-1 truncate text-[12px] text-[#91A197]">
                                         {registrationEmail}
                                     </p>
                                 )}
@@ -347,7 +347,7 @@ export default function LoginPage() {
                         <div className="relative z-40 flex items-center justify-between">
                             <Image src={brandLogo} alt="KOKO Memory" width={48} height={48} className="h-11 w-11 rounded-full object-cover shadow-md transition duration-200 hover:scale-[1.02]" />
 
-                            <span className="hidden rounded-full border border-white/30 bg-[#1F2020]/20 px-4 py-2 text-[9px] font-medium tracking-[0.18em] text-white backdrop-blur-md sm:block">
+                            <span className="hidden rounded-full border border-white/30 bg-[#1F2020]/20 px-4 py-2 text-[12px] font-medium tracking-[0.18em] text-white backdrop-blur-md sm:block">
                                 PHOTOBOOTH & EVENT
                             </span>
                         </div>
@@ -409,7 +409,7 @@ export default function LoginPage() {
                                                 เก็บทุกช่วงเวลา
                                             </p>
 
-                                            <p className="mt-0.5 text-[8px] tracking-[0.12em] text-white/80 sm:text-[9px]">
+                                            <p className="mt-0.5 text-[12px] tracking-[0.12em] text-white/80 sm:text-[12px]">
                                                 KEEP YOUR MEMORIES
                                             </p>
                                         </div>
@@ -418,11 +418,11 @@ export default function LoginPage() {
                                     </div>
 
                                     <div className="relative px-2 pb-1 pt-2 text-center">
-                                        <p className="font-serif text-[11px] font-medium tracking-[0.12em] text-[#1F2020] sm:text-[12px]">
+                                        <p className="font-serif text-[12px] font-medium tracking-[0.12em] text-[#1F2020] sm:text-[12px]">
                                             KOKO MEMORY
                                         </p>
 
-                                        <p className="mt-0.5 text-[7px] tracking-[0.18em] text-[#1F2020] sm:text-[8px]">
+                                        <p className="mt-0.5 text-[12px] tracking-[0.18em] text-[#1F2020] sm:text-[12px]">
                                             PHOTOBOOTH & EVENT
                                         </p>
                                     </div>
@@ -757,7 +757,7 @@ function FloatingCard({
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#1F2020]/15 via-transparent to-white/20" />
                 </div>
 
-                <span className="mt-1.5 block text-center font-serif text-[8px] italic leading-tight text-[#5F5F58] sm:text-[9px]">
+                <span className="mt-1.5 block text-center font-serif text-[12px] italic leading-tight text-[#5F5F58] sm:text-[12px]">
                     {caption}
                 </span>
             </div>

@@ -2,7 +2,7 @@
 .koko-share{min-height:100vh;min-height:100dvh;background:#141516;color:#f4f0e7;font-family:var(--font-koko-sans);padding:max(20px,env(safe-area-inset-top)) 20px max(32px,env(safe-area-inset-bottom));max-width:1240px;margin-inline:auto}
 .koko-share *{box-sizing:border-box}
 .koko-share-head{padding:28px 0 22px}
-.koko-share-eyebrow{font-size:11px;letter-spacing:2px;font-weight:700;color:#d5ee85}
+.koko-share-eyebrow{font-size:12px;letter-spacing:2px;font-weight:700;color:#d5ee85}
 .koko-share-head h1{font-size:clamp(28px,6vw,48px);font-weight:800;line-height:1.35;margin-top:10px;overflow-wrap:anywhere}
 .koko-share-sub{margin-top:8px;color:#bcbcb6;font-size:15px;line-height:1.7}
 .koko-share-note{margin-top:12px;padding:24px;border-radius:16px;background:#1f2020;border:1px solid #3a3b36;line-height:1.8}

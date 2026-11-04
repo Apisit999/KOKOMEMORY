@@ -1034,7 +1034,7 @@ function ScheduleContent() {
                                                     className={`
                                                         mt-2
                                                         whitespace-nowrap
-                                                        text-[10px]
+                                                        text-[12px]
                                                         font-semibold
                                                         sm:text-xs
                                                         md:text-sm

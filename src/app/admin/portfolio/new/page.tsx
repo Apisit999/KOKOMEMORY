@@ -1312,7 +1312,7 @@ export default function NewAdminPortfolioPage() {
                                 className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-60"
                             />
 
-                            <div className="mt-1 text-right text-[11px] text-slate-400">
+                            <div className="mt-1 text-right text-[12px] text-slate-400">
                                 {form.title.length}/150
                             </div>
 
@@ -1350,7 +1350,7 @@ export default function NewAdminPortfolioPage() {
                                 className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-60"
                             />
 
-                            <div className="mt-1 text-right text-[11px] text-slate-400">
+                            <div className="mt-1 text-right text-[12px] text-slate-400">
                                 {form.description.length}/5000
                             </div>
 
@@ -1589,7 +1589,7 @@ export default function NewAdminPortfolioPage() {
                                             {/* Cover */}
 
                                             {image.isCover && (
-                                                <div className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-pink-500 px-2.5 py-1 text-[10px] font-black text-white shadow">
+                                                <div className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-pink-500 px-2.5 py-1 text-[12px] font-black text-white shadow">
                                                     <Star
                                                         size={11}
                                                         fill="currentColor"
@@ -1635,7 +1635,7 @@ export default function NewAdminPortfolioPage() {
                                                         saving ||
                                                         image.isCover
                                                     }
-                                                    className={`flex h-8 w-full items-center justify-center gap-1 rounded-lg text-[10px] font-black transition ${
+                                                    className={`flex h-8 w-full items-center justify-center gap-1 rounded-lg text-[12px] font-black transition ${
                                                         image.isCover
                                                             ? "bg-pink-500 text-white"
                                                             : "bg-white/90 text-slate-700 hover:bg-white"

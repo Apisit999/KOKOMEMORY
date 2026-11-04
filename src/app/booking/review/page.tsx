@@ -724,7 +724,7 @@ function ReviewBookingContent() {
                         </div>
 
                         <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
-                            <p className="text-[11px] font-medium text-slate-400">
+                            <p className="text-[12px] font-medium text-slate-400">
                                 {translate("ขั้นตอน")}
                             </p>
 
@@ -785,7 +785,7 @@ function ReviewBookingContent() {
                                         }`}
                                     >
                                         <span
-                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${
+                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] ${
                                                 step.active
                                                     ? "bg-white/20 text-white"
                                                     : step.done

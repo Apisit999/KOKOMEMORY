@@ -47,7 +47,7 @@ export default function HeroSection() {
 
                     <div className="mb-6 flex justify-center">
 
-                        <span className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-white/90 backdrop-blur-xl sm:text-xs">
+                        <span className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-[12px] font-semibold uppercase tracking-[0.25em] text-white/90 backdrop-blur-xl sm:text-xs">
                             Photobooth & 3D printing Service
                         </span>
 
@@ -116,7 +116,7 @@ export default function HeroSection() {
                                 500+
                             </p>
 
-                            <p className="mt-1 text-[11px] uppercase tracking-wider text-white/55 sm:text-xs">
+                            <p className="mt-1 text-[12px] uppercase tracking-wider text-white/55 sm:text-xs">
                                 Events
                             </p>
 
@@ -129,7 +129,7 @@ export default function HeroSection() {
                                 100K+
                             </p>
 
-                            <p className="mt-1 text-[11px] uppercase tracking-wider text-white/55 sm:text-xs">
+                            <p className="mt-1 text-[12px] uppercase tracking-wider text-white/55 sm:text-xs">
                                 Photos
                             </p>
 
@@ -142,7 +142,7 @@ export default function HeroSection() {
                                 5+
                             </p>
 
-                            <p className="mt-1 text-[11px] uppercase tracking-wider text-white/55 sm:text-xs">
+                            <p className="mt-1 text-[12px] uppercase tracking-wider text-white/55 sm:text-xs">
                                 Years
                             </p>
 
@@ -170,7 +170,7 @@ export default function HeroSection() {
 
                 <div className="flex flex-col items-center gap-2">
 
-                    <span className="text-[9px] uppercase tracking-[0.3em] text-white/50">
+                    <span className="text-[12px] uppercase tracking-[0.3em] text-white/50">
                         Scroll
                     </span>
 

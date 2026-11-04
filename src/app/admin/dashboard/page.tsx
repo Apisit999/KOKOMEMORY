@@ -339,7 +339,7 @@ function StatCard({
                         {value}
                     </p>
 
-                    <p className="mt-1.5 line-clamp-2 text-[11px] leading-4 text-slate-400 sm:mt-2 sm:text-xs">
+                    <p className="mt-1.5 line-clamp-2 text-[12px] leading-4 text-slate-400 sm:mt-2 sm:text-xs">
                         {subtitle}
                     </p>
                 </div>
@@ -1004,7 +1004,7 @@ export default function AdminDashboardPage() {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 
                         <div className="min-w-0">
-                            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-pink-500 sm:text-xs">
                                 KOKO Memory · Admin
                             </p>
 
@@ -1108,7 +1108,7 @@ export default function AdminDashboardPage() {
                 <section className="mt-5 sm:mt-6">
                     <div className="mb-3 flex items-end justify-between gap-3">
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-pink-500 sm:text-xs">
                                 Action Center
                             </p>
 
@@ -1244,7 +1244,7 @@ export default function AdminDashboardPage() {
                 <section className="mt-5 sm:mt-6">
                     <div className="mb-3 flex items-end justify-between gap-3">
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-pink-500 sm:text-xs">
                                 3D Printing
                             </p>
 
@@ -1329,7 +1329,7 @@ export default function AdminDashboardPage() {
                     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-3xl">
                         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
                                     Recent Orders
                                 </p>
 
@@ -1400,7 +1400,7 @@ export default function AdminDashboardPage() {
                                                                 </span>
 
                                                                 <span
-                                                                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getOrderStatusClass(
+                                                                    className={`rounded-full px-2 py-0.5 text-[12px] font-bold ${getOrderStatusClass(
                                                                         order.orderStatus
                                                                     )}`}
                                                                 >
@@ -1418,7 +1418,7 @@ export default function AdminDashboardPage() {
                                                                 }
                                                             </p>
 
-                                                            <p className="mt-1 text-[11px] text-slate-400">
+                                                            <p className="mt-1 text-[12px] text-slate-400">
                                                                 {
                                                                     order
                                                                         .items
@@ -1450,7 +1450,7 @@ export default function AdminDashboardPage() {
                                                                 )}
                                                             </p>
 
-                                                            <p className="text-[11px] text-orange-500">
+                                                            <p className="text-[12px] text-orange-500">
                                                                 {formatCurrency(
                                                                     Number(
                                                                         order.remainingAmount
@@ -1491,7 +1491,7 @@ export default function AdminDashboardPage() {
                                                                     </span>
 
                                                                     <span
-                                                                        className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${getOrderStatusClass(
+                                                                        className={`rounded-full px-2.5 py-1 text-[12px] font-bold ${getOrderStatusClass(
                                                                             order.orderStatus
                                                                         )}`}
                                                                     >
@@ -1561,7 +1561,7 @@ export default function AdminDashboardPage() {
                     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-3xl">
                         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
                                     Booking
                                 </p>
 
@@ -1581,7 +1581,7 @@ export default function AdminDashboardPage() {
 
                         <div className="grid grid-cols-2 gap-2.5 p-3 sm:gap-3 sm:p-5">
                             <div className="rounded-2xl bg-slate-50 p-3.5 sm:p-4">
-                                <p className="text-[11px] text-slate-400 sm:text-xs">
+                                <p className="text-[12px] text-slate-400 sm:text-xs">
                                     Booking ทั้งหมด
                                 </p>
 
@@ -1593,7 +1593,7 @@ export default function AdminDashboardPage() {
                             </div>
 
                             <div className="rounded-2xl bg-emerald-50 p-3.5 sm:p-4">
-                                <p className="text-[11px] text-emerald-600 sm:text-xs">
+                                <p className="text-[12px] text-emerald-600 sm:text-xs">
                                     ยืนยันแล้ว
                                 </p>
 
@@ -1605,7 +1605,7 @@ export default function AdminDashboardPage() {
                             </div>
 
                             <div className="rounded-2xl bg-amber-50 p-3.5 sm:p-4">
-                                <p className="text-[11px] text-amber-600 sm:text-xs">
+                                <p className="text-[12px] text-amber-600 sm:text-xs">
                                     รอดำเนินการ
                                 </p>
 
@@ -1617,7 +1617,7 @@ export default function AdminDashboardPage() {
                             </div>
 
                             <div className="rounded-2xl bg-red-50 p-3.5 sm:p-4">
-                                <p className="text-[11px] text-red-500 sm:text-xs">
+                                <p className="text-[12px] text-red-500 sm:text-xs">
                                     ยกเลิก
                                 </p>
 
@@ -1631,7 +1631,7 @@ export default function AdminDashboardPage() {
                             <div className="col-span-2 rounded-2xl bg-pink-50 p-4 sm:p-5">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <p className="text-[11px] text-pink-600 sm:text-xs">
+                                        <p className="text-[12px] text-pink-600 sm:text-xs">
                                             รายได้ Booking
                                         </p>
 
@@ -1656,7 +1656,7 @@ export default function AdminDashboardPage() {
                 <section className="mt-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:mt-6 sm:rounded-3xl">
                     <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
                                 Latest Activity
                             </p>
 
@@ -1730,7 +1730,7 @@ export default function AdminDashboardPage() {
                                                                 )}
                                                             </p>
 
-                                                            <p className="mt-1 text-[11px] text-slate-400">
+                                                            <p className="mt-1 text-[12px] text-slate-400">
                                                                 {getBookingPhone(
                                                                     booking
                                                                 )}
@@ -1738,7 +1738,7 @@ export default function AdminDashboardPage() {
                                                         </div>
 
                                                         <span
-                                                            className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                                                            className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-bold ${
                                                                 confirmed
                                                                     ? "bg-emerald-50 text-emerald-700"
                                                                     : cancelled
@@ -1756,7 +1756,7 @@ export default function AdminDashboardPage() {
 
                                                     <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
                                                         <div>
-                                                            <p className="text-[10px] text-slate-400">
+                                                            <p className="text-[12px] text-slate-400">
                                                                 Package
                                                             </p>
 
@@ -1768,7 +1768,7 @@ export default function AdminDashboardPage() {
                                                         </div>
 
                                                         <div className="text-right">
-                                                            <p className="text-[10px] text-slate-400">
+                                                            <p className="text-[12px] text-slate-400">
                                                                 ราคา
                                                             </p>
 
@@ -1791,7 +1791,7 @@ export default function AdminDashboardPage() {
                                 <div className="hidden overflow-x-auto md:block">
                                     <table className="w-full min-w-[700px]">
                                         <thead>
-                                            <tr className="border-b border-slate-100 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                            <tr className="border-b border-slate-100 text-left text-[12px] font-bold uppercase tracking-wider text-slate-400">
                                                 <th className="px-3 py-3">
                                                     ลูกค้า
                                                 </th>
@@ -1914,7 +1914,7 @@ export default function AdminDashboardPage() {
 
                 <section className="mt-5 sm:mt-6">
                     <div className="mb-3">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                        <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
                             Quick Actions
                         </p>
 
@@ -1934,7 +1934,7 @@ export default function AdminDashboardPage() {
                                 สร้าง 3D Order
                             </p>
 
-                            <p className="mt-1 text-[11px] leading-4 text-slate-400 sm:text-xs">
+                            <p className="mt-1 text-[12px] leading-4 text-slate-400 sm:text-xs">
                                 เพิ่มคำสั่งซื้อใหม่
                             </p>
                         </Link>
@@ -1949,7 +1949,7 @@ export default function AdminDashboardPage() {
                                 จัดการโมเดล 3D
                             </p>
 
-                            <p className="mt-1 text-[11px] leading-4 text-slate-400 sm:text-xs">
+                            <p className="mt-1 text-[12px] leading-4 text-slate-400 sm:text-xs">
                                 Products และโมเดล
                             </p>
                         </Link>
@@ -1964,7 +1964,7 @@ export default function AdminDashboardPage() {
                                 ตรวจสอบ Payment
                             </p>
 
-                            <p className="mt-1 text-[11px] leading-4 text-slate-400 sm:text-xs">
+                            <p className="mt-1 text-[12px] leading-4 text-slate-400 sm:text-xs">
                                 ตรวจสอบการชำระเงิน
                             </p>
                         </Link>
@@ -1979,7 +1979,7 @@ export default function AdminDashboardPage() {
                                 จัดการ Portfolio
                             </p>
 
-                            <p className="mt-1 text-[11px] leading-4 text-slate-400 sm:text-xs">
+                            <p className="mt-1 text-[12px] leading-4 text-slate-400 sm:text-xs">
                                 ผลงานบนเว็บไซต์
                             </p>
                         </Link>
@@ -1992,7 +1992,7 @@ export default function AdminDashboardPage() {
 
                 <section className="mt-7 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:mt-8 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
                     <div className="min-w-0">
-                        <p className="text-[10px] text-slate-400 sm:text-xs">
+                        <p className="text-[12px] text-slate-400 sm:text-xs">
                             Logged in as
                         </p>
 

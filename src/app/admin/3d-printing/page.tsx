@@ -124,7 +124,7 @@ export default function ThreeDPrintingDashboardPage() {
                                 </div>
 
                                 <div className="min-w-0">
-                                    <p className="text-[10px] font-black tracking-[0.22em] text-pink-500 sm:text-xs">
+                                    <p className="text-[12px] font-black tracking-[0.22em] text-pink-500 sm:text-xs">
                                         KOKO MEMORY · ADMIN
                                     </p>
 
@@ -236,7 +236,7 @@ export default function ThreeDPrintingDashboardPage() {
                             </div>
 
                             <div className="min-w-0">
-                                <p className="text-[10px] font-black tracking-[0.2em] text-violet-500 sm:text-xs">
+                                <p className="text-[12px] font-black tracking-[0.2em] text-violet-500 sm:text-xs">
                                     PRODUCT MANAGEMENT
                                 </p>
 
@@ -384,7 +384,7 @@ function ManagementCard({
                     </div>
 
                     <div className="min-w-0">
-                        <p className="text-[10px] font-black tracking-[0.2em] text-pink-500 sm:text-xs">
+                        <p className="text-[12px] font-black tracking-[0.2em] text-pink-500 sm:text-xs">
                             ORDER MANAGEMENT
                         </p>
 
@@ -447,7 +447,7 @@ function ProductStat({
 }) {
     return (
         <div className="min-w-0 rounded-xl border border-white/80 bg-white/80 p-3 shadow-sm">
-            <p className="truncate text-[10px] font-semibold text-slate-400 sm:text-xs">
+            <p className="truncate text-[12px] font-semibold text-slate-400 sm:text-xs">
                 {label}
             </p>
 

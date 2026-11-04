@@ -379,7 +379,7 @@ function SectionCard({
                     </div>
 
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                        <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
                             {eyebrow}
                         </p>
 
@@ -977,7 +977,7 @@ export default function NewThreeDOrderPage() {
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-pink-500 sm:text-xs">
                                 3D Printing · Orders
                             </p>
 
@@ -993,7 +993,7 @@ export default function NewThreeDOrderPage() {
                         </div>
 
                         <div className="hidden rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm sm:block">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <p className="text-[12px] font-bold uppercase tracking-wider text-slate-400">
                                 Order ใหม่
                             </p>
 
@@ -1267,7 +1267,7 @@ export default function NewThreeDOrderPage() {
                                                                             }
                                                                         </p>
 
-                                                                        <p className="mt-0.5 text-[11px] text-slate-400">
+                                                                        <p className="mt-0.5 text-[12px] text-slate-400">
                                                                             ราคา Product{" "}
                                                                             {formatCurrency(
                                                                                 item.unitPrice
@@ -1554,7 +1554,7 @@ export default function NewThreeDOrderPage() {
                                         </div>
 
                                         <div>
-                                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-300">
+                                            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-300">
                                                 Order Summary
                                             </p>
 
@@ -1669,7 +1669,7 @@ export default function NewThreeDOrderPage() {
                                             placeholder="0"
                                         />
 
-                                        <p className="mt-1.5 text-[11px] text-slate-400">
+                                        <p className="mt-1.5 text-[12px] text-slate-400">
                                             ระบบจะไม่ให้ยอดชำระเกินยอด Order
                                         </p>
                                     </div>
@@ -1761,7 +1761,7 @@ export default function NewThreeDOrderPage() {
                                                     ""
                                                 )
                                             }
-                                            className="mt-2 text-[11px] font-semibold text-slate-400 hover:text-pink-500"
+                                            className="mt-2 text-[12px] font-semibold text-slate-400 hover:text-pink-500"
                                         >
                                             ใช้สถานะอัตโนมัติ
                                         </button>

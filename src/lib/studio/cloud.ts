@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 import { hash, type EntitlementSigner } from "./crypto.ts";
-import { PRODUCT_ID, StudioError, type License, type Plan, type ReleaseStorage, type Transaction, type Store } from "./types.ts";
+import { PRODUCT_ID, effectivePlanId, StudioError, type License, type Plan, type ReleaseStorage, type Transaction, type Store } from "./types.ts";
 
 /**
  * Cloud photo storage for KOKO Studio customers.
@@ -62,7 +62,7 @@ export class CloudService {
     if (license.status === "revoked") throw new StudioError("revoked", 403);
     if (license.status !== "active" || (license.expiresAt && Date.parse(license.expiresAt) <= this.now())) throw new StudioError("expired", 403);
     if (license.devices[deviceId]?.status !== "active") throw new StudioError("device_limit", 403);
-    const plan = await tx.get<Plan>("studioPlans", license.planId);
+    const plan = await tx.get<Plan>("studioPlans", effectivePlanId(license, this.now()));
     if (!plan || !plan.active || !plan.features.includes("cloud_sync") || !claims.features.includes("cloud_sync")) throw new StudioError("cloud_unavailable", 403);
     // Photos belong to a customer account, so the booth must be linked to one first.
     if (!license.ownerUid) throw new StudioError("account_link_required", 403);
@@ -160,7 +160,7 @@ export class CloudService {
     let quotaBytes = 0;
     for (const license of licenses) {
       if (license.status !== "active") continue;
-      const plan = await this.store.transaction(tx => tx.get<Plan>("studioPlans", license.planId));
+      const plan = await this.store.transaction(tx => tx.get<Plan>("studioPlans", effectivePlanId(license, this.now())));
       if (plan?.active && plan.features.includes("cloud_sync")) quotaBytes = Math.max(quotaBytes, plan.photoStorageQuotaBytes ?? 0);
     }
     return { events: events.sort((a, b) => b.createdAt.localeCompare(a.createdAt)), usage: { bytes: usage?.bytes ?? 0, photos: usage?.photos ?? 0 }, quotaBytes };
@@ -223,17 +223,20 @@ export class CloudService {
    */
   async sweepExpiredPhotos(actor = "system:retention") {
     const cutoffOf = (days: number) => this.now() - days * 86_400_000;
-    const licenses = await this.store.list<License>("studioLicenses", undefined, 100);
+    const licenses = await this.store.list<License>("studioLicenses", undefined, 1000);
     const retentionByOwner = new Map<string, number>();
+    const GRACE_DAYS = 14;
     for (const license of licenses) {
       if (license.status !== "active" || !license.ownerUid) continue;
-      const plan = await this.store.transaction(tx => tx.get<Plan>("studioPlans", license.planId));
+      // A lapsed paid/pilot plan keeps photos downloadable for GRACE_DAYS, then everything is purged.
+      if (license.planExpiresAt && effectivePlanId(license, this.now()) === "free" && Date.parse(license.planExpiresAt) + GRACE_DAYS * 86_400_000 <= this.now() && !retentionByOwner.has(license.ownerUid)) retentionByOwner.set(license.ownerUid, -1);
+      const plan = await this.store.transaction(tx => tx.get<Plan>("studioPlans", effectivePlanId(license, this.now())));
       if (!plan?.active || !plan.features.includes("cloud_sync") || !plan.photoRetentionDays) continue;
       retentionByOwner.set(license.ownerUid, Math.max(retentionByOwner.get(license.ownerUid) ?? 0, plan.photoRetentionDays));
     }
     let deleted = 0, failed = 0;
     for (const [ownerUid, days] of retentionByOwner) {
-      const cutoff = cutoffOf(days);
+      const cutoff = days < 0 ? this.now() + 1 : cutoffOf(days);
       const photos = await this.store.list<CloudPhoto>("studioPhotos", { field: "ownerUid", value: ownerUid }, 100);
       for (const photo of photos) {
         if ((photo.status !== "ready" && photo.status !== "hidden") || Date.parse(photo.createdAt) >= cutoff) continue;

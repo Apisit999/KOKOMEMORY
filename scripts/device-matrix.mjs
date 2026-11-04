@@ -2,7 +2,7 @@
 // Start Chrome: chrome --headless=new --remote-debugging-port=9333 about:blank, then: node scripts/device-matrix.mjs <outdir>
 // Edit B (site address) and SHARE (a valid share path) at the top. Writes <outdir>/matrix.json.
 import fs from "node:fs";
-const B="http://192.168.1.166:3040";
+const B=process.env.B||"http://192.168.1.166:3040";
 const SHARE="/s/Xi9CpuR71PngdM4ph6RF05xOsoplPRd28OkNG_2PDJo";
 const pages=["/","/services","/packages","/photobooth","/software/photobooth","/software/photobooth/pricing","/3d-printing","/about","/contact","/enquiry","/account/login",SHARE];
 const UA={ios:"Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",

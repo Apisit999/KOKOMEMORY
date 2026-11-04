@@ -958,7 +958,7 @@ function ThaiAddressCombobox({
                                 {displayAreaName}
                             </p>
 
-                            <p className="mt-0.5 text-[11px] text-slate-400">
+                            <p className="mt-0.5 text-[12px] text-slate-400">
                                 {loading
                                     ? translate("กำลังโหลดข้อมูล...")
                                     : query
@@ -1088,7 +1088,7 @@ function ThaiAddressCombobox({
 
                     {!loading &&
                         filteredItems.length > 0 && (
-                            <div className="border-t bg-slate-50 px-4 py-2 text-[11px] text-slate-400">
+                            <div className="border-t bg-slate-50 px-4 py-2 text-[12px] text-slate-400">
                                 ↑ ↓ เลื่อนรายการ&nbsp;&nbsp;·&nbsp;&nbsp;
                                 Enter เลือก&nbsp;&nbsp;·&nbsp;&nbsp;
                                 Esc ปิด
@@ -1879,7 +1879,7 @@ function CustomerContent() {
                         </div>
 
                         <div className="w-[74px] shrink-0 text-right sm:w-[120px]">
-                            <p className="text-[11px] font-medium text-slate-400">
+                            <p className="text-[12px] font-medium text-slate-400">
                                 {translate("ขั้นตอน")}
                             </p>
 
@@ -1939,7 +1939,7 @@ function CustomerContent() {
                                         }`}
                                     >
                                         <span
-                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[11px] ${
+                                            className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] ${
                                                 step.active
                                                     ? "bg-white/20 text-white"
                                                     : step.done

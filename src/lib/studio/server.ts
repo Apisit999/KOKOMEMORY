@@ -5,6 +5,7 @@ import { createStudioHandler } from "./http.ts";
 import { StudioService } from "./service.ts";
 import { ReleaseService } from "./releases.ts";
 import { CloudService } from "./cloud.ts";
+import { NotificationService } from "./notifications.ts";
 import { createHash } from "node:crypto";
 import type { PublicRelease, ReleaseStorage } from "./types.ts";
 import type { PhotoStorage } from "./cloud.ts";
@@ -70,6 +71,19 @@ async function getReleases() {
   });
   return releaseService;
 }
+async function getNotifications() {
+  await getService();
+  const [{ adminDb, adminAuth }, { Resend }] = await Promise.all([import("@/lib/firebase-admin"), import("resend")]);
+  return new NotificationService({
+    store: new FirestoreStore(adminDb), origin: process.env.STUDIO_WEB_ORIGIN ?? "",
+    resolveEmail: async uid => { const user = await adminAuth.getUser(uid); return user.email && user.emailVerified ? user.email : null; },
+    mailer: { async send(to, subject, html) {
+      if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not configured");
+      const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM_EMAIL || "KOKO Memory <onboarding@resend.dev>", to: [to], subject, html });
+      if (result.error) throw new Error("send failed");
+    } },
+  });
+}
 async function getCloud() {
   if (cloudService) return cloudService;
   await getService(); // same environment and project confirmation checks
@@ -109,6 +123,7 @@ export async function studioRequest(request: Request, path: string) {
     service: getService,
     releases: getReleases,
     cloud: getCloud,
+    notifications: getNotifications,
     authenticate: async req => {
       const { requireCustomerApi, isAdminToken } = await import("@/lib/customer-api-auth");
       const token = await requireCustomerApi(req);
