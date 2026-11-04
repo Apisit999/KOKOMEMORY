@@ -46,7 +46,7 @@ export default function PricingContent() {
 
         <aside className="pricing-pilot" role="note">
           <strong>{t("ช่วงทดลอง: ใช้ทุกฟีเจอร์ฟรี 60 วัน", "Pilot: try every feature free for 60 days")}</strong>
-          <span>{t("ได้เต็มสูงสุดระดับ Studio: ที่เก็บรูปออนไลน์ 200 GB เก็บรูป 180 วัน ใช้ได้ 5 เครื่อง พร้อม QR ให้แขกโหลดรูป จำกัด 30 ผู้ใช้แรก ยังไม่เปิดชำระเงิน ราคาด้านล่างคือราคาที่วางแผนไว้หลังจบช่วงทดลอง", "Top Studio-level limits: 200 GB online storage, 180-day photo retention, 5 devices, plus QR downloads for guests. Limited to the first 30 users. Payments are not open yet; prices below are planned for after the pilot.")}</span>
+          <span>{t("ทดลองใช้ฟรีแบบเต็มระบบ: ที่เก็บรูปออนไลน์ 50 GB เก็บรูป 180 วัน ใช้ได้ 5 เครื่อง พร้อม QR ให้แขกโหลดรูป จำกัด 30 ผู้ใช้แรก ยังไม่เปิดชำระเงิน ราคาด้านล่างคือราคาที่วางแผนไว้หลังจบช่วงทดลอง", "Generous limits: 50 GB online storage, 180-day photo retention, 5 devices, plus QR downloads for guests. Limited to the first 30 users. Payments are not open yet; prices below are planned for after the pilot.")}</span>
           <Link className="studio-button" href="/account/koko-studio">{t("เริ่มทดลองฟรี", "Start the free trial")}<ArrowUpRight size={18} /></Link>
         </aside>
 

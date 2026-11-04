@@ -15,7 +15,7 @@ async function fixture(license: Partial<License>, usageBytes = 0, mailer?: Maile
   return { store, service, outbox, advance: (ms: number) => { time += ms; } };
 }
 test("no email far from expiry and under 80% usage", async () => {
-  const f = await fixture({}, 10 * GB); assert.deepEqual(await f.service.run(), { sent: 0, failed: 0 }); assert.equal(f.outbox.length, 0);
+  const f = await fixture({}, 2.5 * GB); assert.deepEqual(await f.service.run(), { sent: 0, failed: 0 }); assert.equal(f.outbox.length, 0);
 });
 test("expiry reminders go out once at 7 days and once at 1 day, then an ended notice", async () => {
   const f = await fixture({}); f.advance(24 * DAY);
@@ -25,21 +25,21 @@ test("expiry reminders go out once at 7 days and once at 1 day, then an ended no
   f.advance(20 * DAY); await f.service.run(); assert.equal(f.outbox.length, 3); // after the grace period nothing more is sent
 });
 test("quota notices at 80% and 90%, once each, and re-arm after usage drops", async () => {
-  const f = await fixture({}, 170 * GB); // 85% of 200 GB
+  const f = await fixture({}, 42.5 * GB); // 85% of 50 GB
   await f.service.run(); await f.service.run(); assert.equal(f.outbox.length, 1); assert.match(f.outbox[0].subject, /80%/);
-  await f.store.transaction(async tx => { tx.set("studioUsage", "uid-a", { ownerUid: "uid-a", bytes: 190 * GB, photos: 1, updatedAt: "x" }); });
+  await f.store.transaction(async tx => { tx.set("studioUsage", "uid-a", { ownerUid: "uid-a", bytes: 47.5 * GB, photos: 1, updatedAt: "x" }); });
   await f.service.run(); assert.equal(f.outbox.length, 2); assert.match(f.outbox[1].subject, /90%/);
-  await f.store.transaction(async tx => { tx.set("studioUsage", "uid-a", { ownerUid: "uid-a", bytes: 10 * GB, photos: 1, updatedAt: "x" }); });
+  await f.store.transaction(async tx => { tx.set("studioUsage", "uid-a", { ownerUid: "uid-a", bytes: 2.5 * GB, photos: 1, updatedAt: "x" }); });
   await f.service.run();
-  await f.store.transaction(async tx => { tx.set("studioUsage", "uid-a", { ownerUid: "uid-a", bytes: 190 * GB, photos: 1, updatedAt: "x" }); });
+  await f.store.transaction(async tx => { tx.set("studioUsage", "uid-a", { ownerUid: "uid-a", bytes: 47.5 * GB, photos: 1, updatedAt: "x" }); });
   await f.service.run(); assert.equal(f.outbox.length, 3);
 });
 test("failed send is retried next run; free licenses, unlinked owners and unverified emails are skipped", async () => {
   let fail = true; const sent: string[] = [];
-  const f = await fixture({}, 190 * GB, { async send(_to, subject) { if (fail) throw new Error("down"); sent.push(subject); } });
+  const f = await fixture({}, 47.5 * GB, { async send(_to, subject) { if (fail) throw new Error("down"); sent.push(subject); } });
   assert.deepEqual(await f.service.run(), { sent: 0, failed: 1 }); fail = false; assert.deepEqual(await f.service.run(), { sent: 1, failed: 0 });
-  const g = await fixture({ planId: "free", planExpiresAt: null }, 190 * GB); await g.service.run(); assert.equal(g.outbox.length, 0);
-  const h = await fixture({ ownerUid: "uid-none" }, 190 * GB); await h.service.run(); assert.equal(h.outbox.length, 0);
+  const g = await fixture({ planId: "free", planExpiresAt: null }, 47.5 * GB); await g.service.run(); assert.equal(g.outbox.length, 0);
+  const h = await fixture({ ownerUid: "uid-none" }, 47.5 * GB); await h.service.run(); assert.equal(h.outbox.length, 0);
 });
 test("pure decision and escaping", () => {
   assert.deepEqual(dueNotices({ planId: "pro-month", planExpiresAt: null }, 9 * GB, 10 * GB, 0), ["quota90"]);

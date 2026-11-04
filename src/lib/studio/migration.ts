@@ -16,9 +16,9 @@ export const CLOUD_PLANS: Plan[] = CLOUD_TIERS.flatMap(tier => (["month", "year"
 export const PILOT_PLAN_ID = "pilot";
 export const PILOT_DAYS = 60;
 export const PILOT_CAP = 30;
-/** Free trial at the top (Studio) limits: 200 GB, 180-day retention, 5 devices. Lower these before the pilot ends. Granted to a license, lapses back to Free after PILOT_DAYS. */
-export const PILOT_PLAN: Plan = { id: PILOT_PLAN_ID, version: 2, name: "Pilot (free trial, max)", billingPeriod: "month", amountMinor: 0, currency: "THB", deviceLimit: 5,
-  features: [...FREE_FEATURES, "cloud_sync"] as Plan["features"], active: true, purchasable: false, photoRetentionDays: 180, photoStorageQuotaBytes: 200 * GB };
+/** Free trial: 50 GB, 180-day retention, 5 devices. Lower these before the pilot ends. Granted to a license, lapses back to Free after PILOT_DAYS. */
+export const PILOT_PLAN: Plan = { id: PILOT_PLAN_ID, version: 3, name: "Pilot (free trial)", billingPeriod: "month", amountMinor: 0, currency: "THB", deviceLimit: 5,
+  features: [...FREE_FEATURES, "cloud_sync"] as Plan["features"], active: true, purchasable: false, photoRetentionDays: 180, photoStorageQuotaBytes: 50 * GB };
 export async function migrateStudio(store: Store, at = new Date().toISOString()) {
   return store.transaction(async tx => {
     const pilot = await tx.get<Plan>("studioPlans", PILOT_PLAN_ID);

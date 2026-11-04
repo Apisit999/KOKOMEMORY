@@ -52,3 +52,5 @@ ui-debug.log
 *.tsbuildinfo
 rescue-before-restore.patch
 tash list*
+
+firebase-debug.log
