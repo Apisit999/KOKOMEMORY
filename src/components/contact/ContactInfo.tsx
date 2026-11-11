@@ -24,7 +24,7 @@ const mainContacts = [
         value: "080-081-9933",
         description: "สอบถามรายละเอียดและจองคิว",
         link: "tel:0800819933",
-        color: "bg-pink-100 text-pink-500",
+        color: "bg-[#fafaf9] text-[#7a6cc0]",
         action: "โทรหาเรา",
     },
     {
@@ -54,7 +54,7 @@ const socialContacts = [
         value: "@kokomemory",
         description: "ติดตามผลงานและภาพบรรยากาศจากงานต่าง ๆ",
         link: socialLinks.instagram,
-        color: "bg-pink-100 text-pink-500",
+        color: "bg-[#fafaf9] text-[#7a6cc0]",
     },
     {
         icon: FaFacebookF,
@@ -79,7 +79,7 @@ export default function ContactInfo() {
 
                 <div className="mx-auto mb-16 max-w-3xl text-center">
 
-                    <span className="text-sm font-semibold uppercase tracking-[0.3em] text-pink-500">
+                    <span className="text-sm font-semibold uppercase tracking-[0.3em] text-[#7a6cc0]">
                         CONTACT INFORMATION
                     </span>
 
@@ -110,11 +110,11 @@ export default function ContactInfo() {
                             <a
                                 key={item.title}
                                 href={item.link}
-                                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-pink-200 hover:shadow-xl"
+                                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-sm transition duration-300 hover:-translate-y-2 hover:border-[#151515] hover:shadow-xl"
                             >
 
                                 {/* Decorative */}
-                                <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-pink-50 opacity-0 transition duration-300 group-hover:opacity-100" />
+                                <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#fafaf9] opacity-0 transition duration-300 group-hover:opacity-100" />
 
                                 {/* Icon */}
 
@@ -146,13 +146,13 @@ export default function ContactInfo() {
 
                                 <div className="relative mt-7 flex items-center justify-between border-t border-slate-100 pt-5">
 
-                                    <span className="text-sm font-semibold text-pink-500">
+                                    <span className="text-sm font-semibold text-[#7a6cc0]">
                                         {translate(item.action)}
                                     </span>
 
                                     <ArrowUpRight
                                         size={20}
-                                        className="text-slate-400 transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-pink-500"
+                                        className="text-slate-400 transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#151515]"
                                     />
 
                                 </div>
@@ -195,7 +195,7 @@ export default function ContactInfo() {
                                     href={item.link}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group flex items-center gap-6 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-pink-200 hover:shadow-lg"
+                                    className="group flex items-center gap-6 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#151515] hover:shadow-lg"
                                 >
 
                                     {/* Icon */}
@@ -215,7 +215,7 @@ export default function ContactInfo() {
                                             {item.title}
                                         </h4>
 
-                                        <p className="mt-1 font-medium text-pink-500">
+                                        <p className="mt-1 font-medium text-[#7a6cc0]">
                                             {item.value}
                                         </p>
 
@@ -230,7 +230,7 @@ export default function ContactInfo() {
 
                                     <ArrowUpRight
                                         size={22}
-                                        className="shrink-0 text-slate-400 transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-pink-500"
+                                        className="shrink-0 text-slate-400 transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#151515]"
                                     />
 
                                 </a>
@@ -251,7 +251,7 @@ export default function ContactInfo() {
 
                     <div className="mx-auto max-w-3xl">
 
-                        <span className="text-sm font-semibold uppercase tracking-[0.3em] text-pink-400">
+                        <span className="text-sm font-semibold uppercase tracking-[0.3em] text-[#7a6cc0]">
                             LET&apos;S WORK TOGETHER
                         </span>
 
@@ -270,7 +270,7 @@ export default function ContactInfo() {
 
                             <Link
                                 href="/booking"
-                                className="flex items-center gap-2 rounded-full bg-pink-500 px-7 py-4 font-semibold text-white transition duration-300 hover:-translate-y-1 hover:bg-pink-400"
+                                className="flex items-center gap-2 rounded-full bg-[#151515] px-7 py-4 font-semibold text-white transition duration-300 hover:-translate-y-1 hover:bg-[#2e2e2e]"
                             >
                                 <CalendarDays size={19} />
                                 จองคิว

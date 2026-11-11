@@ -69,7 +69,7 @@ export default function GalleryPage() {
                         w-72
                         -translate-x-1/2
                         rounded-full
-                        bg-pink-100/70
+                        bg-[#fafaf9]
                         blur-3xl
                         sm:h-96
                         sm:w-96
@@ -111,15 +111,15 @@ export default function GalleryPage() {
                             inline-flex
                             rounded-full
                             border
-                            border-pink-100
-                            bg-pink-50
+                            border-[#e8e8e6]
+                            bg-[#fafaf9]
                             px-5
                             py-2
                             text-xs
                             font-semibold
                             uppercase
                             tracking-[0.25em]
-                            text-pink-500
+                            text-[#7a6cc0]
                             sm:text-sm
                         "
                     >
@@ -226,7 +226,7 @@ export default function GalleryPage() {
                         -translate-x-1/2
                         -translate-y-1/2
                         rounded-full
-                        bg-pink-100/70
+                        bg-[#fafaf9]
                         blur-3xl
                     "
                 />
@@ -246,7 +246,7 @@ export default function GalleryPage() {
                             font-semibold
                             uppercase
                             tracking-[0.25em]
-                            text-pink-500
+                            text-[#7a6cc0]
                             sm:text-sm
                         "
                     >
@@ -296,22 +296,22 @@ export default function GalleryPage() {
                             items-center
                             justify-center
                             rounded-full
-                            bg-pink-500
+                            bg-[#151515]
                             px-8
                             py-4
                             text-sm
                             font-semibold
                             text-white
                             shadow-lg
-                            shadow-pink-200
+                            shadow-black/5
                             transition-all
                             duration-300
                             hover:-translate-y-1
-                            hover:bg-pink-600
+                            hover:bg-[#2e2e2e]
                             hover:shadow-xl
                             focus:outline-none
                             focus:ring-2
-                            focus:ring-pink-500
+                            focus:ring-[#a79bd8]
                             focus:ring-offset-2
                             sm:px-10
                             sm:text-base

@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import brandLogo from "../../../public/logo/logo.jpg";
 import Link from "next/link";
+import BrandLogo from "@/components/shared/BrandLogo";
 import {
     Phone,
     MapPin,
@@ -21,7 +20,7 @@ export default function Footer() {
     const { t, translate } = useI18n();
 
     return (
-        <footer className="border-t border-white/10 bg-[#0B0B0F] text-white">
+        <footer className="bg-[#151515] text-white">
 
             <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
 
@@ -31,32 +30,13 @@ export default function Footer() {
 
                     <div>
 
-                        <div className="flex items-center gap-4">
+                        <div>
 
-                            <div className="relative h-14 w-14 sm:h-16 sm:w-16 overflow-hidden rounded-full">
+                            <h2 className="sr-only">KOKO Memory</h2>
 
-                                <Image
-                                    src={brandLogo}
-                                    alt="KOKO Memory"
-                                    fill
-                                    priority
-                                    className="object-cover"
-                                    sizes="(max-width: 640px) 56px, 64px"
-                                />
+                            <BrandLogo tone="white" size="lg" />
 
-                            </div>
-
-                            <div>
-
-                                <h2 className="text-2xl sm:text-3xl font-bold">
-                                    KOKO Memory
-                                </h2>
-
-                                <p className="text-[#FF8CC4]">
-                                    Creative Technology Studio
-                                </p>
-
-                            </div>
+                            <span className="hairline-accent mt-6" />
 
                         </div>
 
@@ -72,10 +52,10 @@ export default function Footer() {
 
                                 <Phone
                                     size={20}
-                                    className="text-[#FF8CC4]"
+                                    className="text-white/50"
                                 />
 
-                                <a href="tel:+66800819933" className="inline-flex min-h-11 items-center text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">080-081-9933</a>
+                                <a href="tel:+66800819933" className="inline-flex min-h-11 items-center text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8]">080-081-9933</a>
 
                             </div>
 
@@ -83,10 +63,10 @@ export default function Footer() {
 
                                 <MessageCircle
                                     size={20}
-                                    className="text-green-400"
+                                    className="text-white/50"
                                 />
 
-                                <a href={socialLinks.line} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">@024ppzhh</a>
+                                <a href={socialLinks.line} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8]">@024ppzhh</a>
 
                             </div>
 
@@ -94,10 +74,10 @@ export default function Footer() {
 
                                 <Mail
                                     size={20}
-                                    className="text-[#FF8CC4]"
+                                    className="text-white/50"
                                 />
 
-                                <a href="mailto:kokomemory@gmail.com" className="inline-flex min-h-11 items-center break-all text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF4FA3]">kokomemory@gmail.com</a>
+                                <a href="mailto:kokomemory@gmail.com" className="inline-flex min-h-11 items-center break-all text-white/75 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8]">kokomemory@gmail.com</a>
 
                             </div>
 
@@ -109,7 +89,7 @@ export default function Footer() {
 
                     <div>
 
-                        <h3 className="mb-8 text-2xl font-bold">
+                        <h3 className="mb-8 font-sans text-[13px] font-medium tracking-[0.08em] text-white/50">
                             {t("footer.menu")}
                         </h3>
 
@@ -119,7 +99,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/"
-                                    className="flex min-h-10 items-center gap-2 text-white/70 transition hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 transition hover:text-white"
                                 >
 
                                     <ChevronRight size={16} />
@@ -134,7 +114,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/about"
-                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-white"
                                 >
 
                                     <ChevronRight size={16} />
@@ -149,7 +129,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/gallery/portfolio"
-                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-white"
                                 >
 
                                     <ChevronRight size={16} />
@@ -164,7 +144,7 @@ export default function Footer() {
 
                                 <Link
                                     href="/packages"
-                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-white"
                                 >
 
                                     <ChevronRight size={16} />
@@ -175,15 +155,15 @@ export default function Footer() {
 
                             </li>
 
-                            <li><Link href="/photobooth" className="flex min-h-10 items-center gap-2 text-white/70 hover:text-[#D5EE85]"><ChevronRight size={16} />Photobooth</Link></li>
+                            <li><Link href="/photobooth" className="flex min-h-10 items-center gap-2 text-white/70 hover:text-white"><ChevronRight size={16} />Photobooth</Link></li>
 
-                            <li><Link href="/software" className="flex min-h-10 items-center gap-2 text-white/70 hover:text-[#D5EE85]"> <ChevronRight size={16} />Software</Link></li>
+                            <li><Link href="/software" className="flex min-h-10 items-center gap-2 text-white/70 hover:text-white"> <ChevronRight size={16} />Software</Link></li>
 
                             <li>
 
                                 <Link
                                     href="/contact"
-                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-pink-300"
+                                    className="flex min-h-10 items-center gap-2 text-white/70 hover:text-white"
                                 >
 
                                     <ChevronRight size={16} />
@@ -202,7 +182,7 @@ export default function Footer() {
 
                     <div>
 
-                        <h3 className="mb-8 text-2xl font-bold">
+                        <h3 className="mb-8 font-sans text-[13px] font-medium tracking-[0.08em] text-white/50">
                             {t("footer.services")}
                         </h3>
 
@@ -224,7 +204,7 @@ export default function Footer() {
 
                     <div>
 
-                        <h3 className="mb-8 text-2xl font-bold">
+                        <h3 className="mb-8 font-sans text-[13px] font-medium tracking-[0.08em] text-white/50">
                             {t("footer.follow")}
                         </h3>
 
@@ -234,7 +214,7 @@ export default function Footer() {
                                 href={socialLinks.facebook}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-pink-500"
+                                className="flex items-center gap-3 rounded-[2px] border border-white/15 p-4 transition hover:border-white"
                             >
 
                                 <FaFacebookF size={20} />
@@ -247,7 +227,7 @@ export default function Footer() {
                                 href={socialLinks.line}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-[#778E38]"
+                                className="flex items-center gap-3 rounded-[2px] border border-white/15 p-4 transition hover:border-white"
                             >
 
                                 <MessageCircle />
@@ -260,7 +240,7 @@ export default function Footer() {
                                 href={socialLinks.instagram}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 rounded-xl bg-white/10 p-4 transition hover:bg-[#778E38]"
+                                className="flex items-center gap-3 rounded-[2px] border border-white/15 p-4 transition hover:border-white"
                             >
 
                                 <FaInstagram size={20} />
@@ -309,7 +289,7 @@ export default function Footer() {
 
                         <p className="text-center text-sm sm:text-base text-white/40">
 
-                            Designed with ❤️ by KOKO Memory
+                            Bangkok · Thailand
 
                         </p>
 

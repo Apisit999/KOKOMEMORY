@@ -33,7 +33,7 @@ export default function ContactHero() {
 
                     <h1 className="mt-6 text-5xl font-black leading-tight text-white md:text-7xl">
                         ติดต่อ
-                        <span className="text-pink-500">
+                        <span className="text-[#7a6cc0]">
                             {" "}KOKO Memory
                         </span>
                     </h1>
@@ -51,7 +51,7 @@ export default function ContactHero() {
                             href={socialLinks.line}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="rounded-full bg-pink-500 px-8 py-4 font-semibold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-pink-400 hover:shadow-pink-500/30"
+                            className="rounded-full bg-[#151515] px-8 py-4 font-semibold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-[#2e2e2e] hover:shadow-black/5"
                         >
                             ส่งข้อความหาเรา
                         </a>

@@ -17,7 +17,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import brandLogo from "../../../../public/logo/logo.jpg";
+import brandLogo from "../../../../public/logo/icon.svg";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -325,7 +325,7 @@ export default function AccountProfilePage() {
 
                     <Loader2
                         size={21}
-                        className="animate-spin text-[#A0235F]"
+                        className="animate-spin text-[#7a6cc0]"
                     />
 
                     กำลังโหลดโปรไฟล์...
@@ -373,7 +373,7 @@ export default function AccountProfilePage() {
 
                     <Link
                         href="/account"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-[#A0235F]"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 transition hover:text-[#7a6cc0]"
                     >
                         <ArrowLeft size={18} />
                         <span className="hidden sm:inline">
@@ -406,7 +406,7 @@ export default function AccountProfilePage() {
 
                 <div>
 
-                    <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#A0235F]">
+                    <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#7a6cc0]">
                         My Profile
                     </p>
 
@@ -460,7 +460,7 @@ export default function AccountProfilePage() {
 
                         <div className="flex items-center gap-4">
 
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEE7D9] text-[#A0235F]">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0]">
                                 <User size={26} />
                             </div>
 
@@ -530,7 +530,7 @@ export default function AccountProfilePage() {
                                             placeholder:text-slate-400
                                             focus:border-[#D5A9BE]
                                             focus:ring-4
-                                            focus:ring-[#E4DDCD]
+                                            focus:ring-[#e8e8e6]
                                         "
                                     />
 
@@ -608,13 +608,13 @@ export default function AccountProfilePage() {
                                     font-bold
                                     text-white
                                     shadow-lg
-                                    shadow-[#F2ADCA]
+                                    shadow-[#d98aae]
                                     transition
                                     hover:-translate-y-0.5
                                     hover:bg-[#141516]
                                     hover:shadow-xl
                                     disabled:cursor-not-allowed
-                                    disabled:bg-[#F2ADCA]
+                                    disabled:bg-[#fafaf9]
                                     disabled:shadow-none
                                 "
                             >
@@ -705,13 +705,13 @@ export default function AccountProfilePage() {
                         </section>
 
 
-                        <section className="rounded-3xl border border-[#E4DDCD] bg-[#EEE7D9] p-5 sm:p-6">
+                        <section className="rounded-3xl border border-[#e8e8e6] bg-[#fafaf9] p-5 sm:p-6">
 
-                            <p className="text-sm font-black text-[#A0235F]">
+                            <p className="text-sm font-black text-[#7a6cc0]">
                                 ต้องการดูรายการจอง?
                             </p>
 
-                            <p className="mt-1 text-xs leading-5 text-[#A0235F]/70">
+                            <p className="mt-1 text-xs leading-5 text-[#7a6cc0]/70">
                                 ตรวจสอบ Booking และสถานะการชำระเงินได้จากหน้ารายการจอง
                             </p>
 

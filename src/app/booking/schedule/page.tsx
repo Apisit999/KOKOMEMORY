@@ -1007,7 +1007,7 @@ function ScheduleContent() {
                                                             isCompleted
                                                                 ? "bg-green-100 text-green-600"
                                                                 : isCurrent
-                                                                    ? "bg-pink-500 text-white shadow-lg shadow-pink-200 ring-4 ring-pink-50"
+                                                                    ? "bg-[#151515] text-white shadow-lg shadow-black/5 ring-4 ring-[#ecebf7]"
                                                                     : "bg-slate-100 text-slate-400"
                                                         }
                                                     `}
@@ -1043,7 +1043,7 @@ function ScheduleContent() {
                                                             isCompleted
                                                                 ? "text-green-600"
                                                                 : isCurrent
-                                                                    ? "text-pink-500"
+                                                                    ? "text-[#7a6cc0]"
                                                                     : "text-slate-400"
                                                         }
                                                     `}
@@ -1116,7 +1116,7 @@ function ScheduleContent() {
 
                                 <div className="flex items-center gap-3">
 
-                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-pink-100 text-pink-500 sm:h-12 sm:w-12">
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0] sm:h-12 sm:w-12">
 
                                         <CalendarDays
                                             size={22}
@@ -1127,7 +1127,7 @@ function ScheduleContent() {
 
                                     <div className="min-w-0">
 
-                                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-pink-500 sm:text-sm sm:tracking-[0.2em]">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7a6cc0] sm:text-sm sm:tracking-[0.2em]">
                                             {translate("เลือกวันจัดงาน")}
                                         </p>
 
@@ -1287,7 +1287,7 @@ function ScheduleContent() {
                             <CardContent className="p-5 sm:p-7">
 
 
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-pink-500 sm:text-sm sm:tracking-[0.2em]">
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6cc0] sm:text-sm sm:tracking-[0.2em]">
                                     {translate("รายละเอียดการจอง")}
                                 </p>
 
@@ -1334,7 +1334,7 @@ function ScheduleContent() {
                                                         {translate("ราคา")}
                                                     </p>
 
-                                                    <p className="text-xl font-black text-pink-500">
+                                                    <p className="text-xl font-black text-[#7a6cc0]">
                                                         ฿
                                                         {
                                                             selectedPackage.price.toLocaleString()
@@ -1500,7 +1500,7 @@ function ScheduleContent() {
                                             "available" ||
                                         !selectedPackage
                                     }
-                                    className="mt-5 h-13 w-full rounded-full bg-pink-500 text-sm font-bold text-white shadow-lg shadow-pink-100 hover:bg-pink-400 sm:mt-6 sm:h-14 sm:text-base"
+                                    className="mt-5 h-13 w-full rounded-full bg-[#151515] text-sm font-bold text-white shadow-lg shadow-black/5 hover:bg-[#2e2e2e] sm:mt-6 sm:h-14 sm:text-base"
                                 >
 
                                     {translate("ดำเนินการต่อ")}
@@ -1543,7 +1543,7 @@ function ScheduleContent() {
                             Important Information
                         ================================================= */}
 
-                        <div className="rounded-3xl border border-pink-100 bg-pink-50 p-5 sm:p-6">
+                        <div className="rounded-3xl border border-[#e8e8e6] bg-[#fafaf9] p-5 sm:p-6">
 
                             <h3 className="font-bold text-slate-900">
                                 {translate("💡 หมายเหตุ")}
@@ -1554,7 +1554,7 @@ function ScheduleContent() {
 
                                 KOKO Memory {translate("รับงานสูงสุด")}{" "}
 
-                                <span className="font-bold text-pink-600">
+                                <span className="font-bold text-[#7a6cc0]">
                                     {translate("1 งานต่อวัน")}
                                 </span>
 

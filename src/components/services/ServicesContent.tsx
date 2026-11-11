@@ -58,10 +58,10 @@ const services: Service[] = [
             "เลือกบริการและรูปแบบ Photobooth ให้เหมาะกับงานของคุณ",
 
         color:
-            "from-pink-500 to-rose-400",
+            "from-[#d98aae] to-[#7fb2ee]",
 
         iconBackground:
-            "bg-pink-50",
+            "bg-[#fafaf9]",
 
         href:
             "/booking/package",
@@ -136,10 +136,10 @@ const services: Service[] = [
             "ออกแบบประสบการณ์ให้เหมาะกับวันพิเศษของคุณ",
 
         color:
-            "from-rose-500 to-pink-400",
+            "from-[#d98aae] to-[#7fb2ee]",
 
         iconBackground:
-            "bg-rose-50",
+            "bg-[#fafaf9]",
 
         href:
             "/booking/package",
@@ -188,7 +188,7 @@ const services: Service[] = [
             "สามารถพูดคุยรายละเอียดกับทีมงานเพื่อหาแนวทางที่เหมาะสม",
 
         color:
-            "from-fuchsia-500 to-pink-400",
+            "from-fuchsia-500 to-[#7fb2ee]",
 
         iconBackground:
             "bg-fuchsia-50",
@@ -419,10 +419,10 @@ export default function ServicesContent() {
                                         gap-2
                                         text-sm
                                         font-bold
-                                        text-pink-500
+                                        text-[#7a6cc0]
                                         transition
                                         hover:gap-3
-                                        hover:text-pink-600
+                                        hover:text-[#151515]
                                     "
                                 >
                                     ดูรายละเอียด
@@ -454,7 +454,7 @@ export default function ServicesContent() {
                                     h-40
                                     w-40
                                     rounded-full
-                                    bg-pink-100/50
+                                    bg-[#fafaf9]
                                     opacity-0
                                     blur-3xl
                                     transition
@@ -480,9 +480,9 @@ export default function ServicesContent() {
                         overflow-hidden
                         rounded-[2rem]
                         border
-                        border-pink-100
+                        border-[#e8e8e6]
                         bg-gradient-to-r
-                        from-pink-50
+                        from-[#fafaf9]
                         via-white
                         to-sky-50
                         p-6

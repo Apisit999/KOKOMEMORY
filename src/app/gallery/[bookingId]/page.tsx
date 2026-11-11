@@ -262,7 +262,7 @@ export default function GalleryPage() {
 
                 <div className="mb-10 text-center">
 
-                    <p className="text-sm font-semibold tracking-[0.35em] text-[#A0235F]">
+                    <p className="text-sm font-semibold tracking-[0.35em] text-[#7a6cc0]">
                         KOKO MEMORY
                     </p>
 
@@ -274,9 +274,9 @@ export default function GalleryPage() {
                         รูปภาพจากงานของคุณ
                     </p>
 
-                    <div className="mt-5 inline-block rounded-full bg-[#EEE7D9] px-5 py-2">
+                    <div className="mt-5 inline-block rounded-full bg-[#fafaf9] px-5 py-2">
 
-                        <span className="text-sm text-[#A0235F]">
+                        <span className="text-sm text-[#7a6cc0]">
 
                             Booking:{" "}
 
@@ -297,7 +297,7 @@ export default function GalleryPage() {
 
                         <div className="text-center">
 
-                            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-pink-500" />
+                            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#151515]" />
 
                             <p className="mt-4 text-slate-500">
                                 กำลังโหลดรูป...

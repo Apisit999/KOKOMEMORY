@@ -250,7 +250,7 @@ export default function GalleryCard({
                                     <Star
                                         size={10}
                                         fill="currentColor"
-                                        className="text-[#A0235F]"
+                                        className="text-[#7a6cc0]"
                                     />
 
                                     {t("portfolio.featured")}
@@ -317,7 +317,7 @@ export default function GalleryCard({
                                     font-black
                                     uppercase
                                     tracking-[0.22em]
-                                    text-[#C77A9B]
+                                    text-[#7a6cc0]
                                 "
                             >
                                 {category}

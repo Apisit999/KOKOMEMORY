@@ -192,3 +192,174 @@
 @media(max-width:700px){.pricing-steps{grid-template-columns:1fr}.pricing-price b{font-size:46px}}
 
 .pricing-pilot{display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin:0 0 28px;padding:20px 22px;border-radius:18px;background:#d5ee85;color:#141516;font-size:14px;line-height:1.6}.pricing-pilot strong{font-size:18px}.pricing-pilot .studio-button{background:#141516;color:#fff}
+
+
+/* ============================================================
+   PURE WHITE LUXE THEME (overrides the charcoal/lime palette above)
+   Tokens come from globals.css: --ink, --ink-soft, --ivory,
+   --hairline, --brand-gradient, --font-koko-heading
+   ============================================================ */
+
+/* Base */
+.koko-studio{background:#fff;color:var(--ink)}
+.koko-studio a:focus-visible,.koko-studio button:focus-visible,.koko-studio summary:focus-visible{outline:2px solid var(--brand-lilac)}
+.koko-studio h1,.koko-studio h2,.koko-studio h3{font-family:var(--font-koko-heading);font-weight:500!important;letter-spacing:-.01em!important;color:var(--ink)}
+.koko-studio h1>span,.koko-studio h2 em,.about-hero h1 span,.contact-hero h1 span{font-style:italic;background:var(--brand-gradient);-webkit-background-clip:text;background-clip:text;color:transparent!important}
+.studio-eyebrow{font-size:12px;font-weight:500;letter-spacing:.32em;color:var(--ink-soft)}
+.studio-intro,.studio-heading>p,.studio-product>p,.studio-steps p,.studio-faq details p{color:var(--ink-soft)!important;font-size:17px;line-height:1.8}
+
+/* Buttons and links */
+.studio-button{background:var(--ink);color:#fff;border-radius:2px;font-weight:500;letter-spacing:.08em;padding:16px 30px;transition:background .4s}
+.studio-button:hover{transform:none;background:#2e2e2e}
+.studio-text-link{border-bottom:1px solid var(--ink);color:var(--ink);letter-spacing:.04em}
+
+/* Hero */
+.studio-hero h1{font-size:clamp(44px,5.6vw,80px);line-height:1.15}
+.studio-hero h1 i,.about-hero h1 i{background:var(--brand-gradient);-webkit-background-clip:text;background-clip:text;color:transparent}
+.studio-hero-foot{color:var(--ink-soft)}
+.studio-orbit,.about-art-orbit{border-color:var(--hairline);background:radial-gradient(ellipse,#a79bd814,transparent 70%)}
+.studio-photo-main,.studio-photo-small,.about-art-main,.about-art-small,.rental-photo{border-color:#fff;background:#fff;box-shadow:0 30px 60px rgba(21,21,21,.10)}
+.studio-photo-main figcaption,.about-art-main figcaption,.rental-photo figcaption{color:var(--ink-soft);font-weight:500;letter-spacing:.2em}
+.studio-object{background:var(--ivory);color:var(--ink);border:1px solid var(--hairline);border-radius:2px;box-shadow:0 20px 40px rgba(21,21,21,.08)}
+.studio-sticker,.about-art-sticker{background:#fff;color:var(--ink);border:1px solid var(--ink);font-family:var(--font-koko-heading);font-weight:500;font-style:italic;box-shadow:none}
+
+/* Ribbons */
+.studio-ribbon,.about-ribbon{border-color:var(--hairline);color:var(--ink-soft);font-size:12px;letter-spacing:.4em}
+
+/* Filters */
+.studio-filters button{border-color:var(--hairline);color:var(--ink-soft);border-radius:2px}
+.studio-filters button:hover{border-color:var(--ink);color:var(--ink)}
+.studio-filters button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Service cards: ivory panels, brand hue only on the icon */
+.studio-card,.about-service-card,.services-choice-card,.services-next,.rental-card,.studio-package-card{background:var(--ivory)!important;color:var(--ink)!important;border:1px solid var(--hairline);border-radius:2px;transition:border-color .4s}
+.studio-card:hover,.about-service-card:hover,.services-choice-card:hover{transform:none;box-shadow:none;border-color:var(--ink)}
+.studio-pink .studio-card-top svg:first-child,.studio-pink.about-service-card svg:first-child{color:var(--brand-pink)}
+.studio-lavender .studio-card-top svg:first-child,.studio-lavender.about-service-card svg:first-child{color:var(--brand-lilac)}
+.studio-lime .studio-card-top svg:first-child,.studio-lime.about-service-card svg:first-child{color:var(--brand-sky)}
+.studio-card-top span,.about-service-top span{font-weight:500;letter-spacing:.24em;color:var(--ink-soft)}
+.studio-card small,.studio-card>p,.about-service-card>p{color:var(--ink-soft)}
+.studio-card>a,.about-service-link,.rental-card>a,.services-next a{border-color:var(--hairline);font-weight:500}
+.services-choice-card[aria-pressed=true]{outline:1px solid var(--ink);outline-offset:3px;border-color:var(--ink)}
+
+/* Showcase, process, FAQ */
+.studio-video,.about-video-frame,.about-story-image{border-radius:2px;background:var(--ivory)}
+.studio-process,.services-flow,.rental-packages,.contact-next{border-color:var(--hairline)}
+.studio-steps article>span,.about-value-grid article>span,.about-process-steps article>span{font-family:var(--font-koko-heading);font-style:italic;background:var(--brand-gradient);-webkit-background-clip:text;background-clip:text;color:transparent}
+.studio-faq details,.about-process-steps,.about-process-steps article,.pricing-faq details{border-color:var(--hairline)}
+.studio-faq summary{font-size:17px;font-weight:500}
+.about-process-steps article>svg{color:var(--ink-soft)}
+
+/* Closing CTA */
+.studio-end,.about-end{background:var(--ivory);color:var(--ink);border:1px solid var(--hairline);border-radius:2px;text-align:center}
+.studio-end .studio-eyebrow,.about-end .studio-eyebrow,.about-end>p:not(.studio-eyebrow){color:var(--ink-soft)}
+
+/* Product and enquiry forms */
+.studio-product-note{border-color:var(--hairline);border-radius:2px}
+.studio-enquiry>div>p:not(.studio-eyebrow),.studio-enquiry form small{color:var(--ink-soft)}
+.studio-enquiry>div>a{color:var(--ink);text-decoration:underline}
+.studio-enquiry label{color:var(--ink)}
+.studio-enquiry input,.studio-enquiry select,.studio-enquiry textarea{background:#fff;color:var(--ink);border-color:var(--input);border-radius:2px}
+.studio-enquiry input:focus,.studio-enquiry select:focus,.studio-enquiry textarea:focus{outline:none;border-color:var(--ink)}
+
+/* Rental and services pages */
+.rental-hero>div>p:not(.studio-eyebrow),.services-intro>p:not(.studio-eyebrow),.rental-auth-note,.rental-highlights p,.rental-meta{color:var(--ink-soft)}
+.rental-highlights article{background:#fff;border-color:var(--hairline);border-radius:2px}
+.rental-highlights svg{color:var(--brand-lilac)}
+.rental-card-title small{background:var(--ink);color:#fff;border-radius:2px;letter-spacing:.1em}
+.rental-price{font-family:var(--font-koko-heading);font-weight:500}
+
+/* Packages */
+.studio-packages{background:#fff;color:var(--ink)}
+.studio-packages>div>header>p:not(.studio-eyebrow),.studio-package-meta{color:var(--ink-soft)}
+.studio-package-popular{background:#fff!important;border-color:var(--ink)!important}
+.studio-package-price{color:var(--ink)}
+.studio-package-check{color:var(--brand-lilac)}
+.studio-package-cta{background:var(--ink);color:#fff;border-radius:2px}
+.studio-package-cta:hover{background:#2e2e2e}
+
+/* Footer inside studio shell */
+.koko-studio>footer:not(.studio-footer){border-top:0}
+.koko-studio>footer:not(.studio-footer) a:hover{color:#fff}
+
+/* About */
+.about-story-copy>p:not(.studio-eyebrow),.about-process>div:first-child>p:not(.studio-eyebrow),.about-video>div:last-child>p:not(.studio-eyebrow),.about-section-heading>p,.about-value-grid p,.about-process-steps p{color:var(--ink-soft)}
+.about-values{background:var(--ivory);border-color:var(--hairline)}
+
+/* Contact */
+.contact-hero-art{border-radius:2px;box-shadow:0 30px 60px rgba(21,21,21,.10)}
+.contact-hero-art span{background:#fff;color:var(--ink);font-weight:500;letter-spacing:.3em;transform:none}
+.contact-channels .about-section-heading>p,.contact-next>div>p:not(.studio-eyebrow),.contact-channel-note,.contact-channel-label{color:var(--ink-soft)}
+.contact-channel{background:#fff;border-color:var(--hairline);border-radius:2px}
+.contact-channel:hover{border-color:var(--ink);transform:none}
+.contact-channel-icon{background:var(--ivory);color:var(--ink);border:1px solid var(--hairline)}
+.contact-channel-action{border-color:var(--hairline);color:var(--ink);font-weight:500}
+.contact-next-links a{border-color:var(--hairline)}
+.contact-next-links a:hover{color:var(--ink-soft)}
+
+/* 3D detail and portfolio detail */
+.three-d-detail,.three-d-detail>section:first-of-type,.portfolio-detail-main,.portfolio-detail-main>section:first-of-type{background:#fff!important;color:var(--ink)!important;border-color:var(--hairline)!important}
+.three-d-detail>section:nth-of-type(2){background:var(--ivory)!important;color:var(--ink)}
+.three-d-detail>section:nth-of-type(2) .bg-white{background:#fff!important;border-color:var(--hairline)!important;color:var(--ink)}
+.three-d-detail>section:nth-of-type(2) .bg-slate-900{background:var(--ink)!important;color:#fff!important}
+.three-d-detail>section:nth-of-type(2) .text-slate-900,.three-d-detail>section:nth-of-type(2) .text-slate-800,.portfolio-detail-main .text-slate-900,.portfolio-detail-main .text-slate-800{color:var(--ink)!important}
+.three-d-detail>section:nth-of-type(2) .text-slate-500,.three-d-detail>section:nth-of-type(2) .text-slate-400,.portfolio-detail-main .text-slate-500,.portfolio-detail-main .text-slate-400{color:var(--ink-soft)!important}
+.three-d-detail>section:nth-of-type(2) .bg-pink-50,.three-d-detail>section:nth-of-type(2) .bg-pink-100{background:var(--ivory)!important;color:var(--ink)!important;border:1px solid var(--hairline)}
+.three-d-detail>section:nth-of-type(2) .text-pink-500,.three-d-detail>section:nth-of-type(2) .text-pink-600,.portfolio-detail-main .text-pink-500,.portfolio-detail-main>section:first-of-type .text-pink-300{color:var(--brand-lilac)!important}
+.three-d-detail>section:nth-of-type(2) .border-slate-100,.three-d-detail>section:nth-of-type(2) .border-slate-200{border-color:var(--hairline)!important}
+.three-d-detail>section:nth-of-type(3),.portfolio-detail-main .bg-gradient-to-br{background:var(--ivory)!important;color:var(--ink)}
+.three-d-detail>section:nth-of-type(3) h2,.three-d-detail>section:nth-of-type(3) p,.portfolio-detail-main>section:last-of-type h2,.portfolio-detail-main>section:last-of-type p,.portfolio-detail-main>section:last-of-type .text-white{color:var(--ink)!important}
+.three-d-detail>section:nth-of-type(3) a,.portfolio-detail-main>section:last-of-type a,.three-d-detail .bg-pink-500{background:var(--ink)!important;color:#fff!important;border-radius:2px}
+.three-d-detail>section:first-of-type a{color:var(--ink)!important}
+.portfolio-detail-main>section:last-of-type .text-pink-100,.portfolio-detail-main>section:last-of-type .text-pink-50{color:var(--ink-soft)!important}
+.portfolio-detail-main a:focus-visible,.portfolio-detail-main button:focus-visible{outline:2px solid var(--brand-lilac)}
+
+/* Pricing */
+.pricing-toggle{border-color:var(--hairline);border-radius:2px}
+.pricing-toggle button{color:var(--ink-soft);border-radius:2px}
+.pricing-toggle button[aria-pressed=true]{background:var(--ink);color:#fff}
+.pricing-lead,.pricing-steps span,.pricing-faq details p{color:var(--ink-soft)}
+.pricing-steps li{border-color:var(--hairline);border-radius:2px}
+.pricing-steps svg{color:var(--brand-lilac)}
+.pricing-card.studio-dark,.pricing-card.studio-pink,.pricing-card.studio-lime,.pricing-card.studio-cream,.pricing-card.studio-lavender{background:var(--ivory);color:var(--ink);border:1px solid var(--hairline);border-radius:2px}
+.pricing-card.studio-lime .studio-button{background:var(--ink);color:#fff}
+.pricing-price b{font-family:var(--font-koko-heading);font-weight:500}
+.pricing-popular{outline:1px solid var(--ink);background:#fff!important}
+.pricing-badge{background:var(--ink);color:#fff;border-radius:2px;font-weight:500;letter-spacing:.1em}
+.pricing-pilot{background:var(--ivory);color:var(--ink);border:1px solid var(--hairline);border-radius:2px}
+.pricing-pilot .studio-button{background:var(--ink);color:#fff}
+.studio-free-plan .studio-eyebrow{color:var(--ink-soft)}
+.studio-free-plan li svg,.studio-free-plan-note-title svg{color:var(--brand-lilac)}
+.studio-free-plan-note{border-color:var(--hairline)!important}
+
+/* 3D hero stage */
+.studio-3d-stage{position:relative;height:520px;min-width:0}
+.studio-3d{position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#a79bd826 0%,#7fb2ee14 35%,transparent 65%)}
+.studio-3d canvas{display:block;width:100%!important;height:100%!important}
+.studio-3d-caption{position:absolute;left:0;right:0;bottom:6px;text-align:center;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--ink-soft)}
+@media(max-width:800px){.studio-3d-stage{height:380px}}
+@media(max-width:540px){.studio-3d-stage{height:320px}}
+
+/* Photos: straight, crisp edges, soft shadow, slow zoom on hover (no polaroid tilt) */
+.studio-photo-main,.studio-photo-small,.about-art-main,.about-art-small,.rental-photo{transform:none!important;animation:none!important;border:0!important;padding:0!important;border-radius:2px;overflow:hidden}
+.studio-photo-main figcaption,.about-art-main figcaption,.rental-photo figcaption{display:none}
+.about-art-main{width:68%;left:4%;top:30px}
+.about-art-small{width:40%;right:4%;bottom:20px;box-shadow:0 30px 60px rgba(21,21,21,.16)!important;outline:8px solid #fff}
+.about-art-orbit{display:none}
+.koko-studio figure img,.about-story-image img,.studio-video video,.contact-hero-art{transition:transform 1.2s cubic-bezier(.22,1,.36,1)}
+.koko-studio figure:hover img,.about-story-image:hover img{transform:scale(1.04)}
+.rental-photo{box-shadow:0 30px 60px rgba(21,21,21,.10)}
+
+/* Readability: larger body copy in cards, clear clickable links */
+.studio-card>p,.about-service-card>p,.rental-highlights p,.contact-channel-note,.studio-steps p,.about-value-grid p,.about-process-steps p,.services-next p,.services-next ul{font-size:16px!important;line-height:1.75!important}
+.studio-card small,.services-choice-card small{font-size:14px!important}
+.studio-heading>p,.about-section-heading>p,.contact-channels .about-section-heading>p{font-size:16px!important}
+.studio-card>a,.about-service-link,.rental-card>a,.services-next a,.contact-channel-action{font-size:15px!important;font-weight:500;color:var(--ink)!important;padding-top:18px}
+.studio-card>a svg,.about-service-link svg,.contact-channel-action svg{transition:transform .4s cubic-bezier(.22,1,.36,1)}
+.studio-card:hover>a svg,.about-service-card:hover .about-service-link svg,.contact-channel:hover .contact-channel-action svg{transform:translate(3px,-3px)}
+.studio-text-link{font-size:15px;padding-block:12px;min-height:44px}
+.studio-text-link:hover{border-color:var(--brand-lilac)}
+.studio-filters button{font-size:14px;min-height:44px}
+.services-choice-card span{font-size:17px}
+.studio-faq summary{font-size:18px}
+.studio-hero-foot,.studio-hero-foot button{font-size:13px}

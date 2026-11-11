@@ -301,7 +301,7 @@ function ProvinceCombobox({
 
             <div
                 className={`mt-2 flex h-12 items-center rounded-xl border bg-white transition-all ${open
-                    ? "border-pink-400 ring-4 ring-pink-100"
+                    ? "border-[#151515] ring-4 ring-[#ecebf7]"
                     : error
                         ? "border-red-300"
                         : "border-slate-200"
@@ -382,7 +382,7 @@ function ProvinceCombobox({
                                 onClick={() =>
                                     setQuery("")
                                 }
-                                className="text-xs font-medium text-pink-500 hover:text-pink-600"
+                                className="text-xs font-medium text-[#7a6cc0] hover:text-[#151515]"
                             >
                                 {translate("ล้างการค้นหา")}
                             </button>
@@ -412,7 +412,7 @@ function ProvinceCombobox({
                                         }
                                         className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition ${value ===
                                             province
-                                            ? "bg-pink-50 font-semibold text-pink-600"
+                                            ? "bg-[#fafaf9] font-semibold text-[#7a6cc0]"
                                             : "text-slate-700 hover:bg-slate-50"
                                             }`}
                                     >
@@ -420,7 +420,7 @@ function ProvinceCombobox({
                                         <span
                                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${value ===
                                                 province
-                                                ? "bg-pink-100 text-pink-500"
+                                                ? "bg-[#fafaf9] text-[#7a6cc0]"
                                                 : "bg-slate-100 text-slate-400"
                                                 }`}
                                         >
@@ -438,7 +438,7 @@ function ProvinceCombobox({
 
                                                 <CheckCircle2
                                                     size={17}
-                                                    className="ml-auto text-pink-500"
+                                                    className="ml-auto text-[#7a6cc0]"
                                                 />
 
                                             )}
@@ -880,7 +880,7 @@ function ThaiAddressCombobox({
             <Label>
                 {translate(label)}
 
-                <span className="ml-1 text-pink-500">
+                <span className="ml-1 text-[#7a6cc0]">
                     *
                 </span>
             </Label>
@@ -895,8 +895,8 @@ function ThaiAddressCombobox({
                     : error
                         ? "border-red-300"
                         : open
-                            ? "border-pink-400 ring-4 ring-pink-100"
-                            : "border-slate-200 hover:border-pink-300"
+                            ? "border-[#151515] ring-4 ring-[#ecebf7]"
+                            : "border-slate-200 hover:border-[#151515]"
                     }`}
             >
                 <Search
@@ -974,7 +974,7 @@ function ThaiAddressCombobox({
                                     setQuery("");
                                     setHighlightedIndex(-1);
                                 }}
-                                className="text-xs font-medium text-pink-500 hover:text-pink-600"
+                                className="text-xs font-medium text-[#7a6cc0] hover:text-[#151515]"
                             >
                                 {translate("ล้างการค้นหา")}
                             </button>
@@ -987,7 +987,7 @@ function ThaiAddressCombobox({
 
                     {loading && (
                         <div className="px-4 py-10 text-center">
-                            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-pink-500" />
+                            <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-[#151515]" />
 
                             <p className="mt-3 text-sm text-slate-400">
                                 {translate("กำลังโหลดข้อมูลพื้นที่...")}
@@ -1028,7 +1028,7 @@ function ThaiAddressCombobox({
                                                     )
                                                 }
                                                 className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm transition ${selected
-                                                    ? "bg-pink-50 font-semibold text-pink-600"
+                                                    ? "bg-[#fafaf9] font-semibold text-[#7a6cc0]"
                                                     : highlighted
                                                         ? "bg-slate-50 text-slate-900"
                                                         : "text-slate-700 hover:bg-slate-50"
@@ -1037,7 +1037,7 @@ function ThaiAddressCombobox({
                                                 <div className="flex min-w-0 items-center gap-3">
                                                     <span
                                                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${selected
-                                                            ? "bg-pink-100 text-pink-500"
+                                                            ? "bg-[#fafaf9] text-[#7a6cc0]"
                                                             : "bg-slate-100 text-slate-400"
                                                             }`}
                                                     >
@@ -1054,7 +1054,7 @@ function ThaiAddressCombobox({
                                                 {selected && (
                                                     <CheckCircle2
                                                         size={18}
-                                                        className="shrink-0 text-pink-500"
+                                                        className="shrink-0 text-[#7a6cc0]"
                                                     />
                                                 )}
                                             </button>
@@ -1869,7 +1869,7 @@ function CustomerContent() {
                     <div className="flex min-h-[72px] items-center justify-between gap-4">
 
                         <div className="min-w-0 text-center">
-                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
+                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-[#7a6cc0]">
                                 KOKO Memory
                             </p>
 
@@ -1932,7 +1932,7 @@ function CustomerContent() {
                                     <div
                                         className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${
                                             step.active
-                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200"
+                                                ? "bg-[#151515] text-white shadow-lg shadow-black/5"
                                                 : step.done
                                                     ? "bg-green-50 text-green-700"
                                                     : "bg-slate-100 text-slate-400"
@@ -1991,7 +1991,7 @@ function CustomerContent() {
 
                             <div className="mb-10">
 
-                                <p className="text-sm font-bold uppercase tracking-[0.25em] text-pink-500">
+                                <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#7a6cc0]">
                                     {translate("ขั้นตอนที่ 3")}
                                 </p>
 
@@ -2027,7 +2027,7 @@ function CustomerContent() {
 
                                                 ชื่อ-นามสกุล
 
-                                                <span className="ml-1 text-pink-500">
+                                                <span className="ml-1 text-[#7a6cc0]">
                                                     *
                                                 </span>
 
@@ -2074,7 +2074,7 @@ function CustomerContent() {
 
                                                 เบอร์โทรศัพท์
 
-                                                <span className="ml-1 text-pink-500">
+                                                <span className="ml-1 text-[#7a6cc0]">
                                                     *
                                                 </span>
 
@@ -2208,7 +2208,7 @@ function CustomerContent() {
 
                                                 ประเภทงาน
 
-                                                <span className="ml-1 text-pink-500">
+                                                <span className="ml-1 text-[#7a6cc0]">
                                                     *
                                                 </span>
 
@@ -2305,7 +2305,7 @@ function CustomerContent() {
 
                                     <div className="flex items-start gap-3">
 
-                                        <div className="rounded-xl bg-pink-100 p-3 text-pink-500">
+                                        <div className="rounded-xl bg-[#fafaf9] p-3 text-[#7a6cc0]">
                                             <Clock3 size={22} />
                                         </div>
 
@@ -2316,7 +2316,7 @@ function CustomerContent() {
 
                                             <p className="mt-1 text-sm leading-6 text-slate-500">
                                                 แพ็กเกจนี้กำหนดระยะเวลาไว้{" "}
-                                                <span className="font-bold text-pink-500">
+                                                <span className="font-bold text-[#7a6cc0]">
                                                     {serviceDuration} ชั่วโมง
                                                 </span>{" "}
                                                 กรุณาเลือกเวลาเริ่มงาน ระบบจะคำนวณเวลาสิ้นสุดให้อัตโนมัติ
@@ -2330,7 +2330,7 @@ function CustomerContent() {
                                         <div>
                                             <Label>
                                                 เวลาเริ่มงาน
-                                                <span className="ml-1 text-pink-500">
+                                                <span className="ml-1 text-[#7a6cc0]">
                                                     *
                                                 </span>
                                             </Label>
@@ -2428,10 +2428,10 @@ function CustomerContent() {
                                     </div>
 
                                     {form.startTime && form.endTime && (
-                                        <div className="mt-4 rounded-2xl border border-pink-100 bg-pink-50 p-4">
+                                        <div className="mt-4 rounded-2xl border border-[#e8e8e6] bg-[#fafaf9] p-4">
                                             <div className="flex flex-wrap items-center justify-between gap-3">
                                                 <div>
-                                                    <p className="text-xs font-semibold text-pink-500">
+                                                    <p className="text-xs font-semibold text-[#7a6cc0]">
                                                         ช่วงเวลาที่เลือก
                                                     </p>
 
@@ -2443,7 +2443,7 @@ function CustomerContent() {
                                                     </p>
                                                 </div>
 
-                                                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-pink-600">
+                                                <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-[#7a6cc0]">
                                                     {serviceDuration} ชั่วโมง
                                                 </span>
                                             </div>
@@ -2460,7 +2460,7 @@ function CustomerContent() {
 
                                     <div className="flex items-start gap-3">
 
-                                        <div className="rounded-xl bg-pink-100 p-3 text-pink-500">
+                                        <div className="rounded-xl bg-[#fafaf9] p-3 text-[#7a6cc0]">
 
                                             <MapPin size={22} />
 
@@ -2490,7 +2490,7 @@ function CustomerContent() {
 
                                                 {translate("ชื่อสถานที่จัดงาน")}
 
-                                                <span className="ml-1 text-pink-500">
+                                                <span className="ml-1 text-[#7a6cc0]">
                                                     *
                                                 </span>
 
@@ -2528,7 +2528,7 @@ function CustomerContent() {
 
                                                 {translate("จังหวัด")}
 
-                                                <span className="ml-1 text-pink-500">
+                                                <span className="ml-1 text-[#7a6cc0]">
                                                     *
                                                 </span>
 
@@ -2765,7 +2765,7 @@ function CustomerContent() {
                                                     }
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-pink-500 hover:underline"
+                                                    className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[#7a6cc0] hover:underline"
                                                 >
 
                                                     เปิด Google Maps
@@ -2840,7 +2840,7 @@ function CustomerContent() {
                                             )}`
                                         )
                                     }
-                                    className="h-14 rounded-full border-slate-200 bg-white font-semibold text-slate-700 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600 sm:flex-1"
+                                    className="h-14 rounded-full border-slate-200 bg-white font-semibold text-slate-700 hover:border-[#151515] hover:bg-[#fafaf9] hover:text-[#151515] sm:flex-1"
                                 >
 
                                     <ArrowLeft
@@ -2863,7 +2863,7 @@ function CustomerContent() {
                                         !form.startTime ||
                                         !form.endTime
                                     }
-                                    className="h-14 rounded-full bg-pink-500 font-bold text-white hover:bg-pink-400 sm:flex-1"
+                                    className="h-14 rounded-full bg-[#151515] font-bold text-white hover:bg-[#2e2e2e] sm:flex-1"
                                 >
 
                                         {translate("ตรวจสอบข้อมูล")}
@@ -2890,7 +2890,7 @@ function CustomerContent() {
 
                             <CardContent className="p-7">
 
-                                <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-500">
+                                <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                     {translate("Your Booking")}
                                 </p>
 
@@ -2932,7 +2932,7 @@ function CustomerContent() {
                                                         {translate("ราคา")}
                                                     </p>
 
-                                                    <p className="text-xl font-black text-pink-500">
+                                                    <p className="text-xl font-black text-[#7a6cc0]">
                                                         ฿
                                                         {formatMoney(
                                                             selectedPackage.price
@@ -2996,7 +2996,7 @@ function CustomerContent() {
 
                                         <CalendarDays
                                             size={18}
-                                            className="text-pink-500"
+                                            className="text-[#7a6cc0]"
                                         />
 
                                         <p className="text-sm text-slate-500">
@@ -3024,7 +3024,7 @@ function CustomerContent() {
                                     <div className="flex items-center gap-2">
                                         <Clock3
                                             size={18}
-                                            className="text-pink-500"
+                                            className="text-[#7a6cc0]"
                                         />
 
                                         <p className="text-sm text-slate-500">
@@ -3051,13 +3051,13 @@ function CustomerContent() {
 
                                 {form.province && (
 
-                                    <div className="mt-4 rounded-2xl border border-pink-100 bg-pink-50 p-5">
+                                    <div className="mt-4 rounded-2xl border border-[#e8e8e6] bg-[#fafaf9] p-5">
 
                                         <div className="flex items-center gap-2">
 
                                             <MapPin
                                                 size={18}
-                                                className="text-pink-500"
+                                                className="text-[#7a6cc0]"
                                             />
 
                                             <p className="text-sm text-slate-600">
@@ -3072,13 +3072,13 @@ function CustomerContent() {
                                             }
                                         </p>
 
-                                        <div className="mt-3 flex items-center justify-between border-t border-pink-100 pt-3">
+                                        <div className="mt-3 flex items-center justify-between border-t border-[#e8e8e6] pt-3">
 
                                             <span className="text-sm text-slate-500">
                                                 {translate("ค่าเดินทาง")}
                                             </span>
 
-                                            <span className="font-bold text-pink-600">
+                                            <span className="font-bold text-[#7a6cc0]">
 
                                                 {travelFee === 0
                                                     ? "ฟรี"
@@ -3145,7 +3145,7 @@ function CustomerContent() {
                                             ประมาณการรวม
                                         </span>
 
-                                        <span className="text-2xl font-black text-pink-500">
+                                        <span className="text-2xl font-black text-[#7a6cc0]">
                                             ฿
                                             {formatMoney(
                                                 estimatedTotal

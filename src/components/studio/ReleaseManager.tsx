@@ -73,7 +73,7 @@ export default function ReleaseManager() {
         <label className="text-sm">Channel<select className={input} value={form.channel} onChange={e => setForm({ ...form, channel: e.target.value })}><option value="stable">stable</option><option value="beta">beta</option></select></label>
         <label className="text-sm sm:col-span-2">Release notes (หนึ่งบรรทัดต่อหนึ่งข้อ)<textarea rows={3} className={input} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} /></label>
         <label className="text-sm">เวอร์ชันต่ำสุดที่ยังใช้ได้ (ว่าง = ไม่บังคับอัปเดต)<input pattern="\d+\.\d+\.\d+" className={input} value={form.minimumSupportedVersion} onChange={e => setForm({ ...form, minimumSupportedVersion: e.target.value })} /></label>
-        <div className="flex items-end"><button disabled={Boolean(busy)} className="rounded-full bg-[#F2ADCA] px-5 py-2.5 font-bold text-[#141516] hover:bg-[#D5EE85] disabled:opacity-50">สร้างฉบับร่าง</button></div>
+        <div className="flex items-end"><button disabled={Boolean(busy)} className="rounded-full bg-[#fafaf9] px-5 py-2.5 font-bold text-[#141516] hover:bg-[#ecebf7] disabled:opacity-50">สร้างฉบับร่าง</button></div>
       </form>
       <ul className="mt-5 space-y-4">{releases.map(release => <li key={release.version} className="rounded-2xl border p-4">
         <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-bold">v{release.version} <span className="text-sm font-normal text-slate-500">· {release.channel}</span></h3><span className="rounded-full bg-slate-100 px-3 py-1 text-sm">{statusLabel[release.status]}</span></div>

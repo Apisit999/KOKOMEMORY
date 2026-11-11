@@ -1,12 +1,14 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, Box, Camera, Code2, Monitor, Pause, Play } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { useI18n } from "@/i18n";
 import Footer from "@/components/layout/Footer";
+import dynamic from "next/dynamic";
 import "./studio.css";
+
+const Hero3D = dynamic(() => import("./Hero3D"), { ssr: false, loading: () => <div className="studio-3d" aria-hidden="true" /> });
 
 const services = [
   { id: "rental", label: "PHOTOBOOTH RENTAL", title: ["เช่า Photobooth", "Photobooth rental"], description: ["เติมความสนุกให้งานแต่ง งานเลี้ยง และอีเวนต์ เลือกแพ็กเกจและส่งรายละเอียดงานได้ในเว็บ", "Bring a photo experience to your event. Choose a package and submit event details online."], href: "/photobooth", action: ["ดูบริการและแพ็กเกจ", "Explore rental"], icon: Camera, color: "pink", tags: "Wedding / Party / Corporate" },
@@ -38,7 +40,7 @@ export default function StudioExperience({ servicesPage = false }: { servicesPag
         <p className="studio-intro">{t("จากโมเมนต์ที่อยากเก็บ สู่สิ่งใหม่ที่อยากสร้าง", "From moments worth keeping to things worth creating.")}<br />Photobooth · Software · 3D Print</p>
         <div className="studio-actions"><a className="studio-button" href="#studio-services">{t("ค้นหาบริการที่ใช่", "Find your service")}<ArrowUpRight size={18} /></a><Link className="studio-text-link" href="/gallery/portfolio">{t("ดูผลงานของเรา", "View our work")}<ArrowUpRight size={18} /></Link></div>
         <div className="studio-hero-foot"><span>01 / IMAGINE. CREATE. REMEMBER.</span><button onClick={() => setMoving(!moving)} aria-pressed={!moving}>{moving ? <Pause size={14} /> : <Play size={14} />}{t(moving ? "หยุดภาพเคลื่อนไหว" : "เปิดภาพเคลื่อนไหว", moving ? "Pause motion" : "Enable motion")}</button></div>
-      </div><div className="studio-collage"><div className="studio-orbit" aria-hidden="true" /><figure className="studio-photo-main"><div><Image src="/hero/wedding.jpg" alt={t("บรรยากาศงานแต่งงาน", "Wedding atmosphere")} fill priority sizes="(max-width: 800px) 80vw, 40vw" /></div><figcaption>GOOD TIMES. REAL MEMORIES.</figcaption></figure><figure className="studio-photo-small"><Image src="/gallery/K1.jpg" alt={t("ภาพจากแกลเลอรี KOKO Memory", "KOKO Memory gallery photo")} fill sizes="(max-width: 800px) 40vw, 20vw" /></figure><div className="studio-object" aria-hidden="true"><Box size={60} strokeWidth={1} /><span>IDEA → OBJECT</span></div><div className="studio-sticker" aria-hidden="true">MAKE<br />IT REAL ↗</div></div></section>
+      </div><div className="studio-3d-stage"><Hero3D moving={moving} /><p className="studio-3d-caption">Memories · Software · Objects</p></div></section>
       <div className="studio-ribbon" aria-hidden="true">MEMORIES ✳ SOFTWARE ✳ OBJECTS ✳ EXPERIENCES ✳</div>
       <section className="studio-services studio-wrap" id="studio-services"><div className="studio-heading"><div><p className="studio-eyebrow">02 / WHAT WE MAKE</p><h2>{t("เลือกสิ่งที่คุณอยากสร้าง", "What would you like to create?")}</h2></div><p>{t("สี่บริการ หนึ่งพื้นที่สำหรับไอเดียของคุณ", "Four services. One place for your ideas.")}</p></div>
         <div className="studio-filters" role="group" aria-label={t("กรองบริการ", "Filter services")}><button aria-pressed={filter === "all"} onClick={() => setFilter("all")}>{t("ทั้งหมด", "All services")}</button>{services.map(s => <button key={s.id} aria-pressed={filter === s.id} onClick={() => setFilter(s.id)}>{pick(s.title)}</button>)}</div>

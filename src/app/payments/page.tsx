@@ -247,7 +247,7 @@ function PaymentContent() {
 
                     </div>
 
-                    <p className="mt-6 text-sm font-semibold tracking-[0.3em] text-pink-500">
+                    <p className="mt-6 text-sm font-semibold tracking-[0.3em] text-[#7a6cc0]">
                         KOKO MEMORY
                     </p>
 
@@ -291,7 +291,7 @@ function PaymentContent() {
                         onClick={() =>
                             router.push("/")
                         }
-                        className="mt-8 w-full rounded-2xl bg-pink-500 py-4 font-semibold text-white transition hover:bg-pink-400"
+                        className="mt-8 w-full rounded-2xl bg-[#151515] py-4 font-semibold text-white transition hover:bg-[#2e2e2e]"
                     >
                         กลับหน้าแรก
                     </button>
@@ -317,7 +317,7 @@ function PaymentContent() {
                     onClick={() =>
                         router.back()
                     }
-                    className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-pink-500"
+                    className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-[#151515]"
                 >
                     <ArrowLeft size={18} />
 
@@ -330,7 +330,7 @@ function PaymentContent() {
 
             <section className="px-4 pb-10 text-center sm:px-6">
 
-                <p className="text-sm font-semibold tracking-[0.35em] text-pink-500">
+                <p className="text-sm font-semibold tracking-[0.35em] text-[#7a6cc0]">
                     KOKO MEMORY
                 </p>
 
@@ -357,11 +357,11 @@ function PaymentContent() {
 
                         <div className="flex items-center gap-4">
 
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-pink-50">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fafaf9]">
 
                                 <CreditCard
                                     size={24}
-                                    className="text-pink-500"
+                                    className="text-[#7a6cc0]"
                                 />
 
                             </div>
@@ -433,7 +433,7 @@ function PaymentContent() {
 
                     <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
 
-                        <p className="text-sm font-semibold tracking-[0.25em] text-pink-500">
+                        <p className="text-sm font-semibold tracking-[0.25em] text-[#7a6cc0]">
                             PAYMENT
                         </p>
 
@@ -443,13 +443,13 @@ function PaymentContent() {
 
                         {/* Amount */}
 
-                        <div className="mt-6 rounded-2xl bg-pink-50 p-6 text-center">
+                        <div className="mt-6 rounded-2xl bg-[#fafaf9] p-6 text-center">
 
                             <p className="text-sm text-slate-500">
                                 ยอดที่ต้องชำระ
                             </p>
 
-                            <p className="mt-2 text-4xl font-bold text-pink-500">
+                            <p className="mt-2 text-4xl font-bold text-[#7a6cc0]">
                                 ฿
                                 {amount.toLocaleString(
                                     "th-TH"
@@ -496,13 +496,13 @@ function PaymentContent() {
 
                             {!selectedFile ? (
 
-                                <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center transition hover:border-pink-300 hover:bg-pink-50">
+                                <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center transition hover:border-[#151515] hover:bg-[#fafaf9]">
 
                                     <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm">
 
                                         <Upload
                                             size={24}
-                                            className="text-pink-500"
+                                            className="text-[#7a6cc0]"
                                         />
 
                                     </div>
@@ -544,7 +544,7 @@ function PaymentContent() {
 
                                             <FileImage
                                                 size={20}
-                                                className="shrink-0 text-pink-500"
+                                                className="shrink-0 text-[#7a6cc0]"
                                             />
 
                                             <p className="truncate text-sm font-medium text-slate-700">
@@ -597,7 +597,7 @@ function PaymentContent() {
                                 loadingBooking ||
                                 !selectedFile
                             }
-                            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-pink-500 py-4 font-semibold text-white shadow-lg shadow-pink-500/20 transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#151515] py-4 font-semibold text-white shadow-lg shadow-black/5 transition hover:bg-[#2e2e2e] disabled:cursor-not-allowed disabled:opacity-50"
                         >
 
                             {uploading ? (

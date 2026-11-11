@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import brandLogo from "../../../public/logo/logo.jpg";
+import brandLogo from "../../../public/logo/icon.svg";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -83,7 +83,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
     }, [open]);
 
     if (isPublicPage) return <>{children}</>;
-    if (!authReady || !user) return <main className="flex min-h-screen items-center justify-center bg-[#F4F0E7] px-5"><div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-sm font-semibold text-slate-600 shadow-sm"><LoaderCircle size={19} className="animate-spin text-[#A0235F]" />{locale === "th" ? "กำลังตรวจสอบบัญชีของคุณ…" : "Checking your account…"}</div></main>;
+    if (!authReady || !user) return <main className="flex min-h-screen items-center justify-center bg-[#fafaf9] px-5"><div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-sm font-semibold text-slate-600 shadow-sm"><LoaderCircle size={19} className="animate-spin text-[#7a6cc0]" />{locale === "th" ? "กำลังตรวจสอบบัญชีของคุณ…" : "Checking your account…"}</div></main>;
 
     const text = (label: Label) => label[locale];
     const isActive = (href: string) => pathname === href || (href !== "/account" && href !== "/account/3d-printing" && pathname.startsWith(`${href}/`));
@@ -92,8 +92,8 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
     const renderLink = (item: NavItem, mobile = false) => {
         const active = isActive(item.href);
         const Icon = item.icon;
-        return <Link key={item.href} href={item.href} onClick={mobile ? () => setOpen(false) : undefined} aria-current={active ? "page" : undefined} className={`group relative flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold transition ${active ? "bg-[#EEE7D9] text-[#A0235F]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}>
-            <Icon size={18} className={active ? "text-[#A0235F]" : "text-slate-400 group-hover:text-slate-700"} />
+        return <Link key={item.href} href={item.href} onClick={mobile ? () => setOpen(false) : undefined} aria-current={active ? "page" : undefined} className={`group relative flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold transition ${active ? "bg-[#fafaf9] text-[#7a6cc0]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}>
+            <Icon size={18} className={active ? "text-[#7a6cc0]" : "text-slate-400 group-hover:text-slate-700"} />
             <span>{text(item.label)}</span>
             {active && <span className="ml-auto h-2 w-2 rounded-full bg-[#141516]" />}
         </Link>;
@@ -110,15 +110,15 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
         <button type="button" onClick={() => void signOut(auth)} className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-left text-sm font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600"><LogOut size={18} />{locale === "th" ? "ออกจากระบบ" : "Sign out"}</button>
     </div>;
 
-    return <div data-account-shell className="min-h-screen bg-[#F4F0E7] text-[#111116]"><style jsx global>{`[data-account-shell] main.bg-slate-50 > header{display:none}[data-account-shell] main.bg-slate-50{background:#F4F0E7;min-height:calc(100vh - 72px)}`}</style>
-        <aside className="fixed inset-y-0 left-0 z-50 hidden w-[264px] flex-col border-r border-[#E4DDCD] bg-white px-4 py-6 lg:flex">
+    return <div data-account-shell className="min-h-screen bg-[#fafaf9] text-[#111116]"><style jsx global>{`[data-account-shell] main.bg-slate-50 > header{display:none}[data-account-shell] main.bg-slate-50{background:#fafaf9;min-height:calc(100vh - 72px)}`}</style>
+        <aside className="fixed inset-y-0 left-0 z-50 hidden w-[264px] flex-col border-r border-[#e8e8e6] bg-white px-4 py-6 lg:flex">
             <Link href="/account" className="mb-8 flex items-center gap-3 px-2"><Image src={brandLogo} alt="KOKO Memory" width={44} height={44} className="h-10 w-10 rounded-full object-cover" priority /><span><b className="block text-base tracking-tight">KOKO Memory</b><small className="text-[12px] uppercase tracking-[.2em] text-slate-400">{locale === "th" ? "บัญชีของฉัน" : "My account"}</small></span></Link>
             {navigation()}
             <div className="mt-auto">{secondary()}</div>
         </aside>
         <div className="lg:pl-[264px]">
-            <header className="sticky top-0 z-40 border-b border-[#E4DDCD] bg-white/95 backdrop-blur-xl">
-                <div className="flex h-[72px] items-center justify-between gap-3 px-3 sm:gap-4 sm:px-8"><div className="flex min-w-0 items-center gap-2 sm:gap-3"><button ref={menuButtonRef} type="button" className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 lg:hidden" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="account-mobile-menu" aria-label={locale === "th" ? "เปิดเมนู" : "Open menu"}><Menu size={20} /></button><div className="min-w-0"><p className="truncate text-xs font-bold text-slate-400">KOKO Memory Customer Portal</p><h1 className="truncate text-lg font-black">{pageTitle}</h1></div></div><div className="flex shrink-0 items-center gap-2 sm:gap-3"><LanguageSwitcher appearance="light" /><div className="hidden items-center gap-2 border-l border-slate-100 pl-3 sm:flex"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EEE7D9] text-sm font-black text-[#A0235F]">{(user?.displayName || user?.email || "K").charAt(0).toUpperCase()}</div><span className="hidden max-w-[150px] truncate text-sm font-semibold text-slate-700 xl:block">{user?.displayName || user?.email || "KOKO"}</span></div></div></div>
+            <header className="sticky top-0 z-40 border-b border-[#e8e8e6] bg-white/95 backdrop-blur-xl">
+                <div className="flex h-[72px] items-center justify-between gap-3 px-3 sm:gap-4 sm:px-8"><div className="flex min-w-0 items-center gap-2 sm:gap-3"><button ref={menuButtonRef} type="button" className="rounded-xl p-2 text-slate-500 hover:bg-slate-50 lg:hidden" onClick={() => setOpen(true)} aria-expanded={open} aria-controls="account-mobile-menu" aria-label={locale === "th" ? "เปิดเมนู" : "Open menu"}><Menu size={20} /></button><div className="min-w-0"><p className="truncate text-xs font-bold text-slate-400">KOKO Memory Customer Portal</p><h1 className="truncate text-lg font-black">{pageTitle}</h1></div></div><div className="flex shrink-0 items-center gap-2 sm:gap-3"><LanguageSwitcher appearance="light" /><div className="hidden items-center gap-2 border-l border-slate-100 pl-3 sm:flex"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#fafaf9] text-sm font-black text-[#7a6cc0]">{(user?.displayName || user?.email || "K").charAt(0).toUpperCase()}</div><span className="hidden max-w-[150px] truncate text-sm font-semibold text-slate-700 xl:block">{user?.displayName || user?.email || "KOKO"}</span></div></div></div>
             </header>
             <div>{breadcrumb(pathname, locale)}{children}</div>
         </div>
@@ -126,7 +126,7 @@ export default function AccountLayout({ children }: { children: ReactNode }) {
     </div>;
 }
 
-function NavGroup({ title, children, accent = false }: { title: string; children: ReactNode; accent?: boolean }) { return <div><p className={`mb-2 px-3 text-[12px] font-black uppercase tracking-[.2em] ${accent ? "text-[#A0235F]" : "text-slate-400"}`}>{title}</p><div className="space-y-1">{children}</div></div>; }
+function NavGroup({ title, children, accent = false }: { title: string; children: ReactNode; accent?: boolean }) { return <div><p className={`mb-2 px-3 text-[12px] font-black uppercase tracking-[.2em] ${accent ? "text-[#7a6cc0]" : "text-slate-400"}`}>{title}</p><div className="space-y-1">{children}</div></div>; }
 
 function breadcrumb(pathname: string, locale: "th" | "en") {
     const parts = pathname.split("/").filter(Boolean);
@@ -141,5 +141,5 @@ function breadcrumb(pathname: string, locale: "th" | "en") {
         : isOrder
             ? [{ label: th ? "ภาพรวม" : "Overview", href: "/account" }, { label: th ? "งาน 3D ของฉัน" : "My 3D orders", href: "/account/3d-printing/orders" }, { label: detail }]
             : [{ label: th ? "ภาพรวม" : "Overview", href: "/account" }, { label: th ? "การจองของฉัน" : "My bookings", href: "/account/bookings" }, { label: detail }];
-    return <nav aria-label={th ? "เส้นทางหน้า" : "Breadcrumb"} className="mx-auto flex max-w-6xl flex-wrap items-center gap-1.5 px-4 pt-5 text-xs text-slate-400 sm:px-8">{items.map((item, index) => <span key={`${item.label}-${index}`} className={isBooking && !item.href ? "inline-flex max-w-full min-w-0 items-start gap-1.5" : "inline-flex items-center gap-1.5"}>{index > 0 && <ChevronRight size={13} className={isBooking && !item.href ? "shrink-0" : undefined}/>} {item.href ? <Link href={item.href} className="font-semibold hover:text-[#A0235F]">{item.label}</Link> : <span className={isBooking ? "min-w-0 break-all font-semibold text-slate-700" : "font-semibold text-slate-700"}>{item.label}</span>}</span>)}</nav>;
+    return <nav aria-label={th ? "เส้นทางหน้า" : "Breadcrumb"} className="mx-auto flex max-w-6xl flex-wrap items-center gap-1.5 px-4 pt-5 text-xs text-slate-400 sm:px-8">{items.map((item, index) => <span key={`${item.label}-${index}`} className={isBooking && !item.href ? "inline-flex max-w-full min-w-0 items-start gap-1.5" : "inline-flex items-center gap-1.5"}>{index > 0 && <ChevronRight size={13} className={isBooking && !item.href ? "shrink-0" : undefined}/>} {item.href ? <Link href={item.href} className="font-semibold hover:text-[#7a6cc0]">{item.label}</Link> : <span className={isBooking ? "min-w-0 break-all font-semibold text-slate-700" : "font-semibold text-slate-700"}>{item.label}</span>}</span>)}</nav>;
 }

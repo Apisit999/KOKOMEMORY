@@ -158,7 +158,7 @@ function SuccessContent() {
             <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                        <p className="truncate text-xs font-bold uppercase tracking-[0.18em] text-pink-500">KOKO Memory</p>
+                        <p className="truncate text-xs font-bold uppercase tracking-[0.18em] text-[#7a6cc0]">KOKO Memory</p>
                         <p className="truncate text-sm font-bold text-slate-900">{translate("ขั้นตอนการจอง")}</p>
                     </div>
                     <span className="shrink-0 text-sm font-black text-slate-700">06 <span className="font-normal text-slate-300">/</span> 06</span>
@@ -167,7 +167,7 @@ function SuccessContent() {
                     <ol aria-label={translate("ขั้นตอนการจอง")} className="flex min-w-max items-center justify-start gap-2 sm:justify-center sm:gap-3">
                         {steps.map((step, index) => (
                             <li key={step} aria-current={index === 5 ? "step" : undefined} className="flex items-center gap-2 sm:gap-3">
-                                <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold sm:px-4 sm:text-sm ${index === 5 ? "bg-pink-500 text-white shadow-sm" : "bg-green-50 text-green-700"}`}>
+                                <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold sm:px-4 sm:text-sm ${index === 5 ? "bg-[#151515] text-white shadow-sm" : "bg-green-50 text-green-700"}`}>
                                     <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] ${index === 5 ? "bg-white/20" : "bg-green-100"}`}>{index === 5 ? "✓" : index + 1}</span>
                                     {translate(step)}
                                 </span>
@@ -185,7 +185,7 @@ function SuccessContent() {
             <main className="min-h-screen bg-slate-50">
                 {stepper}
                 <div role="status" className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center px-4 text-center">
-                    <LoaderCircle className="h-9 w-9 animate-spin text-pink-500" aria-hidden="true" />
+                    <LoaderCircle className="h-9 w-9 animate-spin text-[#7a6cc0]" aria-hidden="true" />
                     <p className="mt-4 font-semibold text-slate-700">{translate("กำลังตรวจสอบข้อมูลการจอง")}</p>
                 </div>
             </main>
@@ -202,7 +202,7 @@ function SuccessContent() {
                         <h1 className="mt-4 text-2xl font-black text-slate-900">{translate("ยังยืนยันผลการชำระเงินไม่ได้")}</h1>
                         <p className="mt-3 text-sm leading-6 text-slate-600">{state.message}</p>
                         <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-                            <Link href="/account/bookings" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-pink-500 px-6 font-bold text-white transition hover:bg-pink-600">{translate("รายการจองของฉัน")}<ArrowRight size={17} /></Link>
+                            <Link href="/account/bookings" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#151515] px-6 font-bold text-white transition hover:bg-[#2e2e2e]">{translate("รายการจองของฉัน")}<ArrowRight size={17} /></Link>
                             <Link href="/" className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-200 px-6 font-bold text-slate-700 transition hover:bg-slate-50">{translate("กลับหน้าแรก")}</Link>
                         </div>
                     </div>
@@ -234,20 +234,20 @@ function SuccessContent() {
                     <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full sm:h-20 sm:w-20 ${isRejected ? "bg-red-100" : "bg-green-100"}`}>
                         {isRejected ? <XCircle className="h-10 w-10 text-red-500" /> : <CheckCircle2 className="h-10 w-10 text-green-500" />}
                     </div>
-                    <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-sm">{translate("ผลการจอง")}</p>
+                    <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-[#7a6cc0] sm:text-sm">{translate("ผลการจอง")}</p>
                     <h1 className="mt-2 text-2xl font-black text-slate-900 sm:text-4xl">{title}</h1>
                     <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">{description}</p>
                 </div>
             </section>
 
             <section className="mx-auto max-w-5xl space-y-5 px-4 pb-12 sm:px-6 sm:pb-16 lg:px-8">
-                <div className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm sm:p-8">
+                <div className="rounded-3xl border border-[#e8e8e6] bg-white p-5 shadow-sm sm:p-8">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="min-w-0">
                             <p className="text-xs font-semibold text-slate-500">{translate("Booking ID")}</p>
                             <div className="mt-2 flex min-w-0 items-start gap-2 sm:items-center sm:gap-3">
                                 <code className="min-w-0 break-all text-sm font-black leading-6 text-slate-900 sm:text-lg">{bookingId}</code>
-                                <button type="button" onClick={copyBookingId} className="shrink-0 rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-pink-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500" aria-label={translate("คัดลอก Booking ID")}>
+                                <button type="button" onClick={copyBookingId} className="shrink-0 rounded-xl p-2 text-slate-500 transition hover:bg-slate-100 hover:text-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8]" aria-label={translate("คัดลอก Booking ID")}>
                                     <Copy size={18} />
                                 </button>
                             </div>
@@ -265,7 +265,7 @@ function SuccessContent() {
                 <div className="grid gap-5 md:grid-cols-2">
                     <article className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
                         <div className="flex items-center gap-3">
-                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-pink-100 text-pink-500"><CalendarDays size={21} /></span>
+                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#fafaf9] text-[#7a6cc0]"><CalendarDays size={21} /></span>
                             <div><h2 className="font-black text-slate-900">{translate("รายละเอียดการจอง")}</h2><p className="text-sm text-slate-500">{translate("ข้อมูลบริการ")}</p></div>
                         </div>
                         <dl className="mt-5 space-y-3">
@@ -291,10 +291,10 @@ function SuccessContent() {
                 </div>
 
                 <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-center">
-                    <Link href={`/account/bookings/${encodeURIComponent(bookingId)}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-pink-500 px-7 font-bold text-white transition hover:bg-pink-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2">
+                    <Link href={`/account/bookings/${encodeURIComponent(bookingId)}`} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#151515] px-7 font-bold text-white transition hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] focus-visible:ring-offset-2">
                         {translate("ดูรายละเอียดการจอง")}<ArrowRight size={18} />
                     </Link>
-                    <Link href="/" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-7 font-bold text-slate-700 transition hover:border-pink-200 hover:text-pink-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2">
+                    <Link href="/" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-7 font-bold text-slate-700 transition hover:border-[#151515] hover:text-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] focus-visible:ring-offset-2">
                         <Home size={18} />{translate("กลับหน้าแรก")}
                     </Link>
                 </div>

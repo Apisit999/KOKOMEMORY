@@ -16,7 +16,7 @@ export default function BookingPage() {
                 <h1 className="mt-7 max-w-2xl text-4xl font-black leading-[1.13] tracking-tight text-[#20211d] sm:text-6xl">เก็บช่วงเวลาพิเศษ<br/><span className="text-[#65763b]">เริ่มต้นที่นี่</span></h1>
                 <p className="mt-6 max-w-xl text-base leading-8 text-[#686960] sm:text-lg">เลือกแพ็กเกจ Photobooth เช็กวันว่าง และส่งรายละเอียดงานให้ทีม KOKO ดูแลทุกขั้นตอน</p>
                 <div className="mt-8 flex flex-wrap items-center gap-4">
-                    <Link href="/booking/package" className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#d5ee85] px-7 font-bold text-[#20231a] shadow-[0_12px_30px_rgba(101,118,59,.18)] transition hover:-translate-y-0.5 hover:bg-[#c9e36d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65763b] focus-visible:ring-offset-2">เลือกแพ็กเกจ<ArrowRight size={18}/></Link>
+                    <Link href="/booking/package" className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#ecebf7] px-7 font-bold text-[#20231a] shadow-[0_12px_30px_rgba(101,118,59,.18)] transition hover:-translate-y-0.5 hover:bg-[#c9e36d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65763b] focus-visible:ring-offset-2">เลือกแพ็กเกจ<ArrowRight size={18}/></Link>
                     <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#686960]"><Clock3 size={16}/> ใช้เวลาไม่กี่นาที</span>
                 </div>
                 <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-[#77796e]">

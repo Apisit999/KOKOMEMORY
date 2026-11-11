@@ -175,7 +175,7 @@ export default function ProvinceCombobox({
             ====================================================== */}
 
             <label className="mb-2 block text-sm font-semibold text-slate-800">
-                จังหวัด <span className="text-pink-500">*</span>
+                จังหวัด <span className="text-[#7a6cc0]">*</span>
             </label>
 
             {/* =====================================================
@@ -188,8 +188,8 @@ export default function ProvinceCombobox({
                 className={`flex h-14 w-full items-center justify-between rounded-2xl border bg-white px-4 text-left transition ${error
                         ? "border-red-400"
                         : open
-                            ? "border-pink-500 ring-4 ring-pink-100"
-                            : "border-slate-200 hover:border-pink-300"
+                            ? "border-[#151515] ring-4 ring-[#ecebf7]"
+                            : "border-slate-200 hover:border-[#151515]"
                     }`}
             >
                 <span
@@ -233,7 +233,7 @@ export default function ProvinceCombobox({
                                     setSearch(event.target.value)
                                 }
                                 placeholder={translate("พิมพ์ชื่อจังหวัด...")}
-                                className="h-11 w-full rounded-xl bg-slate-50 pl-10 pr-10 text-sm outline-none ring-0 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-pink-200"
+                                className="h-11 w-full rounded-xl bg-slate-50 pl-10 pr-10 text-sm outline-none ring-0 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-[#ecebf7]"
                             />
 
                             {search && (
@@ -264,7 +264,7 @@ export default function ProvinceCombobox({
                                             handleSelect(province)
                                         }
                                         className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm transition ${selected
-                                                ? "bg-pink-50 font-semibold text-pink-600"
+                                                ? "bg-[#fafaf9] font-semibold text-[#7a6cc0]"
                                                 : "text-slate-700 hover:bg-slate-50"
                                             }`}
                                     >
@@ -273,7 +273,7 @@ export default function ProvinceCombobox({
                                         {selected && (
                                             <Check
                                                 size={18}
-                                                className="text-pink-500"
+                                                className="text-[#7a6cc0]"
                                             />
                                         )}
                                     </button>

@@ -676,7 +676,7 @@ function PaymentContent() {
             <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
                 <div className="rounded-3xl bg-white p-10 text-center shadow-sm">
                     <Loader2
-                        className="mx-auto animate-spin text-pink-500"
+                        className="mx-auto animate-spin text-[#7a6cc0]"
                         size={36}
                     />
                     <p className="mt-4 text-sm text-slate-500">
@@ -708,7 +708,7 @@ function PaymentContent() {
                         onClick={() =>
                             router.push("/booking")
                         }
-                        className="mt-6 rounded-full bg-pink-500 px-6 py-3 text-sm font-bold text-white hover:bg-pink-600"
+                        className="mt-6 rounded-full bg-[#151515] px-6 py-3 text-sm font-bold text-white hover:bg-[#2e2e2e]"
                     >
                         {translate("กลับไปเริ่มการจอง")}
                     </button>
@@ -755,7 +755,7 @@ function PaymentContent() {
                                 </div>
                             ))}
 
-                            <span className="rounded-full bg-pink-500 px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-pink-100 ring-4 ring-pink-50 sm:px-4 sm:text-sm">
+                            <span className="rounded-full bg-[#151515] px-3 py-2 text-xs font-semibold text-white shadow-lg shadow-black/5 ring-4 ring-[#ecebf7] sm:px-4 sm:text-sm">
                                 ⑤ {translate("ชำระเงิน")}
                             </span>
 
@@ -774,11 +774,11 @@ function PaymentContent() {
             {/* HEADER */}
             <section className="px-4 py-10 text-center sm:px-6 lg:py-14">
                 <div className="mx-auto max-w-3xl">
-                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-pink-100 text-pink-500">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0]">
                         <CreditCard size={28} />
                     </div>
 
-                    <p className="mt-5 text-sm font-semibold uppercase tracking-[0.25em] text-pink-500">
+                    <p className="mt-5 text-sm font-semibold uppercase tracking-[0.25em] text-[#7a6cc0]">
                         {translate("ขั้นตอนที่ 5 · การชำระเงิน")}
                     </p>
 
@@ -899,7 +899,7 @@ function PaymentContent() {
                                 <span className="text-slate-500">
                                     {translate("ค่ามัดจำ")}
                                 </span>
-                                <span className="font-semibold text-pink-500">
+                                <span className="font-semibold text-[#7a6cc0]">
                                     {formatMoney(paymentAmount)}
                                 </span>
                             </div>
@@ -908,7 +908,7 @@ function PaymentContent() {
                                 <span className="font-bold text-slate-900">
                                     {translate("ยอดที่ต้องชำระ")}
                                 </span>
-                                <span className="text-3xl font-black text-pink-500">
+                                <span className="text-3xl font-black text-[#7a6cc0]">
                                     {formatMoney(paymentAmount)}
                                 </span>
                             </div>
@@ -929,7 +929,7 @@ function PaymentContent() {
                     {/* RIGHT */}
                     <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pink-100 text-pink-500">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#fafaf9] text-[#7a6cc0]">
                                 <CreditCard size={21} />
                             </div>
 
@@ -1066,7 +1066,7 @@ function PaymentContent() {
                                     <p className="text-xs text-slate-400">
                                         {translate("ยอดที่ต้องชำระ")}
                                     </p>
-                                    <p className="mt-1 text-3xl font-black text-pink-500">
+                                    <p className="mt-1 text-3xl font-black text-[#7a6cc0]">
                                         {formatMoney(paymentAmount)}
                                     </p>
                                 </div>
@@ -1131,7 +1131,7 @@ function PaymentContent() {
                                             "flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition",
                                             slip
                                                 ? "border-green-300 bg-green-50 hover:border-green-400"
-                                                : "border-pink-200 bg-pink-50 hover:border-pink-400 hover:bg-pink-100",
+                                                : "border-[#e8e8e6] bg-[#fafaf9] hover:border-[#151515] hover:bg-[#fafaf9]",
                                         ].join(" ")}
                                     >
                                         <Upload
@@ -1139,7 +1139,7 @@ function PaymentContent() {
                                             className={
                                                 slip
                                                     ? "text-green-500"
-                                                    : "text-pink-500"
+                                                    : "text-[#7a6cc0]"
                                             }
                                         />
 
@@ -1246,7 +1246,7 @@ function PaymentContent() {
                                             isSubmitting ||
                                             loadingBooking
                                         }
-                                        className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-pink-500 px-6 font-bold text-white shadow-lg shadow-pink-100 transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                                        className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#151515] px-6 font-bold text-white shadow-lg shadow-black/5 transition hover:bg-[#2e2e2e] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
                                     >
                                         {isSubmitting ? (
                                             <>
@@ -1295,10 +1295,10 @@ function PaymentContent() {
                     </div>
                 </div>
 
-                <div className="mx-auto mt-8 flex max-w-3xl gap-3 rounded-3xl border border-pink-100 bg-pink-50 p-5">
+                <div className="mx-auto mt-8 flex max-w-3xl gap-3 rounded-3xl border border-[#e8e8e6] bg-[#fafaf9] p-5">
                     <CheckCircle2
                         size={22}
-                        className="mt-0.5 shrink-0 text-pink-500"
+                        className="mt-0.5 shrink-0 text-[#7a6cc0]"
                     />
                     <div>
                         <p className="font-bold text-slate-900">

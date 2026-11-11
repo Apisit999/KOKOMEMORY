@@ -357,7 +357,7 @@ export default function PortfolioDetailPage() {
                                     font-black
                                     uppercase
                                     tracking-[0.32em]
-                                    text-[#C77A9B]
+                                    text-[#7a6cc0]
                                 "
                             >
                                 {portfolio.category}
@@ -551,7 +551,7 @@ export default function PortfolioDetailPage() {
                                     text-[12px]
                                     font-black
                                     tracking-[0.3em]
-                                    text-[#A0235F]
+                                    text-[#7a6cc0]
                                 "
                             >
                                 THE STORY
@@ -633,7 +633,7 @@ export default function PortfolioDetailPage() {
                                         text-[12px]
                                         font-black
                                         tracking-[0.3em]
-                                        text-[#A0235F]
+                                        text-[#7a6cc0]
                                     "
                                 >
                                     MOMENTS
@@ -806,7 +806,7 @@ export default function PortfolioDetailPage() {
                         px-6
                         py-16
                         text-center
-                        shadow-[0_30px_90px_rgba(236,72,153,0.20)]
+                        shadow-[0_30px_90px_rgba(21,21,21,0.20)]
                         sm:px-10
                         sm:py-20
                     "
@@ -853,7 +853,7 @@ export default function PortfolioDetailPage() {
                                 text-[12px]
                                 font-black
                                 tracking-[0.32em]
-                                text-[#C77A9B]
+                                text-[#7a6cc0]
                             "
                         >
                             YOUR SPECIAL DAY
@@ -883,7 +883,7 @@ export default function PortfolioDetailPage() {
                                 max-w-xl
                                 text-sm
                                 leading-7
-                                text-[#C77A9B]
+                                text-[#7a6cc0]
                                 sm:text-base
                             "
                         >
@@ -905,7 +905,7 @@ export default function PortfolioDetailPage() {
                                 py-4
                                 text-sm
                                 font-bold
-                                text-[#A0235F]
+                                text-[#7a6cc0]
                                 shadow-xl
                                 transition-all
                                 duration-300

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import brandLogo from "../../../../public/logo/logo.jpg";
+import brandLogo from "../../../../public/logo/icon.svg";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -449,7 +449,7 @@ export default function RegisterPage() {
     ============================================================ */
 
     return (
-        <main className="min-h-screen overflow-x-hidden bg-[#F4F0E7] px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
+        <main className="min-h-screen overflow-x-hidden bg-[#fafaf9] px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
 
             <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[1080px] items-center sm:min-h-[calc(100vh-3rem)] lg:min-h-[640px]">
 
@@ -463,7 +463,7 @@ export default function RegisterPage() {
 
                         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
 
-                            <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-[#F2ADCA]/70 blur-[100px]" />
+                            <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-[#fafaf9]/70 blur-[100px]" />
 
                             <div className="absolute -bottom-48 -right-32 h-[520px] w-[520px] rounded-full bg-[#1F2020]/40 blur-[110px]" />
 
@@ -561,7 +561,7 @@ export default function RegisterPage() {
                                 <div className="absolute bottom-[-5%] left-1/2 -z-20 h-[12%] w-[64%] -translate-x-1/2 rounded-full bg-[#1F2020]/45 blur-[25px]" />
 
 
-                                <div className="relative rounded-[18px] bg-gradient-to-br from-white via-[#EEE7D9] to-[#8A8A82] p-[6px] shadow-[0_34px_45px_-20px_rgba(45,8,25,0.7)]">
+                                <div className="relative rounded-[18px] bg-gradient-to-br from-white via-[#fafaf9] to-[#8A8A82] p-[6px] shadow-[0_34px_45px_-20px_rgba(45,8,25,0.7)]">
 
                                     <div className="absolute inset-[2px] rounded-[16px] border border-white/80" />
 
@@ -646,7 +646,7 @@ export default function RegisterPage() {
                         FORM
                     ================================================== */}
 
-                    <section className="flex items-center justify-center bg-[#F4F0E7] px-5 py-10 sm:px-8 sm:py-12 md:px-12 lg:px-12 lg:py-14">
+                    <section className="flex items-center justify-center bg-[#fafaf9] px-5 py-10 sm:px-8 sm:py-12 md:px-12 lg:px-12 lg:py-14">
 
                         <div className="w-full max-w-[350px]">
 
@@ -701,7 +701,7 @@ export default function RegisterPage() {
                                         ชื่อ
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="name"
@@ -741,7 +741,7 @@ export default function RegisterPage() {
                                         อีเมล
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="email"
@@ -782,7 +782,7 @@ export default function RegisterPage() {
                                         รหัสผ่าน
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="password"
@@ -829,7 +829,7 @@ export default function RegisterPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#A0235F]"
+                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#7a6cc0]"
                                         >
                                             {showPassword ? (
                                                 <EyeOff
@@ -862,7 +862,7 @@ export default function RegisterPage() {
                                         ยืนยันรหัสผ่าน
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
 
                                         <input
                                             id="confirmPassword"
@@ -911,7 +911,7 @@ export default function RegisterPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#A0235F]"
+                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#7a6cc0]"
                                         >
                                             {showConfirmPassword ? (
                                                 <EyeOff
@@ -968,13 +968,13 @@ export default function RegisterPage() {
 
                             <div className="my-6 flex items-center gap-3 text-xs text-[#5F5F58]">
 
-                                <div className="h-px flex-1 bg-[#EEE7D9]" />
+                                <div className="h-px flex-1 bg-[#fafaf9]" />
 
                                 <span>
                                     หรือ
                                 </span>
 
-                                <div className="h-px flex-1 bg-[#EEE7D9]" />
+                                <div className="h-px flex-1 bg-[#fafaf9]" />
 
                             </div>
 
@@ -990,7 +990,7 @@ export default function RegisterPage() {
                                     loading ||
                                     googleLoading
                                 }
-                                className="flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[14px] border-[1.5px] border-[#E4DDCD] bg-white px-4 py-3 text-sm font-medium text-[#141516] transition hover:border-[#141516] hover:bg-[#F4F0E7] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-4 py-3 text-sm font-medium text-[#141516] transition hover:border-[#141516] hover:bg-[#fafaf9] disabled:cursor-not-allowed disabled:opacity-60"
                             >
 
                                 {googleLoading ? (
@@ -999,7 +999,7 @@ export default function RegisterPage() {
                                             size={
                                                 18
                                             }
-                                            className="animate-spin text-[#A0235F]"
+                                            className="animate-spin text-[#7a6cc0]"
                                         />
 
                                         กำลังเชื่อมต่อ Google...
@@ -1023,7 +1023,7 @@ export default function RegisterPage() {
 
                                 <Link
                                     href={`/account/login?redirect=${encodeURIComponent(redirectTarget)}`}
-                                    className="font-semibold text-[#A0235F] hover:underline"
+                                    className="font-semibold text-[#7a6cc0] hover:underline"
                                 >
                                     เข้าสู่ระบบ
                                 </Link>
@@ -1106,7 +1106,7 @@ export default function RegisterPage() {
                 button:focus-visible,
                 a:focus-visible,
                 input:focus-visible {
-                    outline: 2px solid #A0235F;
+                    outline: 2px solid #7a6cc0;
                     outline-offset: 2px;
                 }
 

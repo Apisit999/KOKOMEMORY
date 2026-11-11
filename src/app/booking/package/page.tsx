@@ -338,9 +338,9 @@ function PackageCard({
                 hover:shadow-xl
 
                 ${selected
-                    ? "border-pink-500 ring-4 ring-pink-100 shadow-xl shadow-pink-100"
+                    ? "border-[#151515] ring-4 ring-[#ecebf7] shadow-xl shadow-black/5"
                     : item.popular
-                        ? "border-pink-400 ring-2 ring-pink-100"
+                        ? "border-[#151515] ring-2 ring-[#ecebf7]"
                         : "border-slate-200"
                 }
             `}
@@ -358,7 +358,7 @@ function PackageCard({
             {/* Popular */}
 
             {item.popular && (
-                <div className="absolute right-3 top-3 z-10 rounded-full bg-pink-500 px-3 py-1.5 text-[12px] font-bold text-white shadow-lg sm:right-5 sm:top-5 sm:text-xs">
+                <div className="absolute right-3 top-3 z-10 rounded-full bg-[#151515] px-3 py-1.5 text-[12px] font-bold text-white shadow-lg sm:right-5 sm:top-5 sm:text-xs">
                     ⭐ {translate("แนะนำ")}
                 </div>
             )}
@@ -381,7 +381,7 @@ function PackageCard({
 
                     ${item.category === "360"
                         ? "bg-orange-100 text-orange-500"
-                        : "bg-pink-100 text-pink-500"
+                        : "bg-[#fafaf9] text-[#7a6cc0]"
                     }
                 `}
             >
@@ -395,7 +395,7 @@ function PackageCard({
 
             {/* Category */}
 
-            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-pink-500 sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
+            <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-[#7a6cc0] sm:mt-6 sm:text-sm sm:tracking-[0.18em]">
                 {item.category === "360"
                     ? "360 PHOTOBOOTH"
                     : translate(item.group).toUpperCase()}
@@ -419,7 +419,7 @@ function PackageCard({
             {/* Price */}
 
             <div className="mt-6 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="text-2xl font-black text-pink-500 sm:text-3xl lg:text-4xl">
+                <span className="text-2xl font-black text-[#7a6cc0] sm:text-3xl lg:text-4xl">
                     ฿{item.price.toLocaleString()}
                 </span>
 
@@ -434,7 +434,7 @@ function PackageCard({
             <div className="mt-5 flex min-w-0 items-center gap-2 rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-600 sm:px-4">
                 <Clock
                     size={18}
-                    className="shrink-0 text-pink-500"
+                    className="shrink-0 text-[#7a6cc0]"
                 />
 
                 <span className="min-w-0 truncate">
@@ -449,7 +449,7 @@ function PackageCard({
                 <div className="mt-3 flex min-w-0 items-center gap-2 rounded-xl bg-slate-50 px-3 py-3 text-sm text-slate-600 sm:px-4">
                     <Images
                         size={18}
-                        className="shrink-0 text-pink-500"
+                        className="shrink-0 text-[#7a6cc0]"
                     />
 
                     <span className="min-w-0 truncate">
@@ -503,7 +503,7 @@ function PackageCard({
                     justify-center
                     gap-2
                     rounded-full
-                    bg-pink-500
+                    bg-[#151515]
                     px-5
                     py-3.5
                     text-center
@@ -511,11 +511,11 @@ function PackageCard({
                     font-bold
                     text-white
                     shadow-lg
-                    shadow-pink-100
+                    shadow-black/5
                     transition-all
                     duration-300
 
-                    hover:bg-pink-600
+                    hover:bg-[#2e2e2e]
                     hover:shadow-xl
 
                     active:scale-[0.98]
@@ -554,7 +554,7 @@ function GroupHeader({
     return (
         <div className="mb-8 flex items-start gap-3 sm:mb-10 sm:items-center sm:gap-4">
 
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-pink-100 text-pink-500 sm:h-12 sm:w-12">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0] sm:h-12 sm:w-12">
                 {icon}
             </div>
 
@@ -672,14 +672,14 @@ function PackageContent() {
 
                 {/* Background */}
 
-                <div className="pointer-events-none absolute -left-32 top-16 h-64 w-64 rounded-full bg-pink-100/70 blur-3xl sm:h-80 sm:w-80" />
+                <div className="pointer-events-none absolute -left-32 top-16 h-64 w-64 rounded-full bg-[#fafaf9] blur-3xl sm:h-80 sm:w-80" />
 
                 <div className="pointer-events-none absolute -right-32 top-10 h-72 w-72 rounded-full bg-purple-100/60 blur-3xl sm:h-96 sm:w-96" />
 
 
                 <div className="booking-package-hero relative mx-auto w-full max-w-7xl px-4 pb-12 pt-24 text-center sm:px-6 sm:pb-16 sm:pt-28 lg:px-8 lg:pt-32">
 
-                    <span className="inline-flex max-w-full items-center gap-2 rounded-full bg-pink-100 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-pink-600 sm:px-5 sm:text-sm sm:tracking-[0.25em]">
+                    <span className="inline-flex max-w-full items-center gap-2 rounded-full bg-[#fafaf9] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#7a6cc0] sm:px-5 sm:text-sm sm:tracking-[0.25em]">
 
                         <Sparkles
                             size={15}
@@ -709,7 +709,7 @@ function PackageContent() {
 
                     {selectedPackageId && (
 
-                        <div className="mx-auto mt-7 inline-flex max-w-full items-center gap-2 rounded-full bg-pink-50 px-4 py-2 text-xs font-semibold text-pink-600 sm:text-sm">
+                        <div className="mx-auto mt-7 inline-flex max-w-full items-center gap-2 rounded-full bg-[#fafaf9] px-4 py-2 text-xs font-semibold text-[#7a6cc0] sm:text-sm">
 
                             <CheckCircle
                                 size={16}
@@ -857,11 +857,11 @@ function PackageContent() {
 
             <section className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
 
-                <div className="rounded-3xl border border-pink-100 bg-pink-50 p-5 sm:p-7 md:p-10">
+                <div className="rounded-3xl border border-[#e8e8e6] bg-[#fafaf9] p-5 sm:p-7 md:p-10">
 
                     <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
 
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-pink-500 shadow-sm sm:h-12 sm:w-12">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#7a6cc0] shadow-sm sm:h-12 sm:w-12">
 
                             <Sparkles size={22} />
 
@@ -935,7 +935,7 @@ function PackageContent() {
                     </div>
 
 
-                    <div className="inline-flex shrink-0 items-center justify-center gap-2 text-sm font-semibold text-pink-500">
+                    <div className="inline-flex shrink-0 items-center justify-center gap-2 text-sm font-semibold text-[#7a6cc0]">
 
                         <CheckCircle size={18} />
 

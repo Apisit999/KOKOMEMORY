@@ -163,13 +163,13 @@ export default function ThreeDProductDetailPage() {
                 TOP
             ================================================= */}
 
-            <section className="border-b border-[#E4DDCD] bg-white">
+            <section className="border-b border-[#e8e8e6] bg-white">
 
                 <div className="mx-auto max-w-7xl px-5 py-5 sm:px-6 lg:px-8">
 
                     <Link
                         href="/3d-printing"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-[#A0235F]"
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-[#7a6cc0]"
                     >
                         <ArrowLeft size={17} />
                         กลับไป 3D Printing
@@ -189,9 +189,9 @@ export default function ThreeDProductDetailPage() {
 
                     {/* IMAGE */}
 
-                    <div className="relative overflow-hidden rounded-[34px] border border-[#E4DDCD] bg-white p-2 shadow-sm">
+                    <div className="relative overflow-hidden rounded-[34px] border border-[#e8e8e6] bg-white p-2 shadow-sm">
 
-                        <div className="relative aspect-square overflow-hidden rounded-[28px] bg-[#EEE7D9]">
+                        <div className="relative aspect-square overflow-hidden rounded-[28px] bg-[#fafaf9]">
 
                             {selectedImage || product.previewImage ? (
                                 <Image
@@ -221,7 +221,7 @@ export default function ThreeDProductDetailPage() {
                         {product.images.length > 1 && (
                             <div className="grid grid-cols-4 gap-2 p-3">
                                 {product.images.map((image) => (
-                                    <button key={image.url} type="button" onClick={() => setSelectedImage(image.url)} className={`relative aspect-square overflow-hidden rounded-xl border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D5A9BE] ${selectedImage === image.url ? "border-[#D5A9BE]" : "border-[#E4DDCD]"}`} aria-label={`ดูรูปที่ ${image.order + 1}`}>
+                                    <button key={image.url} type="button" onClick={() => setSelectedImage(image.url)} className={`relative aspect-square overflow-hidden rounded-xl border focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D5A9BE] ${selectedImage === image.url ? "border-[#D5A9BE]" : "border-[#e8e8e6]"}`} aria-label={`ดูรูปที่ ${image.order + 1}`}>
                                         <Image src={image.url} alt={product.name} fill sizes="120px" className="object-cover" />
                                     </button>
                                 ))}
@@ -234,7 +234,7 @@ export default function ThreeDProductDetailPage() {
 
                     <div>
 
-                        <div className="inline-flex items-center gap-2 rounded-full bg-[#EEE7D9] px-4 py-2 text-xs font-black tracking-[0.18em] text-[#A0235F]">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-[#fafaf9] px-4 py-2 text-xs font-black tracking-[0.18em] text-[#7a6cc0]">
                             <Sparkles
                                 size={14}
                             />
@@ -246,7 +246,7 @@ export default function ThreeDProductDetailPage() {
                         </h1>
 
                         {product.category && (
-                            <p className="mt-4 text-sm font-semibold text-[#A0235F]">
+                            <p className="mt-4 text-sm font-semibold text-[#7a6cc0]">
                                 {product.category}
                             </p>
                         )}
@@ -341,14 +341,14 @@ export default function ThreeDProductDetailPage() {
 
                             <Link
                                 href="/contact"
-                                className="inline-flex h-13 flex-1 items-center justify-center gap-2 rounded-full bg-[#141516] px-7 py-3.5 text-sm font-black text-white shadow-lg shadow-[#F2ADCA] transition hover:bg-[#2A2B2C]"
+                                className="inline-flex h-13 flex-1 items-center justify-center gap-2 rounded-full bg-[#141516] px-7 py-3.5 text-sm font-black text-white shadow-lg shadow-[#d98aae] transition hover:bg-[#2A2B2C]"
                             >
                                 สอบถาม / สั่งผลิต
                             </Link>
 
                             <Link
                                 href="/3d-printing"
-                                className="inline-flex h-13 items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-3.5 text-sm font-bold text-slate-600 transition hover:border-[#E4DDCD] hover:text-[#A0235F]"
+                                className="inline-flex h-13 items-center justify-center rounded-full border border-slate-200 bg-white px-7 py-3.5 text-sm font-bold text-slate-600 transition hover:border-[#e8e8e6] hover:text-[#7a6cc0]"
                             >
                                 ดูสินค้าอื่น
                             </Link>
@@ -369,7 +369,7 @@ export default function ThreeDProductDetailPage() {
 
                 <div className="mx-auto max-w-6xl overflow-hidden rounded-[34px] bg-gradient-to-br from-[#141516] via-[#141516] to-[#2A2B2C] px-7 py-14 text-center sm:px-12">
 
-                    <p className="text-xs font-black tracking-[0.25em] text-[#C77A9B]">
+                    <p className="text-xs font-black tracking-[0.25em] text-[#7a6cc0]">
                         CUSTOM 3D PRINTING
                     </p>
 
@@ -379,7 +379,7 @@ export default function ThreeDProductDetailPage() {
                         หรือออกแบบใหม่?
                     </h2>
 
-                    <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#C77A9B]">
+                    <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#7a6cc0]">
                         ติดต่อ KOKO
                         เพื่อพูดคุยรายละเอียด
                         และประเมินงานที่เหมาะกับคุณ
@@ -387,7 +387,7 @@ export default function ThreeDProductDetailPage() {
 
                     <Link
                         href="/contact"
-                        className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-black text-[#A0235F]"
+                        className="mt-7 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-black text-[#7a6cc0]"
                     >
                         ติดต่อเรา
                     </Link>
@@ -412,11 +412,11 @@ function Spec({
     value: string;
 }) {
     return (
-        <div className="rounded-2xl border border-[#E4DDCD] bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-[#e8e8e6] bg-white p-5 shadow-sm">
 
             <div className="flex items-center gap-3">
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEE7D9] text-[#A0235F]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fafaf9] text-[#7a6cc0]">
                     {icon}
                 </div>
 

@@ -714,7 +714,7 @@ function ReviewBookingContent() {
                     <div className="flex min-h-[72px] items-center justify-between gap-4">
 
                         <div className="min-w-0 text-center">
-                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-pink-500">
+                            <p className="truncate text-xs font-bold uppercase tracking-[0.22em] text-[#7a6cc0]">
                                 KOKO Memory
                             </p>
 
@@ -778,7 +778,7 @@ function ReviewBookingContent() {
                                     <div
                                         className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs font-bold transition sm:px-4 sm:text-sm ${
                                             step.active
-                                                ? "bg-pink-500 text-white shadow-lg shadow-pink-200"
+                                                ? "bg-[#151515] text-white shadow-lg shadow-black/5"
                                                 : step.done
                                                     ? "bg-green-50 text-green-700"
                                                     : "bg-slate-100 text-slate-400"
@@ -840,7 +840,7 @@ function ReviewBookingContent() {
 
                         <div>
 
-                            <p className="text-sm font-bold uppercase tracking-[0.2em] text-pink-500">
+                            <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                 {translate("ขั้นตอนที่ 4")}
                             </p>
 
@@ -863,7 +863,7 @@ function ReviewBookingContent() {
 
                             <div className="flex items-start gap-4">
 
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0]">
                                     <Package size={23} />
                                 </div>
 
@@ -940,7 +940,7 @@ function ReviewBookingContent() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0]">
                                     <User size={21} />
                                 </div>
 
@@ -1050,7 +1050,7 @@ function ReviewBookingContent() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0]">
                                     <CalendarDays size={21} />
                                 </div>
 
@@ -1175,7 +1175,7 @@ function ReviewBookingContent() {
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fafaf9] text-[#7a6cc0]">
                                     <MapPin size={21} />
                                 </div>
 
@@ -1296,14 +1296,14 @@ function ReviewBookingContent() {
                                             justify-center
                                             gap-2
                                             rounded-full
-                                            bg-pink-50
+                                            bg-[#fafaf9]
                                             px-5
                                             py-3
                                             text-sm
                                             font-bold
-                                            text-pink-600
+                                            text-[#7a6cc0]
                                             transition
-                                            hover:bg-pink-100
+                                            hover:bg-[#fafaf9]
                                             sm:w-auto
                                         "
                                     >
@@ -1355,7 +1355,7 @@ function ReviewBookingContent() {
 
                             {/* Header */}
 
-                            <div className="bg-gradient-to-br from-pink-500 to-pink-400 p-6 text-white sm:p-7">
+                            <div className="bg-gradient-to-br from-[#d98aae] to-[#7fb2ee] p-6 text-white sm:p-7">
 
                                 <p className="text-sm font-semibold text-white/80">
                                         {translate("สรุปค่าใช้บริการ")}
@@ -1484,7 +1484,7 @@ function ReviewBookingContent() {
 
                                         </div>
 
-                                        <p className="text-3xl font-black text-pink-500">
+                                        <p className="text-3xl font-black text-[#7a6cc0]">
                                             ฿{formatMoney(
                                                 total
                                             )}
@@ -1497,7 +1497,7 @@ function ReviewBookingContent() {
 
                                 {/* Deposit */}
 
-                                <div className="mt-6 rounded-2xl bg-pink-50 p-4">
+                                <div className="mt-6 rounded-2xl bg-[#fafaf9] p-4">
 
                                     <div className="flex items-center justify-between gap-4">
 
@@ -1505,7 +1505,7 @@ function ReviewBookingContent() {
                                             {translate("เงินมัดจำ")}
                                         </span>
 
-                                        <span className="font-black text-pink-600">
+                                        <span className="font-black text-[#7a6cc0]">
                                             {deposit > 0
                                                 ? `฿${formatMoney(
                                                     deposit
@@ -1519,7 +1519,7 @@ function ReviewBookingContent() {
 
                                     {deposit > 0 && (
 
-                                        <div className="mt-3 flex items-center justify-between gap-4 border-t border-pink-100 pt-3">
+                                        <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#e8e8e6] pt-3">
 
                                             <span className="text-xs text-slate-500">
                                                 {translate("ยอดคงเหลือ")}
@@ -1646,18 +1646,18 @@ function ReviewBookingContent() {
                                         justify-center
                                         gap-3
                                         rounded-full
-                                        bg-pink-500
+                                        bg-[#151515]
                                         px-6
                                         font-bold
                                         text-white
                                         shadow-lg
-                                        shadow-pink-200
+                                        shadow-black/5
                                         transition
                                         hover:-translate-y-0.5
-                                        hover:bg-pink-400
+                                        hover:bg-[#2e2e2e]
                                         hover:shadow-xl
                                         disabled:cursor-not-allowed
-                                        disabled:bg-pink-300
+                                        disabled:bg-[#9a9a96]
                                         disabled:shadow-none
                                     "
                                 >

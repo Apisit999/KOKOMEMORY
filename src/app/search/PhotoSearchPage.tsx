@@ -27,7 +27,7 @@ export default function SearchPage() {
 
                 <div className="text-center">
 
-                    <p className="text-sm font-semibold tracking-[0.35em] text-pink-500">
+                    <p className="text-sm font-semibold tracking-[0.35em] text-[#7a6cc0]">
                         KOKO MEMORY
                     </p>
 
@@ -48,7 +48,7 @@ export default function SearchPage() {
 
                     <div className="text-center">
 
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-pink-50 text-3xl">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#fafaf9] text-3xl">
                             🔎
                         </div>
 
@@ -88,7 +88,7 @@ export default function SearchPage() {
                             }}
                             placeholder="เช่น TEST001"
                             autoComplete="off"
-                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-center font-mono text-lg font-semibold uppercase text-slate-900 outline-none transition focus:border-pink-400 focus:bg-white focus:ring-4 focus:ring-pink-100"
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-center font-mono text-lg font-semibold uppercase text-slate-900 outline-none transition focus:border-[#151515] focus:bg-white focus:ring-4 focus:ring-[#ecebf7]"
                         />
 
                     </div>
@@ -100,7 +100,7 @@ export default function SearchPage() {
                         type="button"
                         onClick={handleSearch}
                         disabled={!bookingId.trim()}
-                        className="mt-5 w-full rounded-2xl bg-pink-500 px-5 py-4 font-semibold text-white shadow-lg shadow-pink-500/20 transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="mt-5 w-full rounded-2xl bg-[#151515] px-5 py-4 font-semibold text-white shadow-lg shadow-black/5 transition hover:bg-[#2e2e2e] disabled:cursor-not-allowed disabled:opacity-40"
                     >
                         ค้นหารูป
                     </button>
@@ -138,7 +138,7 @@ export default function SearchPage() {
                         onClick={() => {
                             setBookingId("TEST001");
                         }}
-                        className="text-sm text-pink-500 underline hover:text-pink-400"
+                        className="text-sm text-[#7a6cc0] underline hover:text-[#151515]"
                     >
                         ใส่ TEST001 สำหรับทดสอบ
                     </button>

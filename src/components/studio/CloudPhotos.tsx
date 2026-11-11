@@ -89,24 +89,24 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
     <h2 id="cloud-photos-title" className="mt-1 text-xl font-bold">{admin ? t("รูปของลูกค้าทั้งหมด", "All customer photos") : t("รูปของฉัน", "My photos")}</h2>
     {overview && <div className="mt-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm"><span>{t("พื้นที่ที่ใช้", "Storage used")} {formatBytes(overview.usage.bytes)}{overview.quotaBytes > 0 && ` / ${formatBytes(overview.quotaBytes)}`}</span><span className="text-slate-500">{overview.usage.photos} {t("รูป", "photos")}</span></div>
-      {overview.quotaBytes > 0 && <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("พื้นที่ที่ใช้", "Storage used")} className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#F4F0E7]"><div className={`h-full rounded-full ${percent >= 90 ? "bg-[#a0235f]" : "bg-[#D5EE85]"}`} style={{ width: `${percent}%` }} /></div>}
-      {percent >= 90 && <p role="alert" className="mt-2 text-sm text-[#a0235f]">{t("พื้นที่ใกล้เต็ม รูปใหม่อาจอัปโหลดไม่ได้ ลบรูปที่ไม่ใช้หรือติดต่อทีมงานเพื่อเพิ่มพื้นที่", "Storage is almost full; new photos may fail to upload. Delete photos you do not need or contact us for more space.")}</p>}
+      {overview.quotaBytes > 0 && <div role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent} aria-label={t("พื้นที่ที่ใช้", "Storage used")} className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#fafaf9]"><div className={`h-full rounded-full ${percent >= 90 ? "bg-[#151515]" : "bg-[#ecebf7]"}`} style={{ width: `${percent}%` }} /></div>}
+      {percent >= 90 && <p role="alert" className="mt-2 text-sm text-[#7a6cc0]">{t("พื้นที่ใกล้เต็ม รูปใหม่อาจอัปโหลดไม่ได้ ลบรูปที่ไม่ใช้หรือติดต่อทีมงานเพื่อเพิ่มพื้นที่", "Storage is almost full; new photos may fail to upload. Delete photos you do not need or contact us for more space.")}</p>}
     </div>}
-    {message && <p role="status" className="mt-4 rounded-xl bg-[#F4F0E7] p-3 text-sm">{message}</p>}
+    {message && <p role="status" className="mt-4 rounded-xl bg-[#fafaf9] p-3 text-sm">{message}</p>}
     {events.length === 0 && !message && <p className="mt-4 text-sm text-slate-600">{t("ยังไม่มีรูปที่อัปโหลดจากโปรแกรม KOKO Studio เมื่อถ่ายรูปและเชื่อมบัญชีแล้ว รูปจะขึ้นที่นี่อัตโนมัติ", "No photos have been uploaded from KOKO Studio yet. Once you shoot and link your account they appear here automatically.")}</p>}
     <ul className="mt-4 grid gap-3 sm:grid-cols-2">{events.map(event => <li key={event.id}>
-      <button type="button" onClick={() => openEvent(event.id).catch(() => setMessage(t("เปิดอีเวนต์ไม่สำเร็จ", "Could not open the event")))} aria-pressed={open?.event.id === event.id} className={`w-full rounded-2xl border p-4 text-left transition hover:border-[#141516] ${open?.event.id === event.id ? "border-[#141516] bg-[#F4F0E7]" : ""}`}>
+      <button type="button" onClick={() => openEvent(event.id).catch(() => setMessage(t("เปิดอีเวนต์ไม่สำเร็จ", "Could not open the event")))} aria-pressed={open?.event.id === event.id} className={`w-full rounded-2xl border p-4 text-left transition hover:border-[#141516] ${open?.event.id === event.id ? "border-[#141516] bg-[#fafaf9]" : ""}`}>
         <strong className="block">{event.name}</strong>
         <span className="mt-1 block text-sm text-slate-600">{event.date ?? event.createdAt.slice(0, 10)} · {event.photoCount} {t("รูป", "photos")} · {formatBytes(event.bytes)}</span>
         {admin && <span className="mt-1 block break-all text-xs text-slate-400">{event.ownerUid}</span>}
       </button></li>)}</ul>
     {open && <div className="mt-6">
       <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-lg font-bold">{open.event.name}</h3><button type="button" onClick={() => openEvent(open.event.id).catch(() => undefined)} className="rounded-full border px-4 py-1.5 text-sm">{t("รีเฟรชรูป", "Refresh")}</button></div>
-      {!admin && <div className="mt-3 rounded-2xl bg-[#F4F0E7] p-4">
+      {!admin && <div className="mt-3 rounded-2xl bg-[#fafaf9] p-4">
         <p className="text-sm font-bold">{t("แชร์ทั้งอีเวนต์", "Share the whole event")}</p>
         <p className="mt-1 text-xs text-slate-600">{t("ลิงก์นี้เห็นรูปทุกคนในงาน ใช้กับเจ้าภาพหรือผู้จัดงาน ส่วนแขกแต่ละคนจะได้ลิงก์ของรอบตัวเองจากโปรแกรมที่ตู้ ซึ่งเห็นเฉพาะรูปของตัวเอง", "This link shows every photo of the event — for the host or organiser. Each guest gets a separate link for their own session from the booth and sees only their own photos.")}</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => share(open.event.id, "create")} className="rounded-full bg-[#141516] px-4 py-2 text-sm font-bold text-[#F4F0E7] disabled:opacity-50">{t("สร้าง / คัดลอกลิงก์", "Create / copy link")}</button>
+          <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => share(open.event.id, "create")} className="rounded-full bg-[#141516] px-4 py-2 text-sm font-bold text-[#fafaf9] disabled:opacity-50">{t("สร้าง / คัดลอกลิงก์", "Create / copy link")}</button>
           <button type="button" disabled={busy === `share-${open.event.id}`} onClick={() => share(open.event.id, "revoke")} className="rounded-full border border-[#141516]/30 px-4 py-2 text-sm disabled:opacity-50">{t("ยกเลิกลิงก์", "Cancel link")}</button>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2"><input value={pinInput} onChange={event => setPinInput(event.target.value.replace(/[^0-9]/g, "").slice(0, 8))} inputMode="numeric" aria-label={t("PIN 4-8 หลัก", "PIN, 4-8 digits")} placeholder="PIN" className="min-h-11 w-28 rounded-xl border border-[#141516]/30 px-3 text-sm" />
@@ -116,7 +116,7 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
       </div>}
       <p className="mt-1 text-xs text-slate-500">{t("ลิงก์รูปเปิดได้ชั่วคราวประมาณ 10 นาที กดรีเฟรชถ้ารูปไม่ขึ้น", "Photo links work for about 10 minutes; press Refresh if a photo does not load.")}</p>
       {open.photos.length === 0 && <p className="mt-3 text-sm text-slate-600">{t("อีเวนต์นี้ยังไม่มีรูปที่พร้อมแสดง", "This event has no photos to show yet.")}</p>}
-      <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{open.photos.map(photo => <li key={photo.id} className="overflow-hidden rounded-2xl border-4 border-white bg-[#F4F0E7] shadow-[0_6px_18px_#14151620]">
+      <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{open.photos.map(photo => <li key={photo.id} className="overflow-hidden rounded-2xl border-4 border-white bg-[#fafaf9] shadow-[0_6px_18px_#14151620]">
         <a href={photo.url} target="_blank" rel="noopener noreferrer" aria-label={t("เปิดรูปเต็ม", "Open full photo")}>
           {/* Signed short-lived storage URLs cannot go through next/image optimisation. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -126,7 +126,7 @@ export default function CloudPhotos({ admin = false }: { admin?: boolean }) {
           <span className="flex flex-wrap gap-2">
             {!admin && <button type="button" disabled={busy === photo.id} onClick={() => { void savePhotos([{ url: photo.url, downloadUrl: photo.url, name: `KOKO-${photo.id.slice(0, 6)}.jpg` }]); }} className="inline-flex min-h-11 items-center rounded-full border border-[#141516] bg-white px-4 text-sm font-bold disabled:opacity-50">{t("บันทึก", "Save")}</button>}
             {admin && <button type="button" disabled={busy === photo.id} onClick={() => manage(photo, photo.status === "hidden" ? "unhide" : "hide")} className="inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-bold disabled:opacity-50">{photo.status === "hidden" ? t("แสดง", "Show") : t("ซ่อน", "Hide")}</button>}
-            <button type="button" disabled={busy === photo.id} onClick={() => manage(photo, "delete")} className="inline-flex min-h-11 items-center rounded-full border border-[#a0235f] px-4 text-sm font-bold text-[#a0235f] disabled:opacity-50">{t("ลบ", "Delete")}</button>
+            <button type="button" disabled={busy === photo.id} onClick={() => manage(photo, "delete")} className="inline-flex min-h-11 items-center rounded-full border border-[#151515] px-4 text-sm font-bold text-[#7a6cc0] disabled:opacity-50">{t("ลบ", "Delete")}</button>
           </span></div>
       </li>)}</ul>
     </div>}

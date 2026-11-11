@@ -24,7 +24,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import brandLogo from "../../../../public/logo/logo.jpg";
+import brandLogo from "../../../../public/logo/icon.svg";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -539,7 +539,7 @@ export default function MyBookingsPage() {
                 <div className="flex items-center gap-3 text-sm font-semibold text-slate-500">
                     <Loader2
                         size={20}
-                        className="animate-spin text-[#A0235F]"
+                        className="animate-spin text-[#7a6cc0]"
                     />
                     กำลังตรวจสอบบัญชี...
                 </div>
@@ -556,7 +556,7 @@ export default function MyBookingsPage() {
                 <div className="text-center">
                     <LogIn
                         size={36}
-                        className="mx-auto text-[#A0235F]"
+                        className="mx-auto text-[#7a6cc0]"
                     />
 
                     <h1 className="mt-4 text-xl font-black text-slate-900">
@@ -668,7 +668,7 @@ export default function MyBookingsPage() {
 
                     <div>
 
-                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#A0235F]">
+                        <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#7a6cc0]">
                             My Bookings
                         </p>
 
@@ -700,7 +700,7 @@ export default function MyBookingsPage() {
                             font-bold
                             text-white
                             shadow-lg
-                            shadow-[#F2ADCA]
+                            shadow-[#d98aae]
                             transition
                             hover:-translate-y-0.5
                             hover:bg-[#141516]
@@ -769,7 +769,7 @@ export default function MyBookingsPage() {
 
                     <section className="mt-10 rounded-3xl bg-white px-6 py-14 text-center shadow-sm ring-1 ring-slate-100 sm:px-10">
 
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#EEE7D9] text-[#A0235F]">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#fafaf9] text-[#7a6cc0]">
                             <CalendarDays size={28} />
                         </div>
 
@@ -796,7 +796,7 @@ export default function MyBookingsPage() {
                                 font-bold
                                 text-white
                                 shadow-lg
-                                shadow-[#F2ADCA]
+                                shadow-[#d98aae]
                                 transition
                                 hover:bg-[#141516]
                             "
@@ -953,7 +953,7 @@ export default function MyBookingsPage() {
                                                     ราคา
                                                 </div>
 
-                                                <p className="mt-2 text-lg font-black text-[#A0235F]">
+                                                <p className="mt-2 text-lg font-black text-[#7a6cc0]">
                                                     ฿{formatMoney(total)}
                                                 </p>
 

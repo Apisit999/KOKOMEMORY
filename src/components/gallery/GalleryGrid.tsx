@@ -1016,7 +1016,7 @@ export default function GalleryGrid() {
                                             ${
                                                 active
                                                     ? "bg-slate-900 text-white shadow-md"
-                                                    : "text-slate-500 hover:bg-white hover:text-[#A0235F]"
+                                                    : "text-slate-500 hover:bg-white hover:text-[#7a6cc0]"
                                             }
                                         `}
                                     >
@@ -1163,7 +1163,7 @@ export default function GalleryGrid() {
                             <button
                                 type="button"
                                 onClick={() => selectCategory("all")}
-                                className="font-semibold text-[#A0235F] underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D5A9BE]"
+                                className="font-semibold text-[#7a6cc0] underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D5A9BE]"
                             >
                                 {t("portfolio.viewAll")}
                             </button>
@@ -1322,13 +1322,13 @@ export default function GalleryGrid() {
                                         <span
                                             className="
                                                 rounded-full
-                                                bg-[#EEE7D9]
+                                                bg-[#fafaf9]
                                                 px-2.5
                                                 py-1
                                                 text-[12px]
                                                 font-black
                                                 tracking-[0.12em]
-                                                text-[#A0235F]
+                                                text-[#7a6cc0]
                                             "
                                         >
                                             {
