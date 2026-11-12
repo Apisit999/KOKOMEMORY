@@ -106,25 +106,25 @@ export default function ThreeDPrintingDashboardPage() {
                 HEADER
             ===================================================== */}
 
-            <section className="overflow-hidden rounded-[28px] border border-pink-100 bg-gradient-to-br from-white via-pink-50/60 to-rose-50 shadow-sm sm:rounded-[32px]">
+            <section className="overflow-hidden rounded-[28px] border border-[#eeeaf8] bg-gradient-to-br from-white via-[#f6f3fc]/60 to-rose-50 shadow-sm sm:rounded-[32px]">
                 <div className="p-5 sm:p-7 lg:p-9">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                         <div className="min-w-0">
                             <Link
                                 href="/admin/dashboard"
-                                className="mb-4 inline-flex items-center gap-2 text-xs font-semibold text-slate-400 transition hover:text-pink-500 sm:text-sm"
+                                className="mb-4 inline-flex items-center gap-2 text-xs font-semibold text-slate-400 transition hover:text-[#7a6cc0] sm:text-sm"
                             >
                                 <ArrowLeft size={15} />
                                 กลับ Dashboard
                             </Link>
 
                             <div className="flex items-start gap-3 sm:gap-4">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-500 text-white shadow-lg shadow-pink-200">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#151515] text-white shadow-lg shadow-[#ddd7f1]">
                                     <Box size={22} />
                                 </div>
 
                                 <div className="min-w-0">
-                                    <p className="text-[12px] font-black tracking-[0.22em] text-pink-500 sm:text-xs">
+                                    <p className="text-[12px] font-black tracking-[0.22em] text-[#7a6cc0] sm:text-xs">
                                         KOKO MEMORY · ADMIN
                                     </p>
 
@@ -164,7 +164,7 @@ export default function ThreeDPrintingDashboardPage() {
 
                             <Link
                                 href="/admin/3d-printing/orders/new"
-                                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-pink-500 px-5 text-sm font-bold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-600 sm:w-auto sm:rounded-2xl"
+                                className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#151515] px-5 text-sm font-bold text-white shadow-lg shadow-[#ddd7f1] transition hover:bg-[#3a3a3a] sm:w-auto sm:rounded-2xl"
                             >
                                 <Plus size={18} />
                                 สร้าง Order ใหม่
@@ -319,7 +319,7 @@ export default function ThreeDPrintingDashboardPage() {
 
             <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:rounded-[30px] sm:p-7">
                 <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-pink-50 text-pink-500">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f6f3fc] text-[#7a6cc0]">
                         <ClipboardList size={19} />
                     </div>
 
@@ -376,15 +376,15 @@ function ManagementCard({
     action: string;
 }) {
     return (
-        <div className="flex min-h-[360px] flex-col overflow-hidden rounded-[28px] border border-pink-100 bg-gradient-to-br from-white via-pink-50/30 to-rose-50/70 p-5 shadow-sm sm:rounded-[30px] sm:p-7">
+        <div className="flex min-h-[360px] flex-col overflow-hidden rounded-[28px] border border-[#eeeaf8] bg-gradient-to-br from-white via-[#f6f3fc]/30 to-rose-50/70 p-5 shadow-sm sm:rounded-[30px] sm:p-7">
             <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-start gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-100 text-pink-600">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#eeeaf8] text-[#6a5cb0]">
                         <ShoppingCart size={23} />
                     </div>
 
                     <div className="min-w-0">
-                        <p className="text-[12px] font-black tracking-[0.2em] text-pink-500 sm:text-xs">
+                        <p className="text-[12px] font-black tracking-[0.2em] text-[#7a6cc0] sm:text-xs">
                             ORDER MANAGEMENT
                         </p>
 
@@ -398,7 +398,7 @@ function ManagementCard({
                     </div>
                 </div>
 
-                <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/80 text-pink-400 ring-1 ring-pink-100 sm:flex">
+                <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/80 text-[#a79bd8] ring-1 ring-[#eeeaf8] sm:flex">
                     <ClipboardList size={18} />
                 </div>
             </div>
@@ -414,7 +414,7 @@ function ManagementCard({
                             key={item}
                             className="flex items-center gap-2.5 text-sm text-slate-600"
                         >
-                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-pink-100 text-pink-600">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#eeeaf8] text-[#6a5cb0]">
                                 <CheckCircle2 size={13} />
                             </span>
                             {item}
@@ -425,7 +425,7 @@ function ManagementCard({
 
             <Link
                 href={href}
-                className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-pink-500 px-5 text-sm font-bold text-white shadow-sm transition hover:bg-pink-600 sm:rounded-2xl"
+                className="mt-6 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#151515] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#3a3a3a] sm:rounded-2xl"
             >
                 {action}
                 <ArrowRight size={17} />

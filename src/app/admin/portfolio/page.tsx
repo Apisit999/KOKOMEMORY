@@ -781,7 +781,7 @@ export default function AdminPortfolioPage() {
 
             <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-pink-500">
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-[#7a6cc0]">
                         Content Management
                     </p>
 
@@ -982,7 +982,7 @@ export default function AdminPortfolioPage() {
                                 )
                             }
                             placeholder="ค้นหาชื่อผลงาน รายละเอียด หรือ Category..."
-                            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50"
+                            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc]"
                         />
                     </div>
 
@@ -1001,7 +1001,7 @@ export default function AdminPortfolioPage() {
                                     .value
                             )
                         }
-                        className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none focus:border-pink-300 focus:bg-white"
+                        className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none focus:border-[#c9c0e8] focus:bg-white"
                     >
                         <option value="all">
                             ทุก Category
@@ -1044,7 +1044,7 @@ export default function AdminPortfolioPage() {
                                     | PortfolioStatus
                             )
                         }
-                        className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none focus:border-pink-300 focus:bg-white"
+                        className="h-11 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none focus:border-[#c9c0e8] focus:bg-white"
                     >
                         <option value="all">
                             ทุกสถานะ
@@ -1122,7 +1122,7 @@ export default function AdminPortfolioPage() {
                     </p>
 
                     {hasFilters && (
-                        <p className="text-xs font-semibold text-pink-500">
+                        <p className="text-xs font-semibold text-[#7a6cc0]">
                             กำลังใช้ตัวกรอง
                         </p>
                     )}
@@ -1137,7 +1137,7 @@ export default function AdminPortfolioPage() {
                 <section className="rounded-2xl border border-slate-200 bg-white py-20 text-center shadow-sm">
                     <Loader2
                         size={32}
-                        className="mx-auto animate-spin text-pink-500"
+                        className="mx-auto animate-spin text-[#7a6cc0]"
                     />
 
                     <p className="mt-4 text-sm font-bold text-slate-600">
@@ -1154,7 +1154,7 @@ export default function AdminPortfolioPage() {
                 portfolios.length ===
                     0 && (
                     <section className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-20 text-center shadow-sm">
-                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-pink-50 text-pink-400">
+                        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f6f3fc] text-[#a79bd8]">
                             <ImageIcon
                                 size={
                                     30
@@ -1295,7 +1295,7 @@ export default function AdminPortfolioPage() {
                     <div className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
                         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
                             <div className="min-w-0">
-                                <p className="text-xs font-black uppercase tracking-[0.15em] text-pink-500">
+                                <p className="text-xs font-black uppercase tracking-[0.15em] text-[#7a6cc0]">
                                     Portfolio Preview
                                 </p>
 
@@ -1360,7 +1360,7 @@ export default function AdminPortfolioPage() {
 
                                                 {image.url ===
                                                     previewItem.coverImage && (
-                                                    <span className="inline-flex items-center gap-1 text-[12px] font-black text-pink-500">
+                                                    <span className="inline-flex items-center gap-1 text-[12px] font-black text-[#7a6cc0]">
                                                         <Star
                                                             size={
                                                                 11
@@ -1401,7 +1401,7 @@ function StatCard({
     return (
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
             <div className="flex items-start justify-between gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-50 text-pink-500">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f6f3fc] text-[#7a6cc0]">
                     {icon}
                 </div>
             </div>
@@ -1532,7 +1532,7 @@ function PortfolioCard({
                 <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                         {item.category && (
-                            <p className="text-[12px] font-black uppercase tracking-[0.14em] text-pink-500">
+                            <p className="text-[12px] font-black uppercase tracking-[0.14em] text-[#7a6cc0]">
                                 {
                                     item.category
                                 }

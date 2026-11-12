@@ -290,7 +290,7 @@ export default function AdminGalleryPage() {
                                 <p className="
                   text-sm
                   tracking-[0.3em]
-                  text-pink-500
+                  text-[#7a6cc0]
                   font-semibold
                 ">
                                     KOKO MEMORY
@@ -349,8 +349,8 @@ export default function AdminGalleryPage() {
             px-3
             py-1.5
             rounded-full
-            bg-pink-50
-            text-pink-600
+            bg-[#f6f3fc]
+            text-[#6a5cb0]
             text-sm
             mb-3
           ">
@@ -414,9 +414,9 @@ export default function AdminGalleryPage() {
               bg-slate-50
               outline-none
               focus:bg-white
-              focus:border-pink-400
+              focus:border-[#a79bd8]
               focus:ring-4
-              focus:ring-pink-100
+              focus:ring-[#eeeaf8]
             "
                     />
 
@@ -536,7 +536,7 @@ export default function AdminGalleryPage() {
                                         <div className="
                       h-44
                       bg-gradient-to-br
-                      from-pink-50
+                      from-[#f6f3fc]
                       to-purple-50
                       flex
                       items-center
@@ -697,7 +697,7 @@ export default function AdminGalleryPage() {
                             bg-slate-900
                             text-white
                             font-medium
-                            hover:bg-pink-600
+                            hover:bg-[#3a3a3a]
                             transition
                           "
                                                 >

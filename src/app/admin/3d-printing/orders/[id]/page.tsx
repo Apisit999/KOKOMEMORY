@@ -630,7 +630,7 @@ export default function ThreeDOrderDetailPage({
                 <div className="flex items-center gap-3 text-slate-500">
                     <Loader2
                         size={25}
-                        className="animate-spin text-pink-500"
+                        className="animate-spin text-[#7a6cc0]"
                     />
                     <span className="font-medium">
                         กำลังโหลดข้อมูล Order...
@@ -646,7 +646,7 @@ export default function ThreeDOrderDetailPage({
                 <section className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                     <Link
                         href="/admin/3d-printing/orders"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-pink-500"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-[#7a6cc0]"
                     >
                         <ArrowLeft size={18} />
                         กลับไป Orders
@@ -693,7 +693,7 @@ export default function ThreeDOrderDetailPage({
                         </Link>
 
                         <div>
-                            <p className="text-xs font-black tracking-[0.2em] text-pink-500">
+                            <p className="text-xs font-black tracking-[0.2em] text-[#7a6cc0]">
                                 3D ORDER
                             </p>
 
@@ -712,7 +712,7 @@ export default function ThreeDOrderDetailPage({
                             <p className="mt-2 text-sm text-slate-400">
                                 สร้างเมื่อ {formatDate(order.createdAt)}
                             </p>
-                            {order.quoteId && <Link href={`/admin/3d-printing/quotes/${encodeURIComponent(order.quoteId)}`} className="mt-3 inline-flex text-sm font-bold text-pink-500 hover:text-pink-600">ดู Quote และไฟล์ต้นฉบับ →</Link>}
+                            {order.quoteId && <Link href={`/admin/3d-printing/quotes/${encodeURIComponent(order.quoteId)}`} className="mt-3 inline-flex text-sm font-bold text-[#7a6cc0] hover:text-[#6a5cb0]">ดู Quote และไฟล์ต้นฉบับ →</Link>}
                         </div>
                     </div>
 
@@ -742,7 +742,7 @@ export default function ThreeDOrderDetailPage({
                                 deleting ||
                                 order.items.length === 0
                             }
-                            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-pink-500 px-6 text-sm font-bold text-white shadow-lg shadow-pink-200 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#151515] px-6 text-sm font-bold text-white shadow-lg shadow-[#ddd7f1] transition hover:bg-[#3a3a3a] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {saving ? (
                                 <Loader2
@@ -795,7 +795,7 @@ export default function ThreeDOrderDetailPage({
             <section className="grid gap-5 lg:grid-cols-3">
                 <Card>
                     <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-500">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f6f3fc] text-[#7a6cc0]">
                             <Package size={21} />
                         </div>
 
@@ -1253,7 +1253,7 @@ export default function ThreeDOrderDetailPage({
                                                     : undefined,
                                         })
                                     }
-                                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition focus:border-[#c9c0e8] focus:ring-4 focus:ring-[#f6f3fc]"
                                 >
                                     <option value="">
                                         ยังไม่ได้ระบุ
@@ -1310,7 +1310,7 @@ export default function ThreeDOrderDetailPage({
                                         คงเหลือ
                                     </p>
 
-                                    <p className="mt-1 text-xl font-black text-pink-300">
+                                    <p className="mt-1 text-xl font-black text-[#c9c0e8]">
                                         {formatMoney(
                                             totals.remainingAmount
                                         )}
@@ -1321,7 +1321,7 @@ export default function ThreeDOrderDetailPage({
                             <div className="border-t border-slate-100 pt-5">
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
-                                        <p className="text-xs font-black tracking-[0.16em] text-pink-500">
+                                        <p className="text-xs font-black tracking-[0.16em] text-[#7a6cc0]">
                                             PAYMENT RECORDS
                                         </p>
                                         <p className="mt-1 text-xs text-slate-400">
@@ -1358,7 +1358,7 @@ export default function ThreeDOrderDetailPage({
                                     <div className="mt-4 flex items-center justify-center rounded-2xl bg-slate-50 py-8 text-xs text-slate-400">
                                         <Loader2
                                             size={17}
-                                            className="mr-2 animate-spin text-pink-500"
+                                            className="mr-2 animate-spin text-[#7a6cc0]"
                                         />
                                         กำลังโหลดรายการชำระเงิน...
                                     </div>
@@ -1410,7 +1410,7 @@ export default function ThreeDOrderDetailPage({
                                                                         .value as ThreeDPayment["status"]
                                                                 )
                                                             }
-                                                            className="max-w-[145px] rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 outline-none focus:border-pink-300"
+                                                            className="max-w-[145px] rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 outline-none focus:border-[#c9c0e8]"
                                                         >
                                                             {PAYMENT_RECORD_STATUS_OPTIONS.map(
                                                                 (
@@ -1521,7 +1521,7 @@ export default function ThreeDOrderDetailPage({
                                                 ),
                                         })
                                     }
-                                    className="h-10 w-32 rounded-xl border border-slate-200 px-3 text-right text-sm font-bold outline-none focus:border-pink-300"
+                                    className="h-10 w-32 rounded-xl border border-slate-200 px-3 text-right text-sm font-bold outline-none focus:border-[#c9c0e8]"
                                 />
                             </div>
 
@@ -1547,7 +1547,7 @@ export default function ThreeDOrderDetailPage({
                                                 ),
                                         })
                                     }
-                                    className="h-10 w-32 rounded-xl border border-slate-200 px-3 text-right text-sm font-bold outline-none focus:border-pink-300"
+                                    className="h-10 w-32 rounded-xl border border-slate-200 px-3 text-right text-sm font-bold outline-none focus:border-[#c9c0e8]"
                                 />
                             </div>
 
@@ -1634,7 +1634,7 @@ export default function ThreeDOrderDetailPage({
                     <div className="w-full max-w-lg overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-2xl">
                         <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-6">
                             <div>
-                                <p className="text-xs font-black tracking-[0.18em] text-pink-500">
+                                <p className="text-xs font-black tracking-[0.18em] text-[#7a6cc0]">
                                     PAYMENT
                                 </p>
                                 <h2
@@ -1686,7 +1686,7 @@ export default function ThreeDOrderDetailPage({
                                                 .value as ThreeDOrderPaymentMethod
                                         )
                                     }
-                                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none focus:border-[#c9c0e8] focus:ring-4 focus:ring-[#f6f3fc]"
                                 >
                                     {PAYMENT_METHOD_OPTIONS.map(
                                         (item) => (
@@ -1717,7 +1717,7 @@ export default function ThreeDOrderDetailPage({
                                                 .value as ThreeDPayment["status"]
                                         )
                                     }
-                                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                                    className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none focus:border-[#c9c0e8] focus:ring-4 focus:ring-[#f6f3fc]"
                                 >
                                     {PAYMENT_RECORD_STATUS_OPTIONS.map(
                                         (item) => (
@@ -1827,7 +1827,7 @@ export default function ThreeDOrderDetailPage({
                             deleting ||
                             order.items.length === 0
                         }
-                        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-pink-500 px-7 text-sm font-black text-white shadow-lg shadow-pink-200 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#151515] px-7 text-sm font-black text-white shadow-lg shadow-[#ddd7f1] transition hover:bg-[#3a3a3a] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {saving ? (
                             <Loader2
@@ -1877,7 +1877,7 @@ function SectionTitle({
 }) {
     return (
         <div>
-            <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-pink-500">
+            <div className="flex items-center gap-2 text-xs font-black tracking-[0.18em] text-[#7a6cc0]">
                 {icon}
                 {eyebrow}
             </div>
@@ -1907,7 +1907,7 @@ function Field({
             <span className="text-sm font-bold text-slate-700">
                 {label}
                 {required && (
-                    <span className="ml-1 text-pink-500">
+                    <span className="ml-1 text-[#7a6cc0]">
                         *
                     </span>
                 )}
@@ -1919,7 +1919,7 @@ function Field({
                 onChange={(event) =>
                     onChange(event.target.value)
                 }
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-300 focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-300 focus:border-[#c9c0e8] focus:ring-4 focus:ring-[#f6f3fc]"
             />
         </label>
     );
@@ -1954,7 +1954,7 @@ function NumberField({
                         )
                     )
                 }
-                className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-[#c9c0e8] focus:ring-4 focus:ring-[#f6f3fc]"
             />
         </label>
     );
@@ -1984,7 +1984,7 @@ function TextArea({
                 }
                 placeholder={placeholder}
                 rows={4}
-                className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-300 focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                className="mt-2 w-full resize-y rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 outline-none transition placeholder:text-slate-300 focus:border-[#c9c0e8] focus:ring-4 focus:ring-[#f6f3fc]"
             />
         </label>
     );
@@ -2048,5 +2048,5 @@ function WorkflowCard({ order, busy, onAction, onQualityReject }: { order: Three
     const steps = ["paid", "queued", "printing", "quality_check", "ready", "shipping", "completed"] as const;
     const labels: Record<string, string> = { paid: "ชำระเงินแล้ว", queued: "รอเข้าคิวผลิต", printing: "กำลังผลิต", quality_check: "ตรวจคุณภาพ", ready: "พร้อมส่ง", shipping: "กำลังจัดส่ง", completed: "เสร็จสิ้น" };
     const current = steps.indexOf(order.orderStatus as (typeof steps)[number]);
-    return <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#D93687]">WORKFLOW</p><h2 className="mt-2 text-xl font-black">สถานะงานและสิ่งที่ต้องทำต่อ</h2></div><span className="rounded-full bg-[#FFE4F1] px-3 py-1.5 text-xs font-bold text-[#D93687]">{getStatusLabel(order.orderStatus)}</span></div><div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{steps.map((step, index) => <div key={step} className={`rounded-2xl border p-4 ${index < current ? "border-emerald-100 bg-emerald-50" : index === current ? "border-pink-200 bg-[#FFE4F1]" : "border-slate-100 bg-slate-50"}`}><p className="text-xs font-bold text-slate-400">{index < current ? "เสร็จแล้ว" : index === current ? "กำลังดำเนินการ" : "ถัดไป"}</p><p className="mt-1 text-sm font-black text-slate-800">{labels[step]}</p></div>)}</div><div className="mt-6 flex flex-wrap gap-3">{order.orderStatus === "queued" && <button disabled={busy} onClick={() => onAction("start")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">เริ่มผลิต</button>}{order.orderStatus === "printing" && <button disabled={busy} onClick={() => onAction("production")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ผลิตเสร็จ → ตรวจคุณภาพ</button>}{order.orderStatus === "quality_check" && <><button disabled={busy} onClick={() => onAction("quality")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">✓ QC ผ่าน</button><button disabled={busy} onClick={onQualityReject} className="rounded-xl border border-red-200 px-5 py-3 text-sm font-bold text-red-600 disabled:opacity-50">✕ QC ไม่ผ่าน</button></>}{order.orderStatus === "ready" && <button disabled={busy} onClick={() => onAction("ship")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ยืนยันจัดส่ง</button>}{order.orderStatus === "shipping" && <button disabled={busy} onClick={() => onAction("complete")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ยืนยันส่งมอบแล้ว</button>}{order.orderStatus === "completed" && !order.isArchived && <button disabled={busy} onClick={() => onAction("complete")} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 disabled:opacity-50">เก็บเข้าคลัง</button>}</div>{order.orderStatus === "ready" && (order.carrier || order.trackingNumber) && <p className="mt-4 text-sm text-slate-500">{order.carrier || "ขนส่ง"} · {order.trackingNumber || "ไม่มีเลขติดตาม"}</p>}</section>;
+    return <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[.18em] text-[#D93687]">WORKFLOW</p><h2 className="mt-2 text-xl font-black">สถานะงานและสิ่งที่ต้องทำต่อ</h2></div><span className="rounded-full bg-[#FFE4F1] px-3 py-1.5 text-xs font-bold text-[#D93687]">{getStatusLabel(order.orderStatus)}</span></div><div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{steps.map((step, index) => <div key={step} className={`rounded-2xl border p-4 ${index < current ? "border-emerald-100 bg-emerald-50" : index === current ? "border-[#ddd7f1] bg-[#FFE4F1]" : "border-slate-100 bg-slate-50"}`}><p className="text-xs font-bold text-slate-400">{index < current ? "เสร็จแล้ว" : index === current ? "กำลังดำเนินการ" : "ถัดไป"}</p><p className="mt-1 text-sm font-black text-slate-800">{labels[step]}</p></div>)}</div><div className="mt-6 flex flex-wrap gap-3">{order.orderStatus === "queued" && <button disabled={busy} onClick={() => onAction("start")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">เริ่มผลิต</button>}{order.orderStatus === "printing" && <button disabled={busy} onClick={() => onAction("production")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ผลิตเสร็จ → ตรวจคุณภาพ</button>}{order.orderStatus === "quality_check" && <><button disabled={busy} onClick={() => onAction("quality")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">✓ QC ผ่าน</button><button disabled={busy} onClick={onQualityReject} className="rounded-xl border border-red-200 px-5 py-3 text-sm font-bold text-red-600 disabled:opacity-50">✕ QC ไม่ผ่าน</button></>}{order.orderStatus === "ready" && <button disabled={busy} onClick={() => onAction("ship")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ยืนยันจัดส่ง</button>}{order.orderStatus === "shipping" && <button disabled={busy} onClick={() => onAction("complete")} className="rounded-xl bg-[#FF4FA3] px-5 py-3 text-sm font-bold text-black disabled:opacity-50">ยืนยันส่งมอบแล้ว</button>}{order.orderStatus === "completed" && !order.isArchived && <button disabled={busy} onClick={() => onAction("complete")} className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 disabled:opacity-50">เก็บเข้าคลัง</button>}</div>{order.orderStatus === "ready" && (order.carrier || order.trackingNumber) && <p className="mt-4 text-sm text-slate-500">{order.carrier || "ขนส่ง"} · {order.trackingNumber || "ไม่มีเลขติดตาม"}</p>}</section>;
 }

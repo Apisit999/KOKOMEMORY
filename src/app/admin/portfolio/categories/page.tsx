@@ -173,7 +173,7 @@ export default function AdminPortfolioCategoriesPage() {
         <main className="mx-auto w-full max-w-6xl space-y-6">
             <header className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-pink-500">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7a6cc0]">
                         PORTFOLIO TAXONOMY
                     </p>
                     <h1 className="mt-2 text-3xl font-black text-slate-900">
@@ -230,7 +230,7 @@ export default function AdminPortfolioCategoriesPage() {
                             onChange={(event) =>
                                 setForm({ ...form, name: event.target.value })
                             }
-                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-[#a79bd8] focus:ring-2 focus:ring-[#eeeaf8]"
                         />
                     </label>
                     <label className="text-sm font-semibold text-slate-700">
@@ -244,7 +244,7 @@ export default function AdminPortfolioCategoriesPage() {
                                     slug: event.target.value,
                                 })
                             }
-                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-[#a79bd8] focus:ring-2 focus:ring-[#eeeaf8]"
                         />
                     </label>
                     <label className="text-sm font-semibold text-slate-700 md:col-span-2">
@@ -258,7 +258,7 @@ export default function AdminPortfolioCategoriesPage() {
                                 })
                             }
                             rows={3}
-                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-[#a79bd8] focus:ring-2 focus:ring-[#eeeaf8]"
                         />
                     </label>
                     <label className="text-sm font-semibold text-slate-700">
@@ -272,7 +272,7 @@ export default function AdminPortfolioCategoriesPage() {
                                     order: Number(event.target.value),
                                 })
                             }
-                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                            className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-[#a79bd8] focus:ring-2 focus:ring-[#eeeaf8]"
                         />
                     </label>
                     <label className="flex items-center gap-3 self-end pb-3 text-sm font-semibold text-slate-700">
@@ -285,14 +285,14 @@ export default function AdminPortfolioCategoriesPage() {
                                     active: event.target.checked,
                                 })
                             }
-                            className="h-4 w-4 accent-pink-500"
+                            className="h-4 w-4 accent-[#7a6cc0]"
                         />
                         เปิดใช้งานหมวดหมู่นี้
                     </label>
                     <button
                         type="submit"
                         disabled={saving}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-pink-500 px-5 py-3 font-bold text-white transition hover:bg-pink-400 disabled:opacity-50 md:col-span-2 md:justify-self-start"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#151515] px-5 py-3 font-bold text-white transition hover:bg-[#151515] disabled:opacity-50 md:col-span-2 md:justify-self-start"
                     >
                         <Plus size={18} />
                         {saving

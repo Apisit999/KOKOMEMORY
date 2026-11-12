@@ -40,3 +40,23 @@
 .koko-share-lightbox-tip.strong{color:#f4f0e7;font-size:14px;background:#1f2020;border:1px solid #6b6c64;border-radius:12px;padding:10px 14px}
 .koko-share-lightbox-bar .koko-share-btn{white-space:nowrap;min-width:150px}
 .koko-share-lightbox-bar{flex-wrap:nowrap}
+
+/* ---- PURE WHITE LUXE override (gallery is white; the photo lightbox stays dark) ---- */
+.koko-share{background:#fff;color:#151515}
+.koko-share-eyebrow{color:#7a6cc0;letter-spacing:.08em;font-weight:600}
+.koko-share-head h1{font-family:var(--font-koko-display),var(--font-koko-serif-thai),serif;font-weight:500;line-height:1.4;color:#151515;text-wrap:balance}
+.koko-share-sub,.koko-share-note p{color:#5c5c5c}
+.koko-share-note{background:#fafaf9;border:1px solid #e8e8e6;border-radius:4px}
+.koko-share-grid button{border:0;border-radius:2px;background:#fff;box-shadow:0 12px 30px -14px #15151540}
+.koko-share-foot{border-top-color:#e8e8e6}
+.koko-share-foot p{color:#5c5c5c}
+.koko-share-btn{border-radius:2px;background:#151515;color:#fff;font-weight:600}
+@media(hover:hover){.koko-share-btn:hover{background:#3a3a3a}}
+.koko-share-btn.secondary{background:#fff;color:#151515;border:1px solid #151515}
+@media(hover:hover){.koko-share-btn.secondary:hover{background:#151515;color:#fff}}
+.koko-share a:focus-visible,.koko-share button:focus-visible{outline-color:#a79bd8}
+.koko-share-warn{background:#f6f3fc;border-color:#a79bd8;color:#151515;border-radius:4px}
+.koko-share-pin{border-radius:2px;border-color:#dcdcd9;background:#fff;color:#151515}
+.koko-share-pin[aria-invalid=true]{border-color:#d98aae}
+.koko-share-lightbox .koko-share-btn{background:#fff;color:#151515}
+.koko-share-lightbox-top button,.koko-share-lightbox-bar>button:not(.koko-share-btn){border-radius:2px}

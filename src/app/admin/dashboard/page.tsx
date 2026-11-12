@@ -320,7 +320,7 @@ function StatCard({
     href?: string;
 }) {
     const toneClasses = {
-        pink: "bg-pink-50 text-pink-500",
+        pink: "bg-[#f6f3fc] text-[#7a6cc0]",
         blue: "bg-blue-50 text-blue-500",
         green: "bg-emerald-50 text-emerald-600",
         orange: "bg-orange-50 text-orange-500",
@@ -978,7 +978,7 @@ export default function AdminDashboardPage() {
         return (
             <main className="flex min-h-[70vh] items-center justify-center bg-slate-50">
                 <div className="text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-pink-500" />
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#7a6cc0]" />
 
                     <p className="mt-4 text-sm text-slate-500">
                         กำลังตรวจสอบสิทธิ์...
@@ -1004,7 +1004,7 @@ export default function AdminDashboardPage() {
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
 
                         <div className="min-w-0">
-                            <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-[#7a6cc0] sm:text-xs">
                                 KOKO Memory · Admin
                             </p>
 
@@ -1029,7 +1029,7 @@ export default function AdminDashboardPage() {
                                 disabled={
                                     refreshingThreeD
                                 }
-                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-pink-200 hover:text-pink-500 disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:flex-none sm:px-4 sm:text-sm"
+                                className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 shadow-sm transition hover:border-[#ddd7f1] hover:text-[#7a6cc0] disabled:cursor-not-allowed disabled:opacity-50 sm:h-11 sm:flex-none sm:px-4 sm:text-sm"
                             >
                                 <RefreshCw
                                     className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
@@ -1108,7 +1108,7 @@ export default function AdminDashboardPage() {
                 <section className="mt-5 sm:mt-6">
                     <div className="mb-3 flex items-end justify-between gap-3">
                         <div>
-                            <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[#7a6cc0] sm:text-xs">
                                 Action Center
                             </p>
 
@@ -1185,19 +1185,19 @@ export default function AdminDashboardPage() {
                         {paymentStats.pending > 0 && (
                             <Link
                                 href="/admin/payments"
-                                className="rounded-2xl border border-pink-100 bg-pink-50 p-4 transition hover:-translate-y-0.5 hover:shadow-md sm:rounded-3xl sm:p-5"
+                                className="rounded-2xl border border-[#eeeaf8] bg-[#f6f3fc] p-4 transition hover:-translate-y-0.5 hover:shadow-md sm:rounded-3xl sm:p-5"
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-pink-500 shadow-sm">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#7a6cc0] shadow-sm">
                                         <AlertCircle className="h-5 w-5" />
                                     </div>
 
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-pink-900">
+                                        <p className="text-sm font-bold text-[#2e2752]">
                                             Payment รอตรวจสอบ
                                         </p>
 
-                                        <p className="mt-0.5 text-xs text-pink-700">
+                                        <p className="mt-0.5 text-xs text-[#5a4d9c]">
                                             {
                                                 paymentStats.pending
                                             }{" "}
@@ -1205,7 +1205,7 @@ export default function AdminDashboardPage() {
                                         </p>
                                     </div>
 
-                                    <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-pink-400" />
+                                    <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-[#a79bd8]" />
                                 </div>
                             </Link>
                         )}
@@ -1244,7 +1244,7 @@ export default function AdminDashboardPage() {
                 <section className="mt-5 sm:mt-6">
                     <div className="mb-3 flex items-end justify-between gap-3">
                         <div>
-                            <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.22em] text-[#7a6cc0] sm:text-xs">
                                 3D Printing
                             </p>
 
@@ -1255,7 +1255,7 @@ export default function AdminDashboardPage() {
 
                         <Link
                             href="/admin/3d-printing/orders"
-                            className="shrink-0 text-xs font-bold text-pink-500 hover:text-pink-600 sm:text-sm"
+                            className="shrink-0 text-xs font-bold text-[#7a6cc0] hover:text-[#6a5cb0] sm:text-sm"
                         >
                             ดู Orders →
                         </Link>
@@ -1329,7 +1329,7 @@ export default function AdminDashboardPage() {
                     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-3xl">
                         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
                             <div>
-                                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#7a6cc0] sm:text-xs">
                                     Recent Orders
                                 </p>
 
@@ -1340,7 +1340,7 @@ export default function AdminDashboardPage() {
 
                             <Link
                                 href="/admin/3d-printing/orders"
-                                className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-pink-500 sm:text-sm"
+                                className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-[#7a6cc0] sm:text-sm"
                             >
                                 ทั้งหมด
                                 <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -1350,7 +1350,7 @@ export default function AdminDashboardPage() {
                         <div className="p-3 sm:p-5">
                             {loadingThreeD ? (
                                 <div className="flex min-h-48 items-center justify-center">
-                                    <Loader2 className="h-6 w-6 animate-spin text-pink-500" />
+                                    <Loader2 className="h-6 w-6 animate-spin text-[#7a6cc0]" />
                                 </div>
                             ) : threeDError ? (
                                 <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-600">
@@ -1479,7 +1479,7 @@ export default function AdminDashboardPage() {
                                                         href={`/admin/3d-printing/orders/${encodeURIComponent(
                                                             order.id
                                                         )}`}
-                                                        className="block rounded-2xl border border-slate-100 p-4 transition hover:border-pink-200 hover:bg-pink-50/30"
+                                                        className="block rounded-2xl border border-slate-100 p-4 transition hover:border-[#ddd7f1] hover:bg-[#f6f3fc]/30"
                                                     >
                                                         <div className="flex items-center justify-between gap-4">
                                                             <div className="min-w-0">
@@ -1561,7 +1561,7 @@ export default function AdminDashboardPage() {
                     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-3xl">
                         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
                             <div>
-                                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                                <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#7a6cc0] sm:text-xs">
                                     Booking
                                 </p>
 
@@ -1572,7 +1572,7 @@ export default function AdminDashboardPage() {
 
                             <Link
                                 href="/admin/bookings"
-                                className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-pink-500 sm:text-sm"
+                                className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-[#7a6cc0] sm:text-sm"
                             >
                                 จัดการ
                                 <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -1628,10 +1628,10 @@ export default function AdminDashboardPage() {
                                 </p>
                             </div>
 
-                            <div className="col-span-2 rounded-2xl bg-pink-50 p-4 sm:p-5">
+                            <div className="col-span-2 rounded-2xl bg-[#f6f3fc] p-4 sm:p-5">
                                 <div className="flex items-center justify-between gap-4">
                                     <div>
-                                        <p className="text-[12px] text-pink-600 sm:text-xs">
+                                        <p className="text-[12px] text-[#6a5cb0] sm:text-xs">
                                             รายได้ Booking
                                         </p>
 
@@ -1642,7 +1642,7 @@ export default function AdminDashboardPage() {
                                         </p>
                                     </div>
 
-                                    <CalendarDays className="h-6 w-6 text-pink-400 sm:h-7 sm:w-7" />
+                                    <CalendarDays className="h-6 w-6 text-[#a79bd8] sm:h-7 sm:w-7" />
                                 </div>
                             </div>
                         </div>
@@ -1656,7 +1656,7 @@ export default function AdminDashboardPage() {
                 <section className="mt-5 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:mt-6 sm:rounded-3xl">
                     <div className="flex items-center justify-between border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
                         <div>
-                            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#7a6cc0] sm:text-xs">
                                 Latest Activity
                             </p>
 
@@ -1667,7 +1667,7 @@ export default function AdminDashboardPage() {
 
                         <Link
                             href="/admin/bookings"
-                            className="text-xs font-bold text-pink-500 hover:text-pink-600 sm:text-sm"
+                            className="text-xs font-bold text-[#7a6cc0] hover:text-[#6a5cb0] sm:text-sm"
                         >
                             ดูทั้งหมด →
                         </Link>
@@ -1676,7 +1676,7 @@ export default function AdminDashboardPage() {
                     <div className="p-3 sm:p-5">
                         {loadingBookings ? (
                             <div className="flex min-h-32 items-center justify-center">
-                                <Loader2 className="h-6 w-6 animate-spin text-pink-500" />
+                                <Loader2 className="h-6 w-6 animate-spin text-[#7a6cc0]" />
                             </div>
                         ) : bookingError ? (
                             <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-600">
@@ -1914,7 +1914,7 @@ export default function AdminDashboardPage() {
 
                 <section className="mt-5 sm:mt-6">
                     <div className="mb-3">
-                        <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                        <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#7a6cc0] sm:text-xs">
                             Quick Actions
                         </p>
 
@@ -1926,9 +1926,9 @@ export default function AdminDashboardPage() {
                     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-4">
                         <Link
                             href="/admin/3d-printing/orders/new"
-                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-md sm:p-5"
+                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#ddd7f1] hover:shadow-md sm:p-5"
                         >
-                            <Plus className="h-5 w-5 text-pink-500" />
+                            <Plus className="h-5 w-5 text-[#7a6cc0]" />
 
                             <p className="mt-3 text-sm font-bold text-slate-800 sm:mt-4">
                                 สร้าง 3D Order
@@ -1941,9 +1941,9 @@ export default function AdminDashboardPage() {
 
                         <Link
                             href="/admin/3d-printing/products"
-                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-md sm:p-5"
+                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#ddd7f1] hover:shadow-md sm:p-5"
                         >
-                            <Package className="h-5 w-5 text-pink-500" />
+                            <Package className="h-5 w-5 text-[#7a6cc0]" />
 
                             <p className="mt-3 text-sm font-bold text-slate-800 sm:mt-4">
                                 จัดการโมเดล 3D
@@ -1956,9 +1956,9 @@ export default function AdminDashboardPage() {
 
                         <Link
                             href="/admin/payments"
-                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-md sm:p-5"
+                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#ddd7f1] hover:shadow-md sm:p-5"
                         >
-                            <Wallet className="h-5 w-5 text-pink-500" />
+                            <Wallet className="h-5 w-5 text-[#7a6cc0]" />
 
                             <p className="mt-3 text-sm font-bold text-slate-800 sm:mt-4">
                                 ตรวจสอบ Payment
@@ -1971,9 +1971,9 @@ export default function AdminDashboardPage() {
 
                         <Link
                             href="/admin/portfolio"
-                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-pink-200 hover:shadow-md sm:p-5"
+                            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#ddd7f1] hover:shadow-md sm:p-5"
                         >
-                            <ShoppingBag className="h-5 w-5 text-pink-500" />
+                            <ShoppingBag className="h-5 w-5 text-[#7a6cc0]" />
 
                             <p className="mt-3 text-sm font-bold text-slate-800 sm:mt-4">
                                 จัดการ Portfolio

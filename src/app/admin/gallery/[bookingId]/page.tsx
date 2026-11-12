@@ -138,7 +138,7 @@ export default function BookingQRPage() {
 
                 {/* Header */}
                 <div className="mb-8 text-center">
-                    <p className="text-sm font-semibold tracking-[0.35em] text-pink-500">
+                    <p className="text-sm font-semibold tracking-[0.35em] text-[#7a6cc0]">
                         KOKO MEMORY
                     </p>
 
@@ -159,7 +159,7 @@ export default function BookingQRPage() {
                         BOOKING
                     </p>
 
-                    <p className="mt-2 text-xl font-bold text-pink-500">
+                    <p className="mt-2 text-xl font-bold text-[#7a6cc0]">
                         {bookingId}
                     </p>
 
@@ -192,11 +192,11 @@ export default function BookingQRPage() {
                     {shareId && !revoked && <div className="mt-7 border-t border-slate-100 pt-6 text-left">
                         <label htmlFor="gallery-upload" className="block text-sm font-semibold text-slate-700">เพิ่มรูปเข้า QR ชุดนี้</label>
                         <p className="mt-1 text-xs text-slate-500">เลือกรูป JPEG, PNG หรือ WebP ขนาดไม่เกิน 25 MB ต่อรูป ลูกค้าจะเห็นรูปเมื่อส่งไฟล์ครบ</p>
-                        <input id="gallery-upload" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploading} onChange={(event) => { void uploadFiles(event.target.files); event.currentTarget.value = ""; }} className="mt-3 block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-pink-50 file:px-4 file:py-2 file:font-semibold file:text-pink-700 disabled:opacity-50" />
+                        <input id="gallery-upload" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploading} onChange={(event) => { void uploadFiles(event.target.files); event.currentTarget.value = ""; }} className="mt-3 block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-[#f6f3fc] file:px-4 file:py-2 file:font-semibold file:text-[#5a4d9c] disabled:opacity-50" />
                         {uploadState && <p aria-live="polite" className="mt-3 text-sm text-slate-600">{uploadState}</p>}
                         <button type="button" onClick={() => void downloadUploaderConfig()} className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">ตั้งค่า Windows ให้ส่งรูปจากโฟลเดอร์อัตโนมัติ</button>
                         {uploaderConfigState && <p aria-live="polite" className="mt-2 text-xs text-slate-500">{uploaderConfigState}</p>}
-                        <a href="/downloads/KokoUploader.ps1" download className="mt-3 block text-center text-sm font-semibold text-pink-600 underline">ดาวน์โหลดโปรแกรม KOKO Uploader สำหรับ Windows</a>
+                        <a href="/downloads/KokoUploader.ps1" download className="mt-3 block text-center text-sm font-semibold text-[#6a5cb0] underline">ดาวน์โหลดโปรแกรม KOKO Uploader สำหรับ Windows</a>
                         <p className="mt-2 text-xs text-slate-400">สร้างไฟล์ตั้งค่าใหม่จะยกเลิกรหัสของไฟล์ตั้งค่าเดิม</p>
                     </div>}
                     {shareExpiresAt && !revoked && <p className="mt-2 text-xs text-slate-400">หมดอายุ: {new Date(shareExpiresAt).toLocaleString("th-TH")}</p>}

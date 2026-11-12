@@ -597,7 +597,7 @@ export default function AdminPaymentsPage() {
                 <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
 
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-500">
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#7a6cc0]">
                             KOKO Memory
                         </p>
 
@@ -628,7 +628,7 @@ export default function AdminPaymentsPage() {
                                         Notification.permission ===
                                         "granted")
                                     ? "bg-green-100 text-green-700"
-                                    : "bg-pink-500 text-white hover:bg-pink-600"
+                                    : "bg-[#151515] text-white hover:bg-[#3a3a3a]"
                                 }`}
                         >
                             🔔{" "}
@@ -771,7 +771,7 @@ export default function AdminPaymentsPage() {
                                     )
                                 }
                                 placeholder="ชื่อ, เบอร์โทร, Email, Payment ID หรือ Booking ID"
-                                className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                                className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none transition focus:border-[#a79bd8] focus:ring-2 focus:ring-[#eeeaf8]"
                             />
                         </div>
 
@@ -841,7 +841,7 @@ export default function AdminPaymentsPage() {
                 {loading && (
                     <div className="rounded-2xl bg-white p-12 text-center shadow-sm">
 
-                        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-pink-500" />
+                        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#7a6cc0]" />
 
                         <p className="text-slate-500">
                             กำลังเชื่อมต่อข้อมูล Realtime...
@@ -934,7 +934,7 @@ export default function AdminPaymentsPage() {
                                                         </span>
 
                                                         {waiting && (
-                                                            <span className="rounded-full bg-pink-50 px-3 py-1 text-xs font-bold text-pink-600">
+                                                            <span className="rounded-full bg-[#f6f3fc] px-3 py-1 text-xs font-bold text-[#6a5cb0]">
                                                                 ใหม่
                                                             </span>
                                                         )}
@@ -957,7 +957,7 @@ export default function AdminPaymentsPage() {
                                                                     payment.id
                                                                 )
                                                             }
-                                                            className="text-xs font-semibold text-pink-500 hover:text-pink-700"
+                                                            className="text-xs font-semibold text-[#7a6cc0] hover:text-[#5a4d9c]"
                                                         >
                                                             คัดลอก
                                                         </button>
@@ -1040,7 +1040,7 @@ export default function AdminPaymentsPage() {
                                                                     payment.bookingId!
                                                                 )
                                                             }
-                                                            className="mt-3 text-xs font-semibold text-pink-500"
+                                                            className="mt-3 text-xs font-semibold text-[#7a6cc0]"
                                                         >
                                                             📋 คัดลอก Booking ID
                                                         </button>

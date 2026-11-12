@@ -82,7 +82,7 @@ export default function AdminSettingsPage() {
 	return (
 		<main className="mx-auto w-full max-w-4xl space-y-6">
 			<header>
-				<p className="text-xs font-bold uppercase tracking-[0.2em] text-pink-500">ADMIN SETTINGS</p>
+				<p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7a6cc0]">ADMIN SETTINGS</p>
 				<h1 className="mt-2 text-3xl font-black text-slate-900">ตั้งค่าระบบ</h1>
 				<p className="mt-1 text-sm text-slate-500">จัดการบัญชี Admin และการตั้งค่าพื้นฐาน</p>
 			</header>
@@ -92,7 +92,7 @@ export default function AdminSettingsPage() {
 
 			<section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
 				<div className="flex items-center gap-3 border-b border-slate-100 pb-5">
-					<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pink-50 text-pink-500"><MailCheck size={21} /></div>
+					<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f6f3fc] text-[#7a6cc0]"><MailCheck size={21} /></div>
 					<div>
 						<h2 className="font-bold text-slate-900">ข้อมูลบัญชี</h2>
 						<p className="text-sm text-slate-500">Firebase Authentication</p>
@@ -119,13 +119,13 @@ export default function AdminSettingsPage() {
 			<section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
 				<div className="flex items-center justify-between gap-4">
 					<div className="flex items-center gap-3">
-						<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pink-50 text-pink-500"><Bell size={21} /></div>
+						<div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f6f3fc] text-[#7a6cc0]"><Bell size={21} /></div>
 						<div>
 							<h2 className="font-bold text-slate-900">การแจ้งเตือน</h2>
 							<p className="text-sm text-slate-500">ตั้งค่าบนเบราว์เซอร์นี้</p>
 						</div>
 					</div>
-					<button type="button" role="switch" aria-checked={notifications} onClick={() => setNotificationPreference(!notifications)} className={`relative h-7 w-12 rounded-full transition ${notifications ? "bg-pink-500" : "bg-slate-300"}`}>
+					<button type="button" role="switch" aria-checked={notifications} onClick={() => setNotificationPreference(!notifications)} className={`relative h-7 w-12 rounded-full transition ${notifications ? "bg-[#151515]" : "bg-slate-300"}`}>
 						<span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${notifications ? "left-6" : "left-1"}`} />
 					</button>
 				</div>

@@ -1142,7 +1142,7 @@ export default function NewAdminPortfolioPage() {
                 <div>
                     <Link
                         href="/admin/portfolio"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-pink-500"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 transition hover:text-[#7a6cc0]"
                     >
                         <ArrowLeft
                             size={16}
@@ -1153,7 +1153,7 @@ export default function NewAdminPortfolioPage() {
 
                     <div className="mt-5">
 
-                        <p className="text-xs font-black uppercase tracking-[0.18em] text-pink-500">
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#7a6cc0]">
                             Content Management
                         </p>
 
@@ -1204,7 +1204,7 @@ export default function NewAdminPortfolioPage() {
             ================================================= */}
 
             {saving && images.length > 0 && (
-                <div className="rounded-2xl border border-pink-100 bg-pink-50 p-4">
+                <div className="rounded-2xl border border-[#eeeaf8] bg-[#f6f3fc] p-4">
 
                     <div className="flex items-center justify-between gap-4">
 
@@ -1212,7 +1212,7 @@ export default function NewAdminPortfolioPage() {
 
                             <Loader2
                                 size={18}
-                                className="animate-spin text-pink-500"
+                                className="animate-spin text-[#7a6cc0]"
                             />
 
                             <div>
@@ -1229,7 +1229,7 @@ export default function NewAdminPortfolioPage() {
 
                         </div>
 
-                        <span className="text-sm font-black text-pink-500">
+                        <span className="text-sm font-black text-[#7a6cc0]">
                             {uploadProgress}%
                         </span>
 
@@ -1238,7 +1238,7 @@ export default function NewAdminPortfolioPage() {
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-white">
 
                         <div
-                            className="h-full rounded-full bg-pink-500 transition-all duration-300"
+                            className="h-full rounded-full bg-[#151515] transition-all duration-300"
                             style={{
                                 width: `${uploadProgress}%`,
                             }}
@@ -1309,7 +1309,7 @@ export default function NewAdminPortfolioPage() {
                                 disabled={saving}
                                 autoComplete="off"
                                 placeholder="เช่น Wedding Ceremony — KOKO Memory"
-                                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc] disabled:cursor-not-allowed disabled:opacity-60"
                             />
 
                             <div className="mt-1 text-right text-[12px] text-slate-400">
@@ -1347,7 +1347,7 @@ export default function NewAdminPortfolioPage() {
                                 rows={5}
                                 disabled={saving}
                                 placeholder="รายละเอียดเกี่ยวกับงานนี้..."
-                                className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc] disabled:cursor-not-allowed disabled:opacity-60"
                             />
 
                             <div className="mt-1 text-right text-[12px] text-slate-400">
@@ -1385,7 +1385,7 @@ export default function NewAdminPortfolioPage() {
                                     }
                                     disabled={saving}
                                     placeholder="Wedding / Pre-Wedding / Event"
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc] disabled:cursor-not-allowed disabled:opacity-60"
                                 />
 
                             </div>
@@ -1415,7 +1415,7 @@ export default function NewAdminPortfolioPage() {
                                         )
                                     }
                                     disabled={saving}
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc] disabled:cursor-not-allowed disabled:opacity-60"
                                 />
 
                             </div>
@@ -1474,8 +1474,8 @@ export default function NewAdminPortfolioPage() {
                         }
                         className={`relative rounded-2xl border-2 border-dashed p-8 text-center transition sm:p-12 ${
                             dragActive
-                                ? "border-pink-400 bg-pink-50"
-                                : "border-slate-200 bg-slate-50 hover:border-pink-300 hover:bg-pink-50/40"
+                                ? "border-[#a79bd8] bg-[#f6f3fc]"
+                                : "border-slate-200 bg-slate-50 hover:border-[#c9c0e8] hover:bg-[#f6f3fc]/40"
                         }`}
                     >
 
@@ -1504,7 +1504,7 @@ export default function NewAdminPortfolioPage() {
                             }`}
                         >
 
-                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-pink-500 shadow-sm">
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-[#7a6cc0] shadow-sm">
                                 <Upload
                                     size={28}
                                 />
@@ -1559,7 +1559,7 @@ export default function NewAdminPortfolioPage() {
                                             }
                                             className={`group relative overflow-hidden rounded-2xl border-2 bg-slate-100 ${
                                                 image.isCover
-                                                    ? "border-pink-400"
+                                                    ? "border-[#a79bd8]"
                                                     : "border-slate-200"
                                             }`}
                                         >
@@ -1589,7 +1589,7 @@ export default function NewAdminPortfolioPage() {
                                             {/* Cover */}
 
                                             {image.isCover && (
-                                                <div className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-pink-500 px-2.5 py-1 text-[12px] font-black text-white shadow">
+                                                <div className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-[#151515] px-2.5 py-1 text-[12px] font-black text-white shadow">
                                                     <Star
                                                         size={11}
                                                         fill="currentColor"
@@ -1637,7 +1637,7 @@ export default function NewAdminPortfolioPage() {
                                                     }
                                                     className={`flex h-8 w-full items-center justify-center gap-1 rounded-lg text-[12px] font-black transition ${
                                                         image.isCover
-                                                            ? "bg-pink-500 text-white"
+                                                            ? "bg-[#151515] text-white"
                                                             : "bg-white/90 text-slate-700 hover:bg-white"
                                                     } disabled:cursor-default`}
                                                 >
@@ -1904,7 +1904,7 @@ export default function NewAdminPortfolioPage() {
                                         disabled={
                                             saving
                                         }
-                                        className="mt-3 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 outline-none focus:border-pink-300 disabled:opacity-60"
+                                        className="mt-3 h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 outline-none focus:border-[#c9c0e8] disabled:opacity-60"
                                     >
                                         <option value="active">
                                             Active — แสดงบนเว็บไซต์
@@ -1985,7 +1985,7 @@ export default function NewAdminPortfolioPage() {
                                 <div className="flex flex-wrap gap-2">
 
                                     {form.category && (
-                                        <span className="rounded-full bg-pink-50 px-3 py-1 text-xs font-black text-pink-500">
+                                        <span className="rounded-full bg-[#f6f3fc] px-3 py-1 text-xs font-black text-[#7a6cc0]">
                                             {
                                                 form.category
                                             }

@@ -504,7 +504,7 @@ export default function ProductForm({
                 title="รูปสินค้า"
             >
                 <div
-                    className="rounded-2xl border-2 border-dashed border-pink-200 bg-pink-50/50 p-8 text-center transition hover:border-pink-400"
+                    className="rounded-2xl border-2 border-dashed border-[#ddd7f1] bg-[#f6f3fc]/50 p-8 text-center transition hover:border-[#a79bd8]"
                     onDragOver={(event) =>
                         event.preventDefault()
                     }
@@ -516,7 +516,7 @@ export default function ProductForm({
                     }}
                 >
                     <ImagePlus
-                        className="mx-auto text-pink-500"
+                        className="mx-auto text-[#7a6cc0]"
                         size={32}
                     />
 
@@ -534,7 +534,7 @@ export default function ProductForm({
                         onClick={() =>
                             imageInput.current?.click()
                         }
-                        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-pink-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-pink-600"
+                        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#151515] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#3a3a3a]"
                     >
                         <Upload size={16} />
                         เพิ่มรูปภาพ
@@ -555,7 +555,7 @@ export default function ProductForm({
                 </div>
 
                 {uploading && (
-                    <p className="mt-3 flex items-center gap-2 text-sm text-pink-600">
+                    <p className="mt-3 flex items-center gap-2 text-sm text-[#6a5cb0]">
                         <Loader2
                             size={16}
                             className="animate-spin"
@@ -584,7 +584,7 @@ export default function ProductForm({
                                         />
 
                                         {index === 0 && (
-                                            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-pink-600">
+                                            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-xs font-bold text-[#6a5cb0]">
                                                 <Star
                                                     size={12}
                                                     fill="currentColor"
@@ -662,7 +662,7 @@ export default function ProductForm({
                         onClick={() =>
                             modelInput.current?.click()
                         }
-                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:border-pink-300"
+                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:border-[#c9c0e8]"
                     >
                         <Upload size={16} />
                         อัปโหลด STL, OBJ, 3MF หรือ ZIP
@@ -702,7 +702,7 @@ export default function ProductForm({
                 <button
                     type="submit"
                     disabled={saving || uploading}
-                    className="rounded-xl bg-pink-500 px-5 py-3 text-sm font-bold text-white hover:bg-pink-600 disabled:opacity-50"
+                    className="rounded-xl bg-[#151515] px-5 py-3 text-sm font-bold text-white hover:bg-[#3a3a3a] disabled:opacity-50"
                 >
                     {saving
                         ? "กำลังบันทึก..."
@@ -751,7 +751,7 @@ function FormSection({
 }) {
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-            <p className="text-[12px] font-black tracking-[0.22em] text-pink-500">
+            <p className="text-[12px] font-black tracking-[0.22em] text-[#7a6cc0]">
                 {eyebrow}
             </p>
 
@@ -788,4 +788,4 @@ function Field({
 }
 
 const inputClass =
-    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-pink-400 focus:ring-4 focus:ring-pink-50";
+    "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-normal outline-none focus:border-[#a79bd8] focus:ring-4 focus:ring-[#f6f3fc]";

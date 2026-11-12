@@ -85,7 +85,7 @@ export default function EditThreeDProductPage() {
     return (
         <main className="mx-auto w-full max-w-4xl space-y-6">
             <header>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-pink-500">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#7a6cc0]">
                     3D PRINTING
                 </p>
                 <h1 className="mt-2 text-3xl font-black text-slate-900">

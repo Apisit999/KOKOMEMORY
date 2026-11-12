@@ -798,7 +798,7 @@ export default function EditAdminPortfolioPage() {
                     <div className="text-center">
                         <Loader2
                             size={32}
-                            className="mx-auto animate-spin text-pink-500"
+                            className="mx-auto animate-spin text-[#7a6cc0]"
                         />
 
                         <p className="mt-4 text-sm font-semibold text-slate-500">
@@ -819,7 +819,7 @@ export default function EditAdminPortfolioPage() {
             <main className="mx-auto w-full max-w-4xl space-y-6">
                 <Link
                     href="/admin/portfolio"
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-pink-500"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-[#7a6cc0]"
                 >
                     <ArrowLeft size={16} />
                     กลับ Portfolio
@@ -853,13 +853,13 @@ export default function EditAdminPortfolioPage() {
                 <div>
                     <Link
                         href="/admin/portfolio"
-                        className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-pink-500"
+                        className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-[#7a6cc0]"
                     >
                         <ArrowLeft size={16} />
                         กลับ Portfolio
                     </Link>
 
-                    <div className="mb-3 text-xs font-black uppercase tracking-[0.28em] text-pink-500">
+                    <div className="mb-3 text-xs font-black uppercase tracking-[0.28em] text-[#7a6cc0]">
                         Content Management
                     </div>
 
@@ -876,7 +876,7 @@ export default function EditAdminPortfolioPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-pink-500 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-pink-200 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#151515] px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-[#ddd7f1] transition hover:bg-[#3a3a3a] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {saving ? (
                         <Loader2
@@ -941,7 +941,7 @@ export default function EditAdminPortfolioPage() {
                     <div>
                         <label className="mb-2 block text-sm font-bold text-slate-700">
                             ชื่อ Portfolio{" "}
-                            <span className="text-pink-500">
+                            <span className="text-[#7a6cc0]">
                                 *
                             </span>
                         </label>
@@ -955,7 +955,7 @@ export default function EditAdminPortfolioPage() {
                                 )
                             }
                             maxLength={150}
-                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-100"
+                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#eeeaf8]"
                             placeholder="เช่น Wedding Ceremony"
                         />
 
@@ -982,7 +982,7 @@ export default function EditAdminPortfolioPage() {
                                 )
                             }
                             rows={5}
-                            className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium leading-7 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-100"
+                            className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-medium leading-7 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#eeeaf8]"
                             placeholder="รายละเอียดเกี่ยวกับผลงาน..."
                         />
                     </div>
@@ -1008,7 +1008,7 @@ export default function EditAdminPortfolioPage() {
                                             .value
                                     )
                                 }
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-100"
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#eeeaf8]"
                                 placeholder="เช่น Wedding, Event, Party"
                             />
                         </div>
@@ -1032,7 +1032,7 @@ export default function EditAdminPortfolioPage() {
                                             .value
                                     )
                                 }
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-100"
+                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#eeeaf8]"
                             />
                         </div>
                     </div>
@@ -1050,15 +1050,15 @@ export default function EditAdminPortfolioPage() {
                             }
                             className={`flex items-center justify-between rounded-2xl border p-5 text-left transition ${
                                 featured
-                                    ? "border-pink-300 bg-pink-50"
-                                    : "border-slate-200 bg-slate-50 hover:border-pink-200"
+                                    ? "border-[#c9c0e8] bg-[#f6f3fc]"
+                                    : "border-slate-200 bg-slate-50 hover:border-[#ddd7f1]"
                             }`}
                         >
                             <div className="flex items-center gap-4">
                                 <div
                                     className={`flex h-11 w-11 items-center justify-center rounded-xl ${
                                         featured
-                                            ? "bg-pink-500 text-white"
+                                            ? "bg-[#151515] text-white"
                                             : "bg-white text-slate-400"
                                     }`}
                                 >
@@ -1086,7 +1086,7 @@ export default function EditAdminPortfolioPage() {
                             <div
                                 className={`h-6 w-11 rounded-full p-1 transition ${
                                     featured
-                                        ? "bg-pink-500"
+                                        ? "bg-[#151515]"
                                         : "bg-slate-300"
                                 }`}
                             >
@@ -1119,7 +1119,7 @@ export default function EditAdminPortfolioPage() {
                                                 .value as PortfolioStatus
                                         )
                                     }
-                                    className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-100"
+                                    className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#c9c0e8] focus:ring-4 focus:ring-[#eeeaf8]"
                                 >
                                     <option value="active">
                                         Active — แสดงบนเว็บไซต์
@@ -1183,7 +1183,7 @@ export default function EditAdminPortfolioPage() {
                                         }
                                         className={`group overflow-hidden rounded-2xl border bg-white transition ${
                                             isCover
-                                                ? "border-pink-400 ring-2 ring-pink-100"
+                                                ? "border-[#a79bd8] ring-2 ring-[#eeeaf8]"
                                                 : "border-slate-200"
                                         }`}
                                     >
@@ -1206,7 +1206,7 @@ export default function EditAdminPortfolioPage() {
                                             </div>
 
                                             {isCover && (
-                                                <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-pink-500 px-3 py-1.5 text-xs font-black text-white shadow-lg">
+                                                <div className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-[#151515] px-3 py-1.5 text-xs font-black text-white shadow-lg">
                                                     <Star
                                                         size={
                                                             13
@@ -1226,7 +1226,7 @@ export default function EditAdminPortfolioPage() {
                                                 }
                                                 className={`absolute inset-x-3 bottom-3 rounded-xl px-4 py-2.5 text-xs font-black backdrop-blur transition ${
                                                     isCover
-                                                        ? "bg-white/90 text-pink-600"
+                                                        ? "bg-white/90 text-[#6a5cb0]"
                                                         : "bg-black/60 text-white opacity-0 group-hover:opacity-100"
                                                 }`}
                                             >
@@ -1259,7 +1259,7 @@ export default function EditAdminPortfolioPage() {
                                                             index ===
                                                             0
                                                         }
-                                                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-pink-200 hover:text-pink-500 disabled:cursor-not-allowed disabled:opacity-30"
+                                                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-[#ddd7f1] hover:text-[#7a6cc0] disabled:cursor-not-allowed disabled:opacity-30"
                                                         title="เลื่อนขึ้น"
                                                     >
                                                         <ChevronUp
@@ -1282,7 +1282,7 @@ export default function EditAdminPortfolioPage() {
                                                             images.length -
                                                                 1
                                                         }
-                                                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-pink-200 hover:text-pink-500 disabled:cursor-not-allowed disabled:opacity-30"
+                                                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:border-[#ddd7f1] hover:text-[#7a6cc0] disabled:cursor-not-allowed disabled:opacity-30"
                                                         title="เลื่อนลง"
                                                     >
                                                         <ChevronDown
@@ -1334,7 +1334,7 @@ export default function EditAdminPortfolioPage() {
                 {newImages.length > 0 && (
                     <div className="mt-8 border-t border-slate-100 pt-8">
                         <div className="mb-4 flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-pink-500" />
+                            <div className="h-2 w-2 rounded-full bg-[#151515]" />
 
                             <h3 className="text-sm font-black text-slate-900">
                                 รูปใหม่ที่รอ Upload
@@ -1349,7 +1349,7 @@ export default function EditAdminPortfolioPage() {
                                 ) => (
                                     <div
                                         key={`${image.name}-${index}`}
-                                        className="overflow-hidden rounded-2xl border border-pink-200 bg-pink-50"
+                                        className="overflow-hidden rounded-2xl border border-[#ddd7f1] bg-[#f6f3fc]"
                                     >
                                         <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
                                             <img
@@ -1362,7 +1362,7 @@ export default function EditAdminPortfolioPage() {
                                                 className="h-full w-full object-cover"
                                             />
 
-                                            <div className="absolute left-3 top-3 rounded-full bg-pink-500 px-3 py-1.5 text-xs font-black text-white">
+                                            <div className="absolute left-3 top-3 rounded-full bg-[#151515] px-3 py-1.5 text-xs font-black text-white">
                                                 NEW
                                             </div>
 
@@ -1417,9 +1417,9 @@ export default function EditAdminPortfolioPage() {
                         onClick={() =>
                             fileInputRef.current?.click()
                         }
-                        className="flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-6 py-10 transition hover:border-pink-300 hover:bg-pink-50/50"
+                        className="flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-6 py-10 transition hover:border-[#c9c0e8] hover:bg-[#f6f3fc]/50"
                     >
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-pink-500 shadow-sm">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#7a6cc0] shadow-sm">
                             <Upload size={24} />
                         </div>
 
@@ -1450,7 +1450,7 @@ export default function EditAdminPortfolioPage() {
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-pink-500 px-7 py-3.5 text-sm font-black text-white shadow-lg shadow-pink-200 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#151515] px-7 py-3.5 text-sm font-black text-white shadow-lg shadow-[#ddd7f1] transition hover:bg-[#3a3a3a] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {saving ? (
                         <Loader2

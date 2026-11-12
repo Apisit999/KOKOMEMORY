@@ -743,8 +743,8 @@ function FloatingCard({
             style={{ animationDelay: delay }}
         >
             <div
-                className="relative rounded-[7px] bg-white px-2.5 pb-5 pt-2.5 shadow-[0_24px_40px_-14px_rgba(60,20,40,0.45)]"
-                style={{ transform: `rotate(${rotate})` }}
+                className="relative rounded-[2px] bg-white px-2.5 pb-5 pt-2.5 shadow-[0_18px_36px_-16px_rgba(21,21,21,0.35)]"
+                data-rotate={rotate}
             >
                 <div className="relative aspect-square w-full overflow-hidden rounded-[2px] bg-[#fafaf9]">
                     <img
@@ -757,7 +757,7 @@ function FloatingCard({
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-[#1F2020]/15 via-transparent to-white/20" />
                 </div>
 
-                <span className="mt-1.5 block text-center font-serif text-[12px] italic leading-tight text-[#5F5F58] sm:text-[12px]">
+                <span className="mt-1.5 block text-center text-[12px] leading-snug text-[#5F5F58] sm:text-[12px]">
                     {caption}
                 </span>
             </div>

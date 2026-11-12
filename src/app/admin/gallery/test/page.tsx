@@ -188,7 +188,7 @@ export default function R2UploadTestPage() {
 
                 <div className="mb-8 text-center">
 
-                    <p className="text-sm font-semibold tracking-[0.35em] text-pink-500">
+                    <p className="text-sm font-semibold tracking-[0.35em] text-[#7a6cc0]">
                         KOKO MEMORY
                     </p>
 
@@ -228,7 +228,7 @@ export default function R2UploadTestPage() {
                                 setUploadedUrl("");
                             }}
                             placeholder="TEST001"
-                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-[#a79bd8] focus:ring-2 focus:ring-[#eeeaf8]"
                         />
 
                         <p className="mt-2 text-xs text-slate-400">
@@ -309,7 +309,7 @@ export default function R2UploadTestPage() {
                             !bookingId.trim() ||
                             !file
                         }
-                        className="mt-6 w-full rounded-xl bg-pink-500 px-6 py-4 font-semibold text-white transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="mt-6 w-full rounded-xl bg-[#151515] px-6 py-4 font-semibold text-white transition hover:bg-[#151515] disabled:cursor-not-allowed disabled:opacity-50"
                     >
 
                         {uploading
@@ -360,7 +360,7 @@ export default function R2UploadTestPage() {
                                     href={uploadedUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="mt-3 inline-block break-all text-sm font-semibold text-pink-600 underline"
+                                    className="mt-3 inline-block break-all text-sm font-semibold text-[#6a5cb0] underline"
                                 >
                                     Open uploaded file
                                 </a>
@@ -375,9 +375,9 @@ export default function R2UploadTestPage() {
 
                     {message.includes("สำเร็จ") && (
 
-                        <div className="mt-5 rounded-2xl border border-pink-100 bg-pink-50 p-5">
+                        <div className="mt-5 rounded-2xl border border-[#eeeaf8] bg-[#f6f3fc] p-5">
 
-                            <p className="text-xs font-semibold text-pink-500">
+                            <p className="text-xs font-semibold text-[#7a6cc0]">
                                 GALLERY
                             </p>
 
@@ -385,7 +385,7 @@ export default function R2UploadTestPage() {
                                 รูปถูกผูกกับ Booking:
                             </p>
 
-                            <p className="mt-1 font-mono text-sm font-semibold text-pink-600">
+                            <p className="mt-1 font-mono text-sm font-semibold text-[#6a5cb0]">
                                 {bookingId}
                             </p>
 
@@ -393,7 +393,7 @@ export default function R2UploadTestPage() {
                                 href={`/gallery/${encodeURIComponent(
                                     bookingId
                                 )}`}
-                                className="mt-4 block w-full rounded-xl bg-pink-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-pink-400"
+                                className="mt-4 block w-full rounded-xl bg-[#151515] px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-[#151515]"
                             >
                                 เปิด Gallery
                             </a>

@@ -110,7 +110,7 @@ export default function AdminLoginPage() {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-pink-400"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#a79bd8]"
                             autoComplete="username"
                             required
                         />
@@ -125,7 +125,7 @@ export default function AdminLoginPage() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-pink-400"
+                            className="w-full border border-gray-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#a79bd8]"
                             autoComplete="current-password"
                             required
                         />
@@ -140,7 +140,7 @@ export default function AdminLoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-pink-600 hover:bg-pink-700 disabled:opacity-60 text-white rounded-xl py-3 font-semibold transition"
+                        className="w-full bg-[#151515] hover:bg-[#3a3a3a] disabled:opacity-60 text-white rounded-xl py-3 font-semibold transition"
                     >
                         {loading
                             ? "กำลังเข้าสู่ระบบ..."

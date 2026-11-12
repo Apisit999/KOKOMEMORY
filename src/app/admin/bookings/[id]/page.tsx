@@ -1383,7 +1383,7 @@ export default function AdminBookingDetailPage() {
                                 "/admin/bookings"
                             )
                         }
-                        className="mb-5 text-sm font-semibold text-pink-600 hover:text-pink-700"
+                        className="mb-5 text-sm font-semibold text-[#6a5cb0] hover:text-[#5a4d9c]"
                     >
                         ← กลับรายการจอง
                     </button>
@@ -1447,13 +1447,13 @@ export default function AdminBookingDetailPage() {
                                     "/admin/bookings"
                                 )
                             }
-                            className="group mb-3 inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-sm font-semibold text-pink-600 transition duration-200 hover:-translate-x-0.5 hover:bg-pink-50 hover:text-pink-700 active:scale-95"
+                            className="group mb-3 inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-sm font-semibold text-[#6a5cb0] transition duration-200 hover:-translate-x-0.5 hover:bg-[#f6f3fc] hover:text-[#5a4d9c] active:scale-95"
                         >
                             <span className="transition-transform duration-200 group-hover:-translate-x-0.5">←</span>
                             กลับรายการจอง
                         </button>
 
-                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-500">
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#7a6cc0]">
                             KOKO Memory
                         </p>
 
@@ -1512,7 +1512,7 @@ export default function AdminBookingDetailPage() {
                         {/* CUSTOMER */}
                         <section className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-6">
                             <div className="mb-5">
-                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                     Customer
                                 </p>
 
@@ -1555,7 +1555,7 @@ export default function AdminBookingDetailPage() {
                         {/* EVENT */}
                         <section className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-6">
                             <div className="mb-5">
-                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                     Event
                                 </p>
 
@@ -1635,7 +1635,7 @@ export default function AdminBookingDetailPage() {
                             <div className="border-b border-slate-100 p-5 sm:p-6">
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
-                                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                             Payment
                                         </p>
 
@@ -1672,7 +1672,7 @@ export default function AdminBookingDetailPage() {
                                                 <div className="flex min-w-0 items-center gap-2">
                                                     <FileImage
                                                         size={18}
-                                                        className="shrink-0 text-pink-500"
+                                                        className="shrink-0 text-[#7a6cc0]"
                                                     />
 
                                                     <span className="truncate text-sm font-semibold text-slate-700">
@@ -1721,7 +1721,7 @@ export default function AdminBookingDetailPage() {
                                                             href={paymentProofUrl}
                                                             target="_blank"
                                                             rel="noreferrer"
-                                                            className="group mt-5 inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-pink-600"
+                                                            className="group mt-5 inline-flex items-center gap-2 rounded-full bg-[#151515] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#3a3a3a]"
                                                         >
                                                             <ExternalLink size={16} />
                                                             เปิดสลิป
@@ -1760,12 +1760,12 @@ export default function AdminBookingDetailPage() {
 
                                         {/* PAYMENT DETAILS */}
                                         <div className="space-y-3">
-                                            <div className="rounded-2xl border border-pink-100 bg-[linear-gradient(135deg,#fff1f8,#fdf4ff)] p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
-                                                <p className="text-xs font-medium text-pink-600">
+                                            <div className="rounded-2xl border border-[#eeeaf8] bg-[linear-gradient(135deg,#fff1f8,#fdf4ff)] p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                                                <p className="text-xs font-medium text-[#6a5cb0]">
                                                     ยอดที่ลูกค้าแจ้งชำระ
                                                 </p>
 
-                                                <p className="mt-1 text-3xl font-black text-pink-600">
+                                                <p className="mt-1 text-3xl font-black text-[#6a5cb0]">
                                                     {formatMoney(
                                                         booking.payment?.paidAmount ??
                                                             booking.paymentAmount
@@ -1947,7 +1947,7 @@ export default function AdminBookingDetailPage() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="rounded-3xl border border-dashed border-slate-200 bg-[linear-gradient(135deg,#f8fafc,#fff)] px-5 py-14 text-center transition duration-300 hover:border-pink-200 hover:bg-pink-50/30">
+                                    <div className="rounded-3xl border border-dashed border-slate-200 bg-[linear-gradient(135deg,#f8fafc,#fff)] px-5 py-14 text-center transition duration-300 hover:border-[#ddd7f1] hover:bg-[#f6f3fc]/30">
                                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-300 shadow-sm">
                                             <FileImage size={27} />
                                         </div>
@@ -1967,7 +1967,7 @@ export default function AdminBookingDetailPage() {
                         {/* PACKAGE */}
                         <section className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-6">
                             <div className="mb-5">
-                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                     Package
                                 </p>
 
@@ -2006,13 +2006,13 @@ export default function AdminBookingDetailPage() {
                                 />
                             </div>
 
-                            <div className="mt-4 flex items-center justify-between rounded-2xl border border-pink-100 bg-[linear-gradient(135deg,rgba(253,242,248,1),rgba(250,245,255,1))] p-5 shadow-sm transition duration-300 hover:shadow-md">
+                            <div className="mt-4 flex items-center justify-between rounded-2xl border border-[#eeeaf8] bg-[linear-gradient(135deg,rgba(253,242,248,1),rgba(250,245,255,1))] p-5 shadow-sm transition duration-300 hover:shadow-md">
                                 <div>
                                     <p className="text-sm text-slate-500">
                                         ยอดรวม
                                     </p>
 
-                                    <p className="mt-1 text-2xl font-bold text-pink-600">
+                                    <p className="mt-1 text-2xl font-bold text-[#6a5cb0]">
                                         {formatMoney(
                                             booking.totalPrice ??
                                                 booking.package
@@ -2033,7 +2033,7 @@ export default function AdminBookingDetailPage() {
 
                         {/* STATUS */}
                         <section className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-6">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                 Booking Status
                             </p>
 
@@ -2057,7 +2057,7 @@ export default function AdminBookingDetailPage() {
                                             e.target.value
                                         )
                                     }
-                                    className="min-h-12 w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none transition duration-200 hover:border-slate-300 hover:bg-white focus:border-pink-400 focus:bg-white focus:ring-4 focus:ring-pink-100"
+                                    className="min-h-12 w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none transition duration-200 hover:border-slate-300 hover:bg-white focus:border-[#a79bd8] focus:bg-white focus:ring-4 focus:ring-[#eeeaf8]"
                                 >
                                     <option value="pending_payment">
                                         รอชำระเงิน
@@ -2094,7 +2094,7 @@ export default function AdminBookingDetailPage() {
                                         status ===
                                             booking.bookingStatus
                                     }
-                                    className="mt-3 min-h-12 w-full rounded-xl bg-pink-500 px-4 py-3 text-sm font-bold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-pink-600 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="mt-3 min-h-12 w-full rounded-xl bg-[#151515] px-4 py-3 text-sm font-bold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-[#3a3a3a] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {saving
                                         ? "กำลังบันทึก..."
@@ -2163,7 +2163,7 @@ export default function AdminBookingDetailPage() {
 
                         {/* BOOKING ID */}
                         <section className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-6">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                 Booking ID
                             </p>
 
@@ -2190,7 +2190,7 @@ export default function AdminBookingDetailPage() {
 
                         {/* CREATED */}
                         <section className="group rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-0.5 hover:shadow-md sm:p-6">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                 System
                             </p>
 
@@ -2420,7 +2420,7 @@ export default function AdminBookingDetailPage() {
                         >
                             <div className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-100 px-4 py-3 sm:px-5">
                                 <div className="min-w-0">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                         Payment Proof
                                     </p>
 

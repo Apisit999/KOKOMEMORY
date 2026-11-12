@@ -968,7 +968,7 @@ export default function AdminBookingsPage() {
 
                 <div className="mb-6 flex flex-col gap-4 sm:mb-8 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-pink-500 sm:text-sm">
+                        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#7a6cc0] sm:text-sm">
                             KOKO Memory
                         </p>
 
@@ -1057,8 +1057,8 @@ export default function AdminBookingsPage() {
                             }}
                             className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
                                 bookingView === view
-                                    ? "bg-pink-500 text-white shadow-sm"
-                                    : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-pink-50 hover:text-pink-600"
+                                    ? "bg-[#151515] text-white shadow-sm"
+                                    : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-[#f6f3fc] hover:text-[#6a5cb0]"
                             }`}
                         >
                             {label}
@@ -1091,7 +1091,7 @@ export default function AdminBookingsPage() {
                                     )
                                 }
                                 placeholder="ค้นหาชื่อ, เบอร์โทร, Email หรือ Booking ID"
-                                className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50"
+                                className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc]"
                             />
                         </div>
 
@@ -1111,7 +1111,7 @@ export default function AdminBookingsPage() {
                                         event.target.value
                                     )
                                 }
-                                className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 outline-none transition focus:border-pink-300 focus:bg-white focus:ring-4 focus:ring-pink-50"
+                                className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc]"
                             >
                                 <option value="all">
                                     ทุกสถานะ
@@ -1159,7 +1159,7 @@ export default function AdminBookingsPage() {
                                 onClick={
                                     clearFilters
                                 }
-                                className="min-h-10 rounded-lg px-3 py-2 text-sm font-medium text-pink-600 transition hover:bg-pink-50"
+                                className="min-h-10 rounded-lg px-3 py-2 text-sm font-medium text-[#6a5cb0] transition hover:bg-[#f6f3fc]"
                             >
                                 ล้างตัวกรอง
                             </button>
@@ -1227,7 +1227,7 @@ export default function AdminBookingsPage() {
 
                 {loading && (
                     <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-100">
-                        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-pink-500" />
+                        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-[#7a6cc0]" />
 
                         <p className="mt-4 text-sm text-slate-500">
                             กำลังโหลดรายการจอง...
@@ -1268,7 +1268,7 @@ export default function AdminBookingsPage() {
                                     onClick={
                                         clearFilters
                                     }
-                                    className="mt-5 min-h-11 rounded-xl bg-pink-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-pink-600"
+                                    className="mt-5 min-h-11 rounded-xl bg-[#151515] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#3a3a3a]"
                                 >
                                     ดูรายการทั้งหมด
                                 </button>
@@ -1369,7 +1369,7 @@ export default function AdminBookingsPage() {
 
 
                                                         <td className="px-5 py-5">
-                                                            <span className="inline-flex rounded-lg bg-pink-50 px-3 py-1 text-sm font-medium text-pink-600">
+                                                            <span className="inline-flex rounded-lg bg-[#f6f3fc] px-3 py-1 text-sm font-medium text-[#6a5cb0]">
                                                                 {getEventTypeLabel(
                                                                     booking
                                                                         .event
@@ -1436,7 +1436,7 @@ export default function AdminBookingsPage() {
                                                                             `/admin/bookings/${booking.id}`
                                                                         )
                                                                     }
-                                                                    className="shrink-0 rounded-lg bg-pink-50 px-3 py-2 text-xs font-semibold text-pink-600 transition hover:bg-pink-100 active:scale-[0.98]"
+                                                                    className="shrink-0 rounded-lg bg-[#f6f3fc] px-3 py-2 text-xs font-semibold text-[#6a5cb0] transition hover:bg-[#eeeaf8] active:scale-[0.98]"
                                                                 >
                                                                     ดูรายละเอียด
                                                                 </button>
@@ -1622,7 +1622,7 @@ export default function AdminBookingsPage() {
                                                             `/admin/bookings/${booking.id}`
                                                         )
                                                     }
-                                                    className="min-h-11 flex-1 rounded-xl bg-pink-50 px-4 py-3 text-sm font-semibold text-pink-600 transition hover:bg-pink-100"
+                                                    className="min-h-11 flex-1 rounded-xl bg-[#f6f3fc] px-4 py-3 text-sm font-semibold text-[#6a5cb0] transition hover:bg-[#eeeaf8]"
                                                 >
                                                     ดูรายละเอียด
                                                 </button>

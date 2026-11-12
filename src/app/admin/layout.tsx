@@ -116,9 +116,9 @@ export default function AdminLayout({
                                     text-slate-600
                                     shadow-sm
                                     transition
-                                    hover:border-pink-200
-                                    hover:bg-pink-50
-                                    hover:text-pink-500
+                                    hover:border-[#ddd7f1]
+                                    hover:bg-[#f6f3fc]
+                                    hover:text-[#7a6cc0]
                                     lg:hidden
                                 "
                                 aria-label="เปิดเมนู"
@@ -202,13 +202,13 @@ export default function AdminLayout({
                                         justify-center
                                         rounded-2xl
                                         bg-gradient-to-br
-                                        from-pink-400
+                                        from-[#a79bd8]
                                         to-rose-500
                                         text-sm
                                         font-bold
                                         text-white
                                         shadow-md
-                                        shadow-pink-200
+                                        shadow-[#ddd7f1]
                                     "
                                 >
                                     A

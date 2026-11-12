@@ -270,7 +270,7 @@ function FieldLabel({
             {children}
 
             {required && (
-                <span className="ml-1 text-pink-500">
+                <span className="ml-1 text-[#7a6cc0]">
                     *
                 </span>
             )}
@@ -300,7 +300,7 @@ function TextInput({
                 onChange(event.target.value)
             }
             placeholder={placeholder}
-            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-300 focus:border-pink-400 focus:ring-4 focus:ring-pink-500/10 sm:h-12"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-300 focus:border-[#a79bd8] focus:ring-4 focus:ring-[#7a6cc0]/10 sm:h-12"
         />
     );
 }
@@ -321,7 +321,7 @@ function SelectInput({
                 onChange={(event) =>
                     onChange(event.target.value)
                 }
-                className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 pr-10 text-sm text-slate-900 outline-none transition focus:border-pink-400 focus:ring-4 focus:ring-pink-500/10 sm:h-12"
+                className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-white px-3.5 pr-10 text-sm text-slate-900 outline-none transition focus:border-[#a79bd8] focus:ring-4 focus:ring-[#7a6cc0]/10 sm:h-12"
             >
                 {children}
             </select>
@@ -350,7 +350,7 @@ function Textarea({
             }
             placeholder={placeholder}
             rows={rows}
-            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-300 focus:border-pink-400 focus:ring-4 focus:ring-pink-500/10"
+            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-300 focus:border-[#a79bd8] focus:ring-4 focus:ring-[#7a6cc0]/10"
         />
     );
 }
@@ -374,12 +374,12 @@ function SectionCard({
         <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-3xl">
             <div className="border-b border-slate-100 px-4 py-4 sm:px-6 sm:py-5">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-pink-50 text-pink-500 sm:h-10 sm:w-10">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f6f3fc] text-[#7a6cc0] sm:h-10 sm:w-10">
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
 
                     <div>
-                        <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-500 sm:text-xs">
+                        <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#7a6cc0] sm:text-xs">
                             {eyebrow}
                         </p>
 
@@ -969,7 +969,7 @@ export default function NewThreeDOrderPage() {
                 <header className="mb-5 sm:mb-7">
                     <Link
                         href="/admin/3d-printing/orders"
-                        className="mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition hover:text-pink-500 sm:text-sm"
+                        className="mb-4 inline-flex items-center gap-2 text-xs font-bold text-slate-500 transition hover:text-[#7a6cc0] sm:text-sm"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         กลับไป Orders
@@ -977,7 +977,7 @@ export default function NewThreeDOrderPage() {
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-pink-500 sm:text-xs">
+                            <p className="text-[12px] font-bold uppercase tracking-[0.25em] text-[#7a6cc0] sm:text-xs">
                                 3D Printing · Orders
                             </p>
 
@@ -1126,7 +1126,7 @@ export default function NewThreeDOrderPage() {
                                     {loadingProducts ? (
                                         <div className="flex min-h-32 items-center justify-center rounded-2xl bg-slate-50">
                                             <div className="text-center">
-                                                <Loader2 className="mx-auto h-6 w-6 animate-spin text-pink-500" />
+                                                <Loader2 className="mx-auto h-6 w-6 animate-spin text-[#7a6cc0]" />
 
                                                 <p className="mt-2 text-xs text-slate-400">
                                                     กำลังโหลด Product...
@@ -1193,7 +1193,7 @@ export default function NewThreeDOrderPage() {
 
                                             <Link
                                                 href="/admin/3d-printing/products/new"
-                                                className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 transition hover:border-pink-200 hover:text-pink-500 sm:h-12 sm:text-sm"
+                                                className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-xs font-bold text-slate-700 transition hover:border-[#ddd7f1] hover:text-[#7a6cc0] sm:h-12 sm:text-sm"
                                             >
                                                 <Plus className="h-4 w-4" />
                                                 เพิ่ม Product
@@ -1550,11 +1550,11 @@ export default function NewThreeDOrderPage() {
                                 <div className="p-5 sm:p-6">
                                     <div className="flex items-center gap-3">
                                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-                                            <Wallet className="h-5 w-5 text-pink-300" />
+                                            <Wallet className="h-5 w-5 text-[#c9c0e8]" />
                                         </div>
 
                                         <div>
-                                            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-pink-300">
+                                            <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[#c9c0e8]">
                                                 Order Summary
                                             </p>
 
@@ -1582,7 +1582,7 @@ export default function NewThreeDOrderPage() {
                                                 ส่วนลด
                                             </span>
 
-                                            <span className="font-semibold text-pink-300">
+                                            <span className="font-semibold text-[#c9c0e8]">
                                                 -{" "}
                                                 {formatCurrency(
                                                     discountValue
@@ -1761,7 +1761,7 @@ export default function NewThreeDOrderPage() {
                                                     ""
                                                 )
                                             }
-                                            className="mt-2 text-[12px] font-semibold text-slate-400 hover:text-pink-500"
+                                            className="mt-2 text-[12px] font-semibold text-slate-400 hover:text-[#7a6cc0]"
                                         >
                                             ใช้สถานะอัตโนมัติ
                                         </button>

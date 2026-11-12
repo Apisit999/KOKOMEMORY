@@ -1155,11 +1155,8 @@ function FloatingCard({
         >
 
             <div
-                className="rounded-[6px] bg-white px-2.5 pb-5 pt-2.5 shadow-[0_24px_40px_-14px_rgba(60,20,40,0.45)]"
-                style={{
-                    transform:
-                        `rotate(${rotate})`,
-                }}
+                className="rounded-[2px] bg-white px-2.5 pb-5 pt-2.5 shadow-[0_18px_36px_-16px_rgba(21,21,21,0.35)]"
+                data-rotate={rotate}
             >
 
                 {image ? (
@@ -1175,7 +1172,7 @@ function FloatingCard({
                     />
                 )}
 
-                <span className="mt-2 block text-center font-serif text-[12px] italic text-[#5F5F58] sm:text-[12px]">
+                <span className="mt-2 block text-center text-[12px] leading-snug text-[#5F5F58] sm:text-[12px]">
                     {caption}
                 </span>
 
