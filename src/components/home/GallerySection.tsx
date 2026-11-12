@@ -80,7 +80,7 @@ export default function GallerySection() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 <div className="mb-8 flex items-end justify-between gap-6 sm:mb-12">
                     <div className="max-w-2xl">
-                        <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-pink-500">
+                        <p className="mb-3 text-xs font-bold uppercase tracking-[0.28em] text-[#7a6cc0]">
                             Our work
                         </p>
                         <h2
@@ -96,7 +96,7 @@ export default function GallerySection() {
 
                     <Link
                         href="/gallery/portfolio"
-                        className="hidden shrink-0 text-sm font-semibold text-slate-900 underline decoration-pink-400 decoration-2 underline-offset-8 transition-colors hover:text-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-4 sm:inline-block"
+                        className="hidden shrink-0 text-sm font-semibold text-slate-900 underline decoration-[#a79bd8] decoration-2 underline-offset-8 transition-colors hover:text-[#7a6cc0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] focus-visible:ring-offset-4 sm:inline-block"
                     >
                         ดูผลงานทั้งหมด
                     </Link>
@@ -130,7 +130,7 @@ export default function GallerySection() {
 
                 <Link
                     href="/gallery/portfolio"
-                    className="mt-8 inline-flex text-sm font-semibold text-slate-900 underline decoration-pink-400 decoration-2 underline-offset-8 transition-colors hover:text-pink-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-4 sm:hidden"
+                    className="mt-8 inline-flex text-sm font-semibold text-slate-900 underline decoration-[#a79bd8] decoration-2 underline-offset-8 transition-colors hover:text-[#7a6cc0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] focus-visible:ring-offset-4 sm:hidden"
                 >
                     ดูผลงานทั้งหมด
                 </Link>

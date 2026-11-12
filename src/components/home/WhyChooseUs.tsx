@@ -48,7 +48,7 @@ export default function WhyChooseUs() {
 
                 <div className="text-center">
 
-                    <span className="rounded-full bg-pink-500/20 px-5 py-2 text-sm font-semibold tracking-[0.3em] text-pink-300 uppercase">
+                    <span className="rounded-full bg-[#7a6cc0]/20 px-5 py-2 text-sm font-semibold tracking-[0.3em] text-[#c9c0e8] uppercase">
                         WHY CHOOSE US
                     </span>
 
@@ -84,12 +84,12 @@ export default function WhyChooseUs() {
                   transition
                   duration-500
                   hover:-translate-y-2
-                  hover:border-pink-500
+                  hover:border-[#7a6cc0]
                   hover:bg-white/10
                 "
                             >
 
-                                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-pink-500">
+                                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-[#151515]">
 
                                     <Icon size={36} />
 

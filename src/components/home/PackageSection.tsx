@@ -94,7 +94,7 @@ export default function PackageSection() {
 
                     {/* Badge */}
 
-                    <div className="inline-flex items-center gap-2 rounded-full bg-pink-100 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-pink-600 sm:px-5 sm:text-sm">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-[#eeeaf8] px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-[#6a5cb0] sm:px-5 sm:text-sm">
 
                         <Sparkles
                             size={15}
@@ -110,7 +110,7 @@ export default function PackageSection() {
                     <h2 className="mt-5 text-3xl font-black leading-tight tracking-tight text-slate-900 sm:mt-6 sm:text-4xl lg:text-5xl">
 
                         แพ็กเกจที่เหมาะกับ
-                        <span className="text-pink-500">
+                        <span className="text-[#7a6cc0]">
                             {" "}ทุกงานของคุณ
                         </span>
 
@@ -169,7 +169,7 @@ export default function PackageSection() {
                                 hover:shadow-2xl
 
                                 ${pkg.popular
-                                    ? "ring-2 ring-pink-500"
+                                    ? "ring-2 ring-[#7a6cc0]"
                                     : ""
                                 }
                             `}
@@ -184,7 +184,7 @@ export default function PackageSection() {
 
                                 <div className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
 
-                                    <div className="inline-flex items-center gap-1.5 rounded-full bg-pink-500 px-3 py-1.5 text-xs font-bold text-white shadow-md sm:px-4 sm:text-sm">
+                                    <div className="inline-flex items-center gap-1.5 rounded-full bg-[#151515] px-3 py-1.5 text-xs font-bold text-white shadow-md sm:px-4 sm:text-sm">
 
                                         <Sparkles
                                             size={13}
@@ -216,7 +216,7 @@ export default function PackageSection() {
                                     sm:w-14
 
                                     ${pkg.popular
-                                        ? "bg-pink-100 text-pink-500"
+                                        ? "bg-[#eeeaf8] text-[#7a6cc0]"
                                         : "bg-slate-100 text-slate-500"
                                     }
                                 `}
@@ -259,7 +259,7 @@ export default function PackageSection() {
 
                                 <Clock3
                                     size={17}
-                                    className="text-pink-500"
+                                    className="text-[#7a6cc0]"
                                 />
 
                                 {pkg.time}
@@ -282,7 +282,7 @@ export default function PackageSection() {
 
                                 <div className="mt-1 flex flex-wrap items-baseline gap-2">
 
-                                    <span className="text-4xl font-black tracking-tight text-pink-500 sm:text-5xl">
+                                    <span className="text-4xl font-black tracking-tight text-[#7a6cc0] sm:text-5xl">
 
                                         ฿{pkg.price}
 
@@ -338,7 +338,7 @@ export default function PackageSection() {
                                                         rounded-full
 
                                                         ${pkg.popular
-                                                            ? "bg-pink-100 text-pink-500"
+                                                            ? "bg-[#eeeaf8] text-[#7a6cc0]"
                                                             : "bg-slate-100 text-slate-500"
                                                         }
                                                     `}
@@ -401,8 +401,8 @@ export default function PackageSection() {
                                     sm:text-base
 
                                     ${pkg.popular
-                                        ? "bg-pink-500 text-white shadow-lg shadow-pink-200 hover:bg-pink-400 hover:shadow-xl"
-                                        : "bg-slate-900 text-white hover:bg-pink-500"
+                                        ? "bg-[#151515] text-white shadow-lg shadow-[#ddd7f1] hover:bg-[#151515] hover:shadow-xl"
+                                        : "bg-slate-900 text-white hover:bg-[#3a3a3a]"
                                     }
                                 `}
                             >
@@ -440,7 +440,7 @@ export default function PackageSection() {
 
                     <Link
                         href="/packages"
-                        className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-pink-500 transition hover:text-pink-600 sm:text-base"
+                        className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[#7a6cc0] transition hover:text-[#6a5cb0] sm:text-base"
                     >
 
                         ดูแพ็กเกจทั้งหมดและเปรียบเทียบ

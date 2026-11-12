@@ -48,7 +48,7 @@ export default function ServiceSection() {
 
                 <div className="text-center">
 
-                    <span className="rounded-full bg-pink-100 px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-pink-500">
+                    <span className="rounded-full bg-[#eeeaf8] px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-[#7a6cc0]">
                         OUR SERVICES
                     </span>
 
@@ -95,15 +95,15 @@ export default function ServiceSection() {
                                     items-center
                                     justify-center
                                     rounded-2xl
-                                    bg-pink-100
+                                    bg-[#eeeaf8]
                                     transition
-                                    group-hover:bg-pink-500
+                                    group-hover:bg-[#3a3a3a]
                                     "
                                 >
 
                                     <Icon
                                         size={38}
-                                        className="text-pink-500 group-hover:text-white"
+                                        className="text-[#7a6cc0] group-hover:text-white"
                                     />
 
                                 </div>

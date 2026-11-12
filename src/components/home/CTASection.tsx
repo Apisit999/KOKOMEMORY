@@ -7,7 +7,7 @@ export default function CTASection() {
         <section className="relative overflow-hidden bg-gradient-to-r from-[#243D7A] via-[#3157a5] to-[#EC6AAE] py-16 sm:py-20 lg:py-28">
 
             {/* Background Blur */}
-            <div className="absolute -left-20 top-0 h-80 w-80 rounded-full bg-pink-400/30 blur-[120px]" />
+            <div className="absolute -left-20 top-0 h-80 w-80 rounded-full bg-[#a79bd8]/30 blur-[120px]" />
             <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-blue-300/30 blur-[120px]" />
 
             <div className="relative mx-auto flex max-w-7xl flex-col items-center px-4 sm:px-6 text-center text-white">

@@ -352,7 +352,7 @@ export default function LoginPage() {
                             </span>
                         </div>
 
-                        <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+                        <div className="pointer-events-none absolute inset-0 z-10 hidden overflow-hidden sm:block">
                             <FloatingCard
                                 image="/gallery/1.jpg"
                                 className="left-[3%] top-[25%] sm:left-[6%] sm:top-[19%] lg:left-[4%] lg:top-[18%]"

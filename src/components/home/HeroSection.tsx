@@ -59,7 +59,7 @@ export default function HeroSection() {
                     <h1 className="text-5xl font-black tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
 
                         KOKO
-                        <span className="text-pink-400">
+                        <span className="text-[#a79bd8]">
                             {" "}MEMORY
                         </span>
 
@@ -88,7 +88,7 @@ export default function HeroSection() {
 
                         <Link
                             href="/gallery/portfolio"
-                            className="w-full rounded-full bg-pink-500 px-9 py-3.5 text-sm font-semibold text-white shadow-xl shadow-pink-500/20 transition-all duration-300 hover:-translate-y-1 hover:bg-pink-400 sm:w-auto sm:px-10 sm:py-4 sm:text-base"
+                            className="w-full rounded-full bg-[#151515] px-9 py-3.5 text-sm font-semibold text-white shadow-xl shadow-[#7a6cc0]/20 transition-all duration-300 hover:-translate-y-1 hover:bg-[#151515] sm:w-auto sm:px-10 sm:py-4 sm:text-base"
                         >
                             ดูผลงาน
                         </Link>
@@ -112,7 +112,7 @@ export default function HeroSection() {
 
                         <div className="px-3 py-5 sm:px-6 sm:py-6">
 
-                            <p className="text-2xl font-bold text-pink-300 sm:text-3xl">
+                            <p className="text-2xl font-bold text-[#c9c0e8] sm:text-3xl">
                                 500+
                             </p>
 
@@ -125,7 +125,7 @@ export default function HeroSection() {
 
                         <div className="border-x border-white/15 px-3 py-5 sm:px-6 sm:py-6">
 
-                            <p className="text-2xl font-bold text-pink-300 sm:text-3xl">
+                            <p className="text-2xl font-bold text-[#c9c0e8] sm:text-3xl">
                                 100K+
                             </p>
 
@@ -138,7 +138,7 @@ export default function HeroSection() {
 
                         <div className="px-3 py-5 sm:px-6 sm:py-6">
 
-                            <p className="text-2xl font-bold text-pink-300 sm:text-3xl">
+                            <p className="text-2xl font-bold text-[#c9c0e8] sm:text-3xl">
                                 5+
                             </p>
 

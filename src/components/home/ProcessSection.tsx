@@ -36,7 +36,7 @@ export default function ProcessSection() {
 
                 <div className="text-center">
 
-                    <span className="rounded-full bg-pink-100 px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-pink-500">
+                    <span className="rounded-full bg-[#eeeaf8] px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-[#7a6cc0]">
                         HOW WE WORK
                     </span>
 
@@ -64,15 +64,15 @@ export default function ProcessSection() {
                                 className="relative rounded-[30px] bg-slate-50 p-6 sm:p-8 lg:p-10 text-center shadow-lg transition hover:-translate-y-2 hover:shadow-2xl"
                             >
 
-                                <div className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-pink-500 font-bold text-white">
+                                <div className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-[#151515] font-bold text-white">
                                     {index + 1}
                                 </div>
 
-                                <div className="mx-auto mt-6 flex h-20 w-20 items-center justify-center rounded-full bg-pink-100">
+                                <div className="mx-auto mt-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#eeeaf8]">
 
                                     <Icon
                                         size={38}
-                                        className="text-pink-500"
+                                        className="text-[#7a6cc0]"
                                     />
 
                                 </div>

@@ -259,7 +259,7 @@ export default function AdminSidebar({
                         onClick={onClose}
                         className="flex items-center gap-3"
                     >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500 text-sm font-bold text-white">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#151515] text-sm font-bold text-white">
                             K
                         </div>
 
@@ -324,7 +324,7 @@ export default function AdminSidebar({
                             return (
                                 <div key={item.href}>
                                     {item.href === "/admin/3d-printing" && (
-                                        <div className="mb-2 mt-5 px-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-pink-500">
+                                        <div className="mb-2 mt-5 px-3 text-[12px] font-semibold uppercase tracking-[0.2em] text-[#7a6cc0]">
                                             KOKO 3D
                                         </div>
                                     )}
@@ -343,12 +343,12 @@ export default function AdminSidebar({
                                         transition
                                         ${
                                             item.href.startsWith("/admin/3d-printing/")
-                                                ? "ml-2 border-l border-pink-100 pl-4"
+                                                ? "ml-2 border-l border-[#eeeaf8] pl-4"
                                                 : ""
                                         }
                                         ${
                                             isActive
-                                                ? "bg-pink-50 text-pink-600"
+                                                ? "bg-[#f6f3fc] text-[#6a5cb0]"
                                                 : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                                         }
                                     `}
@@ -362,7 +362,7 @@ export default function AdminSidebar({
                                     </div>
 
                                     {isActive && (
-                                        <span className="h-1.5 w-1.5 rounded-full bg-pink-500" />
+                                        <span className="h-1.5 w-1.5 rounded-full bg-[#151515]" />
                                     )}
                                     </Link>
                                 </div>

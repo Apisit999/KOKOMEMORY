@@ -10,19 +10,19 @@ export default function StatsSection() {
                 {/* Responsive stats grid: 2 columns on mobile, 4 on larger screens. */}
                 <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
                     <div className="rounded-2xl bg-slate-50 p-5 text-center sm:p-7">
-                        <p className="text-3xl font-black text-pink-500 sm:text-4xl">500+</p>
+                        <p className="text-3xl font-black text-[#7a6cc0] sm:text-4xl">500+</p>
                         <p className="mt-2 text-sm text-slate-500 sm:text-base">{t("stats.events")}</p>
                     </div>
                     <div className="rounded-2xl bg-slate-50 p-5 text-center sm:p-7">
-                        <p className="text-3xl font-black text-pink-500 sm:text-4xl">100K+</p>
+                        <p className="text-3xl font-black text-[#7a6cc0] sm:text-4xl">100K+</p>
                         <p className="mt-2 text-sm text-slate-500 sm:text-base">{t("stats.photos")}</p>
                     </div>
                     <div className="rounded-2xl bg-slate-50 p-5 text-center sm:p-7">
-                        <p className="text-3xl font-black text-pink-500 sm:text-4xl">5+</p>
+                        <p className="text-3xl font-black text-[#7a6cc0] sm:text-4xl">5+</p>
                         <p className="mt-2 text-sm text-slate-500 sm:text-base">{t("stats.years")}</p>
                     </div>
                     <div className="rounded-2xl bg-slate-50 p-5 text-center sm:p-7">
-                        <p className="text-3xl font-black text-pink-500 sm:text-4xl">★★★★★</p>
+                        <p className="text-3xl font-black text-[#7a6cc0] sm:text-4xl">★★★★★</p>
                         <p className="mt-2 text-sm text-slate-500 sm:text-base">{t("stats.reviews")}</p>
                     </div>
                 </div>

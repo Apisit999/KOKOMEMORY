@@ -513,7 +513,7 @@ export default function RegisterPage() {
                         </div>
 
 
-                        <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+                        <div className="pointer-events-none absolute inset-0 z-10 hidden overflow-hidden sm:block">
 
                             <FloatingCard
                                 image="/gallery/1.jpg"

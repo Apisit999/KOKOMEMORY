@@ -56,7 +56,7 @@ export default function AboutSection() {
 
                     {/* Experience Badge */}
 
-                    <div className="absolute -bottom-5 right-4 rounded-3xl bg-pink-500 p-5 text-white shadow-xl sm:-bottom-8 sm:-right-6 sm:p-7 lg:-bottom-10 lg:-right-10 lg:p-8">
+                    <div className="absolute -bottom-5 right-4 rounded-3xl bg-[#151515] p-5 text-white shadow-xl sm:-bottom-8 sm:-right-6 sm:p-7 lg:-bottom-10 lg:-right-10 lg:p-8">
 
                         <h3 className="text-4xl font-bold sm:text-5xl">
                             5+
@@ -77,13 +77,13 @@ export default function AboutSection() {
 
                 <div>
 
-                    <span className="inline-block rounded-full bg-pink-100 px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-pink-500">
+                    <span className="inline-block rounded-full bg-[#eeeaf8] px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-[#7a6cc0]">
                         ABOUT US
                     </span>
 
                     <h2 className="mt-7 text-4xl font-bold text-slate-900 sm:text-5xl">
                         เราสร้างมากกว่า
-                        <span className="text-pink-500">
+                        <span className="text-[#7a6cc0]">
                             {" "}ภาพถ่าย
                         </span>
                     </h2>
@@ -112,12 +112,12 @@ export default function AboutSection() {
                             return (
                                 <div
                                     key={item.title}
-                                    className="group rounded-2xl border border-slate-100 bg-slate-50 p-5 transition duration-300 hover:-translate-y-1 hover:border-pink-100 hover:bg-pink-50"
+                                    className="group rounded-2xl border border-slate-100 bg-slate-50 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#eeeaf8] hover:bg-[#f6f3fc]"
                                 >
 
                                     <div className="flex items-start gap-4">
 
-                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-pink-100 text-pink-500 transition group-hover:bg-pink-500 group-hover:text-white">
+                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#eeeaf8] text-[#7a6cc0] transition group-hover:bg-[#3a3a3a] group-hover:text-white">
                                             <Icon size={22} />
                                         </div>
 
@@ -147,7 +147,7 @@ export default function AboutSection() {
 
                     <Link
                         href="/about"
-                        className="mt-10 inline-flex w-full items-center justify-center rounded-full bg-pink-500 px-8 py-4 font-semibold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-pink-400 hover:shadow-pink-500/30 sm:w-auto"
+                        className="mt-10 inline-flex w-full items-center justify-center rounded-full bg-[#151515] px-8 py-4 font-semibold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-[#151515] hover:shadow-[#7a6cc0]/30 sm:w-auto"
                     >
                         ดูรายละเอียดเพิ่มเติม
                     </Link>

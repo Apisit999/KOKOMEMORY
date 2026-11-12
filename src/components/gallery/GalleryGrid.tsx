@@ -931,7 +931,7 @@ export default function GalleryGrid() {
                             gap-2
                             text-[12px]
                             font-black
-                            tracking-[0.25em]
+                            tracking-[0.04em]
                             text-slate-400
                         "
                     >

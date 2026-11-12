@@ -454,7 +454,7 @@ export default function GalleryPage() {
                                         className="
                                             text-[12px]
                                             font-bold
-                                            tracking-[0.32em]
+                                            tracking-[0.04em]
                                             text-white/75
                                             sm:text-xs
                                         "
@@ -986,7 +986,7 @@ export default function GalleryPage() {
                                         className="
                                             text-[12px]
                                             font-bold
-                                            tracking-[0.28em]
+                                            tracking-[0.04em]
                                             text-[#7a6cc0]
                                         "
                                     >
@@ -1194,7 +1194,7 @@ export default function GalleryPage() {
                                 className="
                                     text-[12px]
                                     font-black
-                                    tracking-[0.32em]
+                                    tracking-[0.04em]
                                     text-[#7a6cc0]
                                 "
                             >
@@ -1230,7 +1230,7 @@ export default function GalleryPage() {
 
                         <div
                             className="
-                                rounded-[2rem]
+                                rounded-[4px]
                                 border
                                 border-white/10
                                 bg-white/[0.045]
@@ -1398,7 +1398,7 @@ export default function GalleryPage() {
                                 className="
                                     text-[12px]
                                     font-black
-                                    tracking-[0.32em]
+                                    tracking-[0.04em]
                                     text-[#7a6cc0]
                                 "
                             >

@@ -4,7 +4,7 @@ export default function ContactSection() {
             <div className="mx-auto max-w-7xl px-4 sm:px-6">
                 <div className="mx-auto max-w-3xl rounded-3xl bg-slate-50 p-6 text-center sm:p-10 lg:p-14">
                     {/* Stack content on small screens and keep text widths fluid. */}
-                    <span className="rounded-full bg-pink-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-pink-500 sm:px-5 sm:text-sm sm:tracking-[0.3em]">
+                    <span className="rounded-full bg-[#eeeaf8] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6cc0] sm:px-5 sm:text-sm sm:tracking-[0.3em]">
                         CONTACT
                     </span>
                     <h2 className="mt-5 text-3xl font-bold text-slate-900 sm:text-4xl lg:text-5xl">

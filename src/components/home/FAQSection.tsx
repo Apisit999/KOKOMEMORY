@@ -19,7 +19,7 @@ export default function FAQSection() {
 
                 <div className="text-center">
 
-                    <span className="rounded-full bg-pink-100 px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-pink-500">
+                    <span className="rounded-full bg-[#eeeaf8] px-5 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-[#7a6cc0]">
                         FAQ
                     </span>
 
