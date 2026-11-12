@@ -687,3 +687,10 @@ input[type="checkbox"], input[type="radio"] {
     display: none;
   }
 }
+
+/* THAI READABILITY FIX — no fake italic / clipped marks on Thai */
+.text-display-xl,.text-display-lg,.text-display-md{line-height:1.4;text-wrap:balance}
+.font-display .text-gradient,.text-gradient.font-display{font-style:normal}
+.text-gradient{padding-block:.15em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.eyebrow:lang(th){letter-spacing:.06em}
+h1,h2,h3{text-wrap:balance}

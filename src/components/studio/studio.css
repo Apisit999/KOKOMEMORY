@@ -363,3 +363,16 @@
 .services-choice-card span{font-size:17px}
 .studio-faq summary{font-size:18px}
 .studio-hero-foot,.studio-hero-foot button{font-size:13px}
+
+/* ============================================================
+   THAI READABILITY FIX — Thai needs room for tone marks/vowels,
+   no fake italic, no wide tracking, balanced line breaks
+   ============================================================ */
+.koko-studio h1,.koko-studio h2,.koko-studio h3{line-height:1.45!important;text-wrap:balance;overflow-wrap:normal}
+.studio-hero h1,.about-hero h1,.contact-hero h1,.rental-hero h1,.services-intro h1,.studio-product h1{font-size:clamp(36px,4.6vw,64px)!important;line-height:1.4!important}
+.koko-studio h1>span,.koko-studio h2 em,.about-hero h1 span,.contact-hero h1 span,.studio-hero h1 i,.about-hero h1 i{font-style:normal!important;padding-block:.15em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.studio-sticker,.about-art-sticker{font-style:normal}
+.studio-eyebrow,.studio-ribbon,.about-ribbon,.studio-card-top span,.about-service-top span,.studio-photo-main figcaption,.about-art-main figcaption,.rental-photo figcaption,.contact-hero-art span{letter-spacing:.06em!important;line-height:1.7}
+.studio-ribbon,.about-ribbon{word-spacing:.6em!important}
+.studio-button{letter-spacing:.02em}
+.koko-studio p,.koko-studio li{line-height:1.85}
