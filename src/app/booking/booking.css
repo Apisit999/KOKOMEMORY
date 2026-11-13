@@ -1,42 +1,43 @@
+/* Booking flow — Pure White Luxe palette (white, ink, brand lilac accent) */
 .booking-experience {
     min-height: 100vh;
-    background: #f4f2ec;
-    color: #20211d;
+    background: #ffffff;
+    color: #151515;
 }
 
 .booking-content-offset { padding-top: 6rem; }
 
-.booking-experience main.bg-slate-50 { background-color: #f4f2ec; }
-.booking-experience .bg-white { background-color: #fffdf8; }
+.booking-experience main.bg-slate-50 { background-color: #fafaf9; }
+.booking-experience .bg-white { background-color: #ffffff; }
 .booking-experience .border-slate-100,
-.booking-experience .border-slate-200 { border-color: #e7e3d8; }
-.booking-experience .bg-slate-50 { background-color: #f4f2ec; }
-.booking-experience .bg-slate-100 { background-color: #ebe8df; }
+.booking-experience .border-slate-200 { border-color: #e8e8e6; }
+.booking-experience .bg-slate-50 { background-color: #fafaf9; }
+.booking-experience .bg-slate-100 { background-color: #f3f3f1; }
 
 .booking-experience .bg-pink-500,
 .booking-experience .bg-pink-600,
 .booking-experience .hover\:bg-pink-400:hover,
 .booking-experience .hover\:bg-pink-600:hover {
-    background-color: #d5ee85;
-    color: #20231a;
+    background-color: #151515;
+    color: #ffffff;
 }
 
-.booking-experience .bg-pink-100 { background-color: #e8efcf; }
-.booking-experience .bg-pink-50 { background-color: #f0f3e5; }
+.booking-experience .bg-pink-100 { background-color: #ecebf7; }
+.booking-experience .bg-pink-50 { background-color: #f5f4fb; }
 .booking-experience .text-pink-500,
-.booking-experience .text-pink-600 { color: #65763b; }
+.booking-experience .text-pink-600 { color: #7a6cc0; }
 .booking-experience .border-pink-100,
-.booking-experience .border-pink-200 { border-color: #dce5bd; }
-.booking-experience .ring-pink-50 { --tw-ring-color: #f0f3e5; }
+.booking-experience .border-pink-200 { border-color: #dcd7f0; }
+.booking-experience .ring-pink-50 { --tw-ring-color: #f5f4fb; }
 .booking-experience .shadow-pink-100,
-.booking-experience .shadow-pink-200 { --tw-shadow-color: rgb(101 118 59 / 14%); }
+.booking-experience .shadow-pink-200 { --tw-shadow-color: rgb(21 21 21 / 6%); }
 
 .booking-experience a:focus-visible,
 .booking-experience button:focus-visible,
 .booking-experience input:focus-visible,
 .booking-experience select:focus-visible,
 .booking-experience textarea:focus-visible {
-    outline-color: #65763b;
+    outline-color: #7a6cc0;
 }
 
 .booking-experience .booking-package-hero { padding-top: 2rem; }
@@ -45,3 +46,16 @@
     .booking-content-offset { padding-top: 5rem; }
     .booking-experience .booking-package-hero { padding-top: 1.5rem; }
 }
+
+/* Match the rest of the site: crisp corners, calmer weights, readable text */
+.booking-experience .rounded-xl,
+.booking-experience .rounded-2xl,
+.booking-experience .rounded-3xl,
+.booking-experience .rounded-\[2rem\] { border-radius: 4px; }
+.booking-experience .font-black { font-weight: 700; }
+.booking-experience .text-xs { font-size: 0.8125rem; }
+.booking-experience .text-sm { font-size: 0.9375rem; }
+.booking-experience .shadow-xl,
+.booking-experience .shadow-2xl,
+.booking-experience .shadow-lg { box-shadow: 0 20px 50px rgb(21 21 21 / 6%); }
+.booking-experience h1, .booking-experience h2 { line-height: 1.35; }
