@@ -137,8 +137,8 @@ export default function GalleryPage() {
                         relative
                         isolate
                         overflow-hidden
-                        bg-[#141516]
-                        text-white
+                        bg-white
+                        text-[#151515]
                     "
                 >
 
@@ -191,7 +191,7 @@ export default function GalleryPage() {
                             absolute
                             inset-0
                             -z-20
-                            bg-[#141516]/70
+                            bg-white/80
                         "
                     />
 
@@ -206,8 +206,8 @@ export default function GalleryPage() {
                             inset-0
                             -z-20
                             bg-gradient-to-r
-                            from-[#141516]/95
-                            via-[#141516]/65
+                            from-white/95
+                            via-white/70
                             to-transparent
                         "
                     />
@@ -223,9 +223,9 @@ export default function GalleryPage() {
                             inset-0
                             -z-20
                             bg-gradient-to-b
-                            from-[#141516]/40
+                            from-white/40
                             via-transparent
-                            to-[#141516]/80
+                            to-white
                         "
                     />
 
@@ -245,7 +245,7 @@ export default function GalleryPage() {
                             h-[520px]
                             w-[520px]
                             rounded-full
-                            bg-[#141516]/14
+                            bg-[#d98aae]/15
                             blur-[130px]
                             motion-safe:animate-[kokoGlow_12s_ease-in-out_infinite]
                         "
@@ -263,7 +263,7 @@ export default function GalleryPage() {
                             h-[620px]
                             w-[620px]
                             rounded-full
-                            bg-[#ecebf7]/10
+                            bg-[#7fb2ee]/15
                             blur-[150px]
                             motion-safe:animate-[kokoGlow_15s_ease-in-out_infinite_reverse]
                         "
@@ -292,9 +292,9 @@ export default function GalleryPage() {
                                 className="
                                     absolute
                                     rounded-full
-                                    bg-white
+                                    bg-[#a79bd8]
                                     opacity-30
-                                    shadow-[0_0_10px_rgba(255,255,255,0.65)]
+                                    shadow-[0_0_10px_rgba(167,155,216,0.6)]
                                     motion-safe:animate-[kokoParticle_linear_infinite]
                                 "
                                 style={{
@@ -316,7 +316,7 @@ export default function GalleryPage() {
                                 key={`star-${index}`}
                                 className="
                                     absolute
-                                    text-white/55
+                                    text-[#a79bd8]/70
                                     motion-safe:animate-[kokoStar_ease-in-out_infinite]
                                 "
                                 style={{
@@ -347,7 +347,7 @@ export default function GalleryPage() {
                             inset-0
                             -z-10
                             opacity-[0.035]
-                            [background-image:linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)]
+                            [background-image:linear-gradient(rgba(21,21,21,1)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,21,1)_1px,transparent_1px)]
                             [background-size:80px_80px]
                             [mask-image:linear-gradient(to_bottom,black,transparent_90%)]
                         "
@@ -410,8 +410,8 @@ export default function GalleryPage() {
                                         gap-3
                                         rounded-full
                                         border
-                                        border-white/15
-                                        bg-white/[0.07]
+                                        border-[#151515]/10
+                                        bg-white/70
                                         px-4
                                         py-2.5
                                         backdrop-blur-xl
@@ -432,7 +432,7 @@ export default function GalleryPage() {
                                                 absolute
                                                 inset-0
                                                 rounded-full
-                                                bg-[#ecebf7]
+                                                bg-[#a79bd8]
                                                 blur-[3px]
                                             "
                                         />
@@ -443,7 +443,7 @@ export default function GalleryPage() {
                                                 h-2
                                                 w-2
                                                 rounded-full
-                                                bg-[#ecebf7]
+                                                bg-[#a79bd8]
                                             "
                                         />
 
@@ -455,7 +455,7 @@ export default function GalleryPage() {
                                             text-[12px]
                                             font-bold
                                             tracking-[0.04em]
-                                            text-white/75
+                                            text-[#151515]/80
                                             sm:text-xs
                                         "
                                     >
@@ -475,7 +475,7 @@ export default function GalleryPage() {
                                         font-black
                                         leading-[1.02]
                                         tracking-[-0.045em]
-                                        text-white
+                                        text-[#151515]
                                         sm:text-6xl
                                         md:text-7xl
                                         lg:text-[5.25rem]
@@ -490,9 +490,9 @@ export default function GalleryPage() {
                                     <span
                                         className="
                                             bg-gradient-to-r
-                                            from-white
-                                            via-[#fafaf9]
-                                            to-[#ecebf7]
+                                            from-[#d98aae]
+                                            via-[#a79bd8]
+                                            to-[#7fb2ee]
                                             bg-clip-text
                                             text-transparent
                                             motion-safe:animate-[kokoGradient_8s_ease-in-out_infinite]
@@ -512,7 +512,7 @@ export default function GalleryPage() {
                                         max-w-2xl
                                         text-sm
                                         leading-8
-                                        text-white/65
+                                        text-[#151515]/70
                                         sm:text-base
                                         lg:text-[17px]
                                     "
@@ -543,17 +543,17 @@ export default function GalleryPage() {
                                             items-center
                                             justify-center
                                             rounded-full
-                                            bg-[#ecebf7]
+                                            bg-[#151515]
                                             px-7
                                             py-3.5
                                             text-sm
                                             font-bold
-                                            text-[#141516]
+                                            text-white
                                             shadow-[0_16px_45px_rgba(21,21,21,0.08)]
                                             transition-all
                                             duration-300
                                             hover:-translate-y-1
-                                            hover:bg-[#fafaf9]
+                                            hover:bg-[#2a2a2a]
                                             hover:shadow-[0_22px_55px_rgba(21,21,21,0.08)]
                                         "
                                     >
@@ -582,19 +582,19 @@ export default function GalleryPage() {
                                             justify-center
                                             rounded-full
                                             border
-                                            border-white/15
-                                            bg-white/[0.055]
+                                            border-[#151515]/10
+                                            bg-white/70
                                             px-7
                                             py-3.5
                                             text-sm
                                             font-semibold
-                                            text-white
+                                            text-[#151515]
                                             backdrop-blur-xl
                                             transition-all
                                             duration-300
                                             hover:-translate-y-1
-                                            hover:border-white/25
-                                            hover:bg-white/10
+                                            hover:border-[#151515]/10
+                                            hover:bg-[#151515]/[0.06]
                                         "
                                     >
 
@@ -618,7 +618,7 @@ export default function GalleryPage() {
                                         text-[12px]
                                         font-medium
                                         tracking-[0.08em]
-                                        text-white/35
+                                        text-[#151515]/55
                                     "
                                 >
 
@@ -626,13 +626,13 @@ export default function GalleryPage() {
                                         {t("portfolio.realMoments")}
                                     </span>
 
-                                    <span className="h-1 w-1 rounded-full bg-[#ecebf7]/70" />
+                                    <span className="h-1 w-1 rounded-full bg-[#a79bd8]" />
 
                                     <span>
                                         {t("portfolio.madeWithCare")}
                                     </span>
 
-                                    <span className="h-1 w-1 rounded-full bg-[#ecebf7]/70" />
+                                    <span className="h-1 w-1 rounded-full bg-[#a79bd8]" />
 
                                     <span>
                                         KOKO MEMORY
@@ -668,8 +668,8 @@ export default function GalleryPage() {
                                         w-[390px]
                                         rounded-[2px]
                                         border
-                                        border-white/[0.13]
-                                        bg-white/[0.045]
+                                        border-[#151515]/10
+                                        bg-white/70
                                         shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_40px_120px_rgba(0,0,0,0.22)]
                                         backdrop-blur-[8px]
                                         motion-safe:animate-[kokoFloat_10s_ease-in-out_infinite]
@@ -685,7 +685,7 @@ export default function GalleryPage() {
                                             inset-5
                                             rounded-[2.2rem]
                                             border
-                                            border-white/[0.07]
+                                            border-[#151515]/10
                                         "
                                     />
 
@@ -701,7 +701,7 @@ export default function GalleryPage() {
                                             h-px
                                             bg-gradient-to-r
                                             from-transparent
-                                            via-white/20
+                                            via-[#151515]/15
                                             to-transparent
                                         "
                                     />
@@ -717,7 +717,7 @@ export default function GalleryPage() {
                                             text-[12px]
                                             font-bold
                                             tracking-[0.35em]
-                                            text-white/25
+                                            text-[#151515]/35
                                         "
                                     >
                                         KOKO MEMORY
@@ -736,7 +736,7 @@ export default function GalleryPage() {
                                             rounded-full
                                             bg-gradient-to-r
                                             from-[#141516]
-                                            to-[#fafaf9]/20
+                                            to-[#a79bd8]/40
                                             shadow-[0_0_20px_rgba(244,114,182,0.25)]
                                         "
                                     />
@@ -753,8 +753,8 @@ export default function GalleryPage() {
                                             w-12
                                             rounded-full
                                             border
-                                            border-white/10
-                                            bg-white/[0.05]
+                                            border-[#151515]/10
+                                            bg-white/70
                                         "
                                     />
 
@@ -772,8 +772,8 @@ export default function GalleryPage() {
                                         w-36
                                         rounded-[1.75rem]
                                         border
-                                        border-white/[0.10]
-                                        bg-white/[0.035]
+                                        border-[#151515]/10
+                                        bg-white/70
                                         shadow-[0_25px_70px_rgba(0,0,0,0.20)]
                                         backdrop-blur-md
                                         motion-safe:animate-[kokoFloatSlow_13s_ease-in-out_infinite]
@@ -807,8 +807,8 @@ export default function GalleryPage() {
                                         w-28
                                         rounded-full
                                         border
-                                        border-white/10
-                                        bg-white/[0.035]
+                                        border-[#151515]/10
+                                        bg-white/70
                                         shadow-[inset_0_0_45px_rgba(255,255,255,0.08),0_0_80px_rgba(244,114,182,0.10)]
                                         backdrop-blur-md
                                         motion-safe:animate-[kokoFloatSlow_15s_ease-in-out_infinite_reverse]
@@ -824,7 +824,7 @@ export default function GalleryPage() {
                                         left-[21%]
                                         top-[12%]
                                         text-xl
-                                        text-white/45
+                                        text-[#a79bd8]/70
                                         motion-safe:animate-[kokoStar_8s_ease-in-out_infinite]
                                     "
                                 >
@@ -867,7 +867,7 @@ export default function GalleryPage() {
                             h-px
                             bg-gradient-to-r
                             from-transparent
-                            via-white/15
+                            via-[#151515]/15
                             to-transparent
                         "
                     />
@@ -898,7 +898,7 @@ export default function GalleryPage() {
                                 font-bold
                                 uppercase
                                 tracking-[0.45em]
-                                text-white/30
+                                text-[#151515]/45
                             "
                         >
                             Scroll
@@ -911,7 +911,7 @@ export default function GalleryPage() {
                                 h-8
                                 w-px
                                 overflow-hidden
-                                bg-white/10
+                                bg-white/70
                             "
                         >
 
@@ -922,7 +922,7 @@ export default function GalleryPage() {
                                     top-0
                                     h-4
                                     w-px
-                                    bg-[#141516]
+                                    bg-[#a79bd8]
                                     motion-safe:animate-[kokoScroll_2.2s_ease-in-out_infinite]
                                 "
                             />
@@ -1117,10 +1117,10 @@ export default function GalleryPage() {
                         relative
                         isolate
                         overflow-hidden
-                        bg-[#141516]
+                        bg-[#fafaf9]
                         px-5
                         py-24
-                        text-white
+                        text-[#151515]
                         sm:px-6
                         sm:py-28
                         lg:px-8
@@ -1140,7 +1140,7 @@ export default function GalleryPage() {
                             h-[700px]
                             w-[700px]
                             rounded-full
-                            bg-[#141516]/10
+                            bg-[#d98aae]/10
                             blur-[150px]
                             motion-safe:animate-[kokoGlow_13s_ease-in-out_infinite]
                         "
@@ -1157,7 +1157,7 @@ export default function GalleryPage() {
                             h-[650px]
                             w-[650px]
                             rounded-full
-                            bg-[#ecebf7]/10
+                            bg-[#7fb2ee]/10
                             blur-[150px]
                         "
                     />
@@ -1169,7 +1169,7 @@ export default function GalleryPage() {
                             absolute
                             inset-0
                             opacity-[0.025]
-                            [background-image:linear-gradient(rgba(255,255,255,1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,1)_1px,transparent_1px)]
+                            [background-image:linear-gradient(rgba(21,21,21,1)_1px,transparent_1px),linear-gradient(90deg,rgba(21,21,21,1)_1px,transparent_1px)]
                             [background-size:90px_90px]
                         "
                     />
@@ -1232,10 +1232,10 @@ export default function GalleryPage() {
                             className="
                                 rounded-[4px]
                                 border
-                                border-white/10
-                                bg-white/[0.045]
+                                border-[#151515]/10
+                                bg-white
                                 p-7
-                                shadow-[0_30px_90px_rgba(0,0,0,0.18)]
+                                shadow-[0_30px_90px_rgba(21,21,21,0.06)]
                                 backdrop-blur-xl
                                 sm:p-9
                             "
@@ -1245,7 +1245,7 @@ export default function GalleryPage() {
                                 className="
                                     text-sm
                                     leading-8
-                                    text-white/65
+                                    text-[#151515]/70
                                     sm:text-base
                                 "
                             >
@@ -1268,7 +1268,7 @@ export default function GalleryPage() {
                                     className="
                                         h-px
                                         w-12
-                                        bg-[#fafaf9]
+                                        bg-[#a79bd8]
                                     "
                                 />
 
@@ -1277,7 +1277,7 @@ export default function GalleryPage() {
                                         text-[12px]
                                         font-bold
                                         tracking-[0.25em]
-                                        text-white/30
+                                        text-[#151515]/45
                                     "
                                 >
                                     KOKO MEMORY
