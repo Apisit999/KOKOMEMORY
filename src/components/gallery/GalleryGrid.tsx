@@ -814,7 +814,7 @@ export default function GalleryGrid() {
                                 className="
                                     aspect-[4/5]
                                     animate-pulse
-                                    rounded-[1.75rem]
+                                    rounded-[2px]
                                     bg-slate-100
                                 "
                             />
@@ -842,7 +842,7 @@ export default function GalleryGrid() {
             <div
                 aria-label={t("gallery.error")}
                 className="
-                    rounded-[2rem]
+                    rounded-[2px]
                     border
                     border-red-100
                     bg-red-50
@@ -964,12 +964,11 @@ export default function GalleryGrid() {
                             flex-wrap
                             justify-center
                             gap-2
-                            rounded-full
+                            rounded-[2px]
                             border
-                            border-slate-100
-                            bg-slate-50/80
+                            border-[#e8e8e6]
+                            bg-white
                             p-1.5
-                            shadow-sm
                         "
                     >
 
@@ -1005,18 +1004,18 @@ export default function GalleryGrid() {
                                         onClick={() => selectCategory(item)}
                                         aria-pressed={active}
                                         className={`
-                                            rounded-full
+                                            rounded-[2px]
                                             px-5
                                             py-2.5
-                                            text-xs
+                                            text-sm
                                             font-bold
                                             transition-all
                                             duration-300
 
                                             ${
                                                 active
-                                                    ? "bg-slate-900 text-white shadow-md"
-                                                    : "text-slate-500 hover:bg-white hover:text-[#7a6cc0]"
+                                                    ? "bg-[#151515] text-white"
+                                                    : "text-[#5c5c5c] hover:bg-[#fafaf9] hover:text-[#151515]"
                                             }
                                         `}
                                     >
@@ -1103,7 +1102,7 @@ export default function GalleryGrid() {
 
                 <div
                     className="
-                        rounded-[2rem]
+                        rounded-[2px]
                         border
                         border-slate-200
                         bg-slate-50
@@ -1276,7 +1275,7 @@ export default function GalleryGrid() {
                             max-w-7xl
                             flex-col
                             overflow-hidden
-                            rounded-[1.75rem]
+                            rounded-[2px]
                             bg-white
                             shadow-[0_40px_140px_rgba(0,0,0,0.45)]
                             motion-safe:animate-[galleryModalIn_400ms_ease-out_both]

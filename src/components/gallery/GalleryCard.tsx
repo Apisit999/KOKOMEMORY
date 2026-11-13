@@ -67,7 +67,7 @@ export default function GalleryCard({
                 group
                 relative
                 overflow-hidden
-                rounded-[1.75rem]
+                rounded-[2px]
                 bg-slate-100
                 shadow-[0_10px_35px_rgba(15,23,42,0.06)]
                 transition-all
@@ -232,7 +232,7 @@ export default function GalleryCard({
                                         inline-flex
                                         items-center
                                         gap-1.5
-                                        rounded-full
+                                        rounded-[2px]
                                         border
                                         border-white/20
                                         bg-white/90
@@ -270,7 +270,7 @@ export default function GalleryCard({
                                     shrink-0
                                     items-center
                                     gap-1.5
-                                    rounded-full
+                                    rounded-[2px]
                                     border
                                     border-white/15
                                     bg-black/35
@@ -362,7 +362,7 @@ export default function GalleryCard({
                                     inline-flex
                                     items-center
                                     gap-2
-                                    rounded-full
+                                    rounded-[2px]
                                     border
                                     border-white/15
                                     bg-white/10
@@ -407,7 +407,7 @@ export default function GalleryCard({
                             pointer-events-none
                             absolute
                             inset-0
-                            rounded-[1.75rem]
+                            rounded-[2px]
                             border
                             border-white/0
                             transition-colors

@@ -408,7 +408,7 @@ export default function GalleryPage() {
                                         inline-flex
                                         items-center
                                         gap-3
-                                        rounded-full
+                                        rounded-[2px]
                                         border
                                         border-[#151515]/10
                                         bg-white/70
@@ -971,7 +971,7 @@ export default function GalleryPage() {
                                         inline-flex
                                         items-center
                                         gap-2.5
-                                        rounded-full
+                                        rounded-[2px]
                                         border
                                         border-[#e8e8e6]
                                         bg-[#fafaf9]
@@ -1044,10 +1044,7 @@ export default function GalleryPage() {
                                 mt-12
                                 h-px
                                 w-full
-                                bg-gradient-to-r
-                                from-[#fafaf9]
-                                via-slate-100
-                                to-transparent
+                                bg-[#e8e8e6]
                             "
                         />
 
