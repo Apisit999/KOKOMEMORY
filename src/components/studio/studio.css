@@ -470,3 +470,12 @@
 .studio-apple .about-actions>a,.studio-apple .contact-hero-actions>a{width:100%;justify-content:center}
 .studio-apple .about-end{padding:56px 24px!important;margin-bottom:56px!important}
 }
+/* Apple-style: software pages */
+.studio-apple.koko-studio .studio-product{text-align:center;padding-top:150px}
+.studio-apple .studio-product h1{margin-inline:auto;text-wrap:balance}
+.studio-apple .studio-product>p{margin-inline:auto}
+.studio-apple .studio-product>img{margin-inline:auto!important;display:block}
+.studio-apple .studio-product .studio-grid{text-align:left;gap:24px;margin-block:64px}
+.studio-apple .studio-product .studio-actions{justify-content:center}
+.studio-apple .studio-product-note{max-width:820px;margin-inline:auto}
+@media(max-width:800px){.studio-apple.koko-studio .studio-product{padding-top:120px}.studio-apple .studio-product .studio-actions{flex-direction:column}.studio-apple .studio-product .studio-actions>a{width:100%}}
