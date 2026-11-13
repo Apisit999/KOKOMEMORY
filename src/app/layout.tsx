@@ -7,7 +7,7 @@ import I18nRoot from "@/components/layout/I18nRoot";
 const kokoSans = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["300", "400", "500", "600", "700"], display: "swap", variable: "--font-koko-thai" });
 // Display pair for headings: Latin serif + matching Thai serif.
 const kokoDisplay = Cormorant_Garamond({ subsets: ["latin"], weight: ["400", "500", "600"], style: ["normal", "italic"], display: "swap", variable: "--font-koko-display" });
-const kokoSerifThai = Noto_Serif_Thai({ subsets: ["thai"], weight: ["400", "500", "600"], display: "swap", variable: "--font-koko-serif-thai" });
+const kokoSerifThai = Noto_Serif_Thai({ subsets: ["thai", "latin"], weight: ["400", "500", "600"], display: "swap", variable: "--font-koko-serif-thai" });
 
 
 export const metadata: Metadata = {

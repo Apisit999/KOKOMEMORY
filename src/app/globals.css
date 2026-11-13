@@ -702,3 +702,31 @@ input[type="checkbox"], input[type="radio"] {
 .text-gradient{padding-block:.15em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .eyebrow:lang(th){letter-spacing:.06em}
 h1,h2,h3{text-wrap:balance}
+
+/* ============================================================
+   TYPE SYSTEM v2 — serif only for big page/section headings,
+   clear sans for everything people need to read or compare.
+   ============================================================ */
+/* Thai pages: one serif family for big headings so English words match Thai size */
+html:lang(th) h1,html:lang(th) h2{font-family:var(--font-koko-serif-thai),var(--font-koko-display),Georgia,serif!important}
+
+/* Card titles, small headings, prices, numbers → sans, solid weight */
+h3,h4,h5,h6,article h2,
+.rental-price,.studio-package-price,.pricing-price b,
+.studio-steps article>span,.about-value-grid article>span,.about-process-steps article>span{
+  font-family:var(--font-koko-sans)!important;font-style:normal!important;letter-spacing:-.005em!important;
+}
+h3,h4,h5,h6,article h2{font-weight:600!important;line-height:1.45}
+.rental-price,.studio-package-price,.pricing-price b{font-weight:700!important}
+body{font-variant-numeric:lining-nums}
+
+/* Step numbers: simple, not italic script */
+.studio-steps article>span,.about-value-grid article>span,.about-process-steps article>span{font-size:15px!important;font-weight:600!important;-webkit-text-fill-color:#7a6cc0;color:#7a6cc0!important;background:none!important}
+
+/* Body copy: bigger, darker, comfortable measure */
+main p{color:#3d3d3d}
+.koko-studio .studio-intro,.koko-studio .services-intro>p:not(.studio-eyebrow),.koko-studio .rental-hero>div>p:not(.studio-eyebrow){font-size:18px!important;line-height:1.8;color:#3d3d3d!important}
+.koko-studio .studio-card>p,.koko-studio .about-service-card>p,.koko-studio .studio-steps p,.koko-studio .studio-faq details p{color:#3d3d3d!important}
+
+/* Small labels: sans, modest tracking */
+.studio-eyebrow,.eyebrow{font-family:var(--font-koko-sans)!important;letter-spacing:.14em!important;font-weight:600!important}
