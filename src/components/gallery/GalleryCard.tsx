@@ -317,7 +317,7 @@ export default function GalleryCard({
                                     font-black
                                     uppercase
                                     tracking-[0.22em]
-                                    text-[#7a6cc0]
+                                    text-white/85
                                 "
                             >
                                 {category}

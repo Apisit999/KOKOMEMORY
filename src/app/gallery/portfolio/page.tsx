@@ -1274,7 +1274,7 @@ export default function GalleryPage() {
                                         text-[12px]
                                         font-bold
                                         tracking-[0.25em]
-                                        text-[#151515]/45
+                                        text-[#151515]/60
                                     "
                                 >
                                     KOKO MEMORY
@@ -1396,7 +1396,7 @@ export default function GalleryPage() {
                                     text-[12px]
                                     font-black
                                     tracking-[0.04em]
-                                    text-[#7a6cc0]
+                                    text-[#c9c0f0]
                                 "
                             >
                                 {t("portfolio.specialDay")}
@@ -1431,7 +1431,7 @@ export default function GalleryPage() {
                                     max-w-xl
                                     text-sm
                                     leading-7
-                                    text-[#7a6cc0]
+                                    text-white/80
                                     sm:text-base
                                 "
                             >
@@ -1455,7 +1455,7 @@ export default function GalleryPage() {
                                     py-4
                                     text-sm
                                     font-bold
-                                    text-[#7a6cc0]
+                                    text-[#151515]
                                     shadow-xl
                                     transition-all
                                     duration-300
