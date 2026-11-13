@@ -334,9 +334,9 @@ export default function ForgotPasswordPage() {
                                 <div className="koko-frame-photo">
 
                                     <img
-                                        src="/images/auth/KOKO-3D.webp"
+                                        src="/about/about2.png"
                                         alt="KOKO Memory Photobooth"
-                                        className="h-full w-full object-contain koko-bob"
+                                        className="h-full w-full object-cover koko-bob"
                                     />
 
                                     <div className="koko-frame-message">
@@ -603,11 +603,11 @@ export default function ForgotPasswordPage() {
                     bottom: 8%;
                     z-index: 3;
                     padding: 7px 5px;
-                    border-radius: 9px;
+                    border-radius: 2px;
                     text-align: center;
-                    background: rgba(116, 29, 65, 0.86);
+                    background: rgba(21, 21, 21, 0.88);
                     color: white;
-                    box-shadow: 0 10px 18px -12px rgba(45, 8, 28, 0.8);
+                    box-shadow: 0 10px 18px -12px rgba(0, 0, 0, 0.6);
                 }
 
                 .koko-frame-message span,
@@ -711,19 +711,19 @@ export default function ForgotPasswordPage() {
                 .koko-photo-b {
                     background:
                         radial-gradient(circle at 28% 28%, #fafaf9 0 8%, transparent 9%),
-                        linear-gradient(135deg, #eadcff, #bda6e4 50%, #7f639f);
+                        linear-gradient(135deg, #ecebf7, #a79bd8 50%, #6f62b0);
                 }
 
                 .koko-photo-c {
                     background:
                         radial-gradient(circle at 70% 28%, #fff4dc 0 8%, transparent 9%),
-                        linear-gradient(135deg, #ffe8bd, #e7ad87 50%, #1F2020);
+                        linear-gradient(135deg, #f7e1ea, #d98aae 50%, #8a4a66);
                 }
 
                 .koko-photo-d {
                     background:
                         radial-gradient(circle at 35% 38%, #ffffff 0 7%, transparent 8%),
-                        linear-gradient(135deg, #d9f2ef, #9bc7c1 50%, #5c8580);
+                        linear-gradient(135deg, #e3eefc, #7fb2ee 50%, #3f6ea8);
                 }
 
                 .koko-p1 {

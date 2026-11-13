@@ -532,7 +532,7 @@ export default function RegisterPage() {
                             />
 
                             <FloatingCard
-                                image="/gallery/3.jpg"
+                                image="/illustrations/idea-to-reality.svg"
                                 className="right-[4%] top-[18%] sm:right-[14%] sm:top-[11%] lg:right-[8%] lg:left-auto lg:top-[16%]"
                                 delay="2.6s"
                                 rotate="8deg"
@@ -540,7 +540,7 @@ export default function RegisterPage() {
                             />
 
                             <FloatingCard
-                                image="/gallery/4.jpg"
+                                image="/hero/wedding.jpg"
                                 className="left-[2%] bottom-[14%] sm:left-[12%] sm:bottom-[10%] lg:left-[4%] lg:top-[58%] lg:bottom-auto"
                                 delay="0.8s"
                                 rotate="8deg"
@@ -571,7 +571,7 @@ export default function RegisterPage() {
                                     <div className="relative overflow-hidden rounded-[11px] bg-[#1F2020]">
 
                                         <img
-                                            src="/images/auth/KOKO-3D.webp"
+                                            src="/about/about2.png"
                                             alt="KOKO Memory"
                                             className="block aspect-[4/5] h-auto w-full object-cover object-center"
                                         />

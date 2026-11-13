@@ -730,3 +730,27 @@ body{font-variant-numeric:lining-nums}
 
 /* Small labels: sans, modest tracking */
 .studio-eyebrow,.eyebrow{font-family:var(--font-koko-sans)!important;letter-spacing:.14em!important;font-weight:600!important}
+
+/* ============================================================
+   ACCOUNT / PAYMENTS AREA — same crisp look as the public site
+   ============================================================ */
+[data-account-shell] .rounded-xl,
+[data-account-shell] .rounded-2xl,
+[data-account-shell] .rounded-3xl,
+[data-account-shell] .rounded-\[2rem\],
+[data-account-shell] .rounded-\[28px\],
+[data-account-shell] .rounded-\[24px\] { border-radius: 4px; }
+[data-account-shell] .font-black { font-weight: 700; }
+[data-account-shell] .text-xs { font-size: 0.8125rem; }
+[data-account-shell] .text-sm { font-size: 0.9375rem; }
+[data-account-shell] .shadow-xl,
+[data-account-shell] .shadow-2xl,
+[data-account-shell] .shadow-lg { box-shadow: 0 20px 50px rgb(21 21 21 / 6%); }
+[data-account-shell] .bg-pink-500,
+[data-account-shell] .bg-pink-600 { background-color: #151515; color: #fff; }
+[data-account-shell] .bg-pink-50,
+[data-account-shell] .bg-pink-100 { background-color: #f5f4fb; }
+[data-account-shell] .text-pink-500,
+[data-account-shell] .text-pink-600 { color: #7a6cc0; }
+[data-account-shell] .border-pink-100,
+[data-account-shell] .border-pink-200 { border-color: #dcd7f0; }
