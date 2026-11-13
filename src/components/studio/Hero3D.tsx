@@ -9,7 +9,7 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
-const PHOTOS = ["/hero/wedding.jpg", "/gallery/1.jpg", "/about/about.jpg", "/gallery/2.jpg"];
+const PHOTOS = ["/hero/wedding.jpg", "/gallery/1.jpg", "/about/about2.png", "/gallery/2.jpg"];
 
 export default function Hero3D({ moving = true }: { moving?: boolean }) {
     const mountRef = useRef<HTMLDivElement>(null);

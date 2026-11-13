@@ -384,7 +384,7 @@ export default function GalleryPage() {
                                 w-full
                                 items-center
                                 gap-14
-                                justify-items-center text-center
+                                text-left
                                 lg:gap-10
                                 xl:gap-20
                             "
@@ -396,7 +396,7 @@ export default function GalleryPage() {
 
                             <div
                                 className="
-                                    mx-auto max-w-3xl
+                                    max-w-3xl
                                     motion-safe:animate-[kokoHeroIn_900ms_ease-out_both]
                                 "
                             >
@@ -470,7 +470,7 @@ export default function GalleryPage() {
                                 <h1
                                     className="
                                         mt-7
-                                        mx-auto max-w-3xl
+                                        max-w-3xl
                                         text-5xl
                                         font-black
                                         leading-[1.3]
@@ -509,7 +509,7 @@ export default function GalleryPage() {
                                 <p
                                     className="
                                         mt-7
-                                        mx-auto max-w-2xl
+                                        max-w-2xl
                                         text-sm
                                         leading-8
                                         text-[#151515]/70
@@ -531,7 +531,7 @@ export default function GalleryPage() {
                                         flex
                                         flex-col
                                         gap-3
-                                        sm:flex-row sm:justify-center
+                                        sm:flex-row
                                     "
                                 >
 
@@ -611,7 +611,7 @@ export default function GalleryPage() {
                                     className="
                                         mt-9
                                         flex
-                                        flex-wrap justify-center
+                                        flex-wrap
                                         items-center
                                         gap-x-5
                                         gap-y-2

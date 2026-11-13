@@ -38,8 +38,7 @@ export default function AboutPage() {
                 <div className="about-hero-art" aria-label="ภาพบรรยากาศและผลงาน KOKO Memory">
                     <div className="about-art-orbit" aria-hidden="true" />
                     <figure className="about-art-main"><div><Image src="/about/about2.png" alt="บรรยากาศ Photobooth ของ KOKO Memory" fill priority sizes="(max-width: 760px) 82vw, 42vw" /></div><figcaption>GOOD TIMES. REAL MEMORIES.</figcaption></figure>
-                    <figure className="about-art-small"><Image src="/about/about.jpg" alt="อีกมุมหนึ่งของงาน KOKO Memory" fill sizes="(max-width: 760px) 42vw, 22vw" /></figure>
-                    <div className="about-art-sticker" aria-hidden="true">IDEA<br />→ REALITY</div>
+                    <figure className="about-art-small"><Image src="/illustrations/idea-to-reality.svg" alt="จากไอเดียสู่ชิ้นงานจริง" fill unoptimized sizes="(max-width: 760px) 42vw, 22vw" /></figure>
                 </div>
             </section>
 
@@ -70,7 +69,7 @@ export default function AboutPage() {
             </section>
 
             <section className="about-video studio-wrap" aria-label="วิดีโอเบื้องหลัง KOKO Memory">
-                <div className="about-video-frame"><video controls playsInline preload="none" poster="/hero/wedding.jpg" aria-label="วิดีโอผลงาน KOKO Memory"><source src="/videos/koko-memory-portfolio-background.mp4" type="video/mp4" />เบราว์เซอร์นี้ไม่รองรับการเล่นวิดีโอ</video></div>
+                <div className="about-video-frame"><video controls playsInline preload="none" poster="/gallery/2.jpg" aria-label="วิดีโอผลงาน KOKO Memory"><source src="/videos/koko-memory-portfolio-background.mp4" type="video/mp4" />เบราว์เซอร์นี้ไม่รองรับการเล่นวิดีโอ</video></div>
                 <div><p className="studio-eyebrow">IN THE MOMENT</p><h2>บรรยากาศจริง<br /><em>จากผลงานของเรา</em></h2><p>ดูภาพและวิดีโอเพิ่มเติมจากงานที่ผ่านมา แล้วนำแรงบันดาลใจไปต่อยอดกับโปรเจกต์ของคุณ</p><Link className="studio-text-link" href="/gallery/portfolio">เปิดแกลเลอรีผลงาน <ArrowUpRight size={17} /></Link></div>
             </section>
 
