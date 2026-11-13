@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Check, CreditCard, Sparkles } from "lucide-react";
@@ -7,6 +8,8 @@ const highlights = [
     { icon: CalendarDays, title: "เลือกวันและใส่ข้อมูลงาน", detail: "เช็กวันว่างจากปฏิทิน แล้วกรอกรายละเอียดงาน" },
     { icon: CreditCard, title: "ยืนยันและชำระมัดจำ", detail: "ตรวจสอบสรุปรายการ แล้วยืนยันการจองในเว็บ" },
 ];
+
+export const metadata: Metadata = { title: "จองคิว Photobooth | KOKO Memory", description: "เลือกแพ็กเกจ เช็กวันว่าง และส่งรายละเอียดงานให้ทีม KOKO ดูแลทุกขั้นตอน" };
 
 export default function BookingPage() {
     return <main className="booking-landing min-h-screen bg-white">
