@@ -32,6 +32,7 @@
  */
 
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import Navbar from "@/components/layout/Navbar";
@@ -365,7 +366,7 @@ export default function GalleryPage() {
                             mx-auto
                             flex
                             min-h-[680px]
-                            max-w-7xl
+                            max-w-[1304px]
                             items-center
                             px-5
                             pb-20
@@ -384,7 +385,7 @@ export default function GalleryPage() {
                                 w-full
                                 items-center
                                 gap-14
-                                text-left
+                                text-left lg:grid-cols-[1.05fr_0.95fr]
                                 lg:gap-10
                                 xl:gap-20
                             "
@@ -647,204 +648,13 @@ export default function GalleryPage() {
                                 RIGHT VISUAL
                             ================================================== */}
 
-                            <div
-                                aria-hidden="true"
-                                className="
-                                    relative
-                                    hidden
-                                    h-[430px]
-                                    lg:hidden
-                                "
-                            >
-
-                                {/* Main glass panel */}
-
-                                <div
-                                    className="
-                                        absolute
-                                        right-2
-                                        top-8
-                                        h-[285px]
-                                        w-[390px]
-                                        rounded-[2px]
-                                        border
-                                        border-[#151515]/10
-                                        bg-white/70
-                                        shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_40px_120px_rgba(0,0,0,0.22)]
-                                        backdrop-blur-[8px]
-                                        motion-safe:animate-[kokoFloat_10s_ease-in-out_infinite]
-                                        [transform:perspective(1400px)_rotateY(-12deg)_rotateX(5deg)_rotateZ(1deg)]
-                                    "
-                                >
-
-                                    {/* Inner frame */}
-
-                                    <div
-                                        className="
-                                            absolute
-                                            inset-5
-                                            rounded-[2.2rem]
-                                            border
-                                            border-[#151515]/10
-                                        "
-                                    />
-
-
-                                    {/* Top reflection */}
-
-                                    <div
-                                        className="
-                                            absolute
-                                            left-10
-                                            right-10
-                                            top-8
-                                            h-px
-                                            bg-gradient-to-r
-                                            from-transparent
-                                            via-[#151515]/15
-                                            to-transparent
-                                        "
-                                    />
-
-
-                                    {/* Brand mark */}
-
-                                    <div
-                                        className="
-                                            absolute
-                                            left-10
-                                            top-12
-                                            text-[12px]
-                                            font-bold
-                                            tracking-[0.35em]
-                                            text-[#151515]/35
-                                        "
-                                    >
-                                        KOKO MEMORY
-                                    </div>
-
-
-                                    {/* Pink accent */}
-
-                                    <div
-                                        className="
-                                            absolute
-                                            bottom-10
-                                            left-10
-                                            h-1.5
-                                            w-20
-                                            rounded-full
-                                            bg-gradient-to-r
-                                            from-[#141516]
-                                            to-[#a79bd8]/40
-                                            shadow-[0_0_20px_rgba(244,114,182,0.25)]
-                                        "
-                                    />
-
-
-                                    {/* Small circle */}
-
-                                    <div
-                                        className="
-                                            absolute
-                                            bottom-9
-                                            right-10
-                                            h-12
-                                            w-12
-                                            rounded-full
-                                            border
-                                            border-[#151515]/10
-                                            bg-white/70
-                                        "
-                                    />
-
+                            <div className="relative mx-auto hidden h-[470px] w-full max-w-[520px] lg:block">
+                                <div className="absolute right-0 top-0 h-[360px] w-[70%] overflow-hidden rounded-[2px] shadow-[0_30px_60px_rgba(21,21,21,0.12)]">
+                                    <Image src="/gallery/1.jpg" alt="คู่บ่าวสาวถ่ายภาพกับ Photobooth ของ KOKO" fill priority sizes="360px" className="object-cover" />
                                 </div>
-
-
-                                {/* Secondary glass */}
-
-                                <div
-                                    className="
-                                        absolute
-                                        bottom-5
-                                        right-20
-                                        h-24
-                                        w-36
-                                        rounded-[1.75rem]
-                                        border
-                                        border-[#151515]/10
-                                        bg-white/70
-                                        shadow-[0_25px_70px_rgba(0,0,0,0.20)]
-                                        backdrop-blur-md
-                                        motion-safe:animate-[kokoFloatSlow_13s_ease-in-out_infinite]
-                                        [transform:perspective(900px)_rotateY(12deg)_rotateX(-8deg)]
-                                    "
-                                >
-
-                                    <div
-                                        className="
-                                            absolute
-                                            bottom-5
-                                            left-5
-                                            h-1
-                                            w-10
-                                            rounded-full
-                                            bg-[#141516]/40
-                                        "
-                                    />
-
+                                <div className="absolute bottom-0 left-0 h-[260px] w-[56%] overflow-hidden rounded-[2px] border-[6px] border-white shadow-[0_30px_60px_rgba(21,21,21,0.12)]">
+                                    <Image src="/gallery/2.jpg" alt="เพื่อน ๆ ถ่ายภาพสนุก ๆ กับ Photobooth" fill sizes="300px" className="object-cover" />
                                 </div>
-
-
-                                {/* Orb */}
-
-                                <div
-                                    className="
-                                        absolute
-                                        bottom-7
-                                        left-4
-                                        h-28
-                                        w-28
-                                        rounded-full
-                                        border
-                                        border-[#151515]/10
-                                        bg-white/70
-                                        shadow-[inset_0_0_45px_rgba(255,255,255,0.08),0_0_80px_rgba(244,114,182,0.10)]
-                                        backdrop-blur-md
-                                        motion-safe:animate-[kokoFloatSlow_15s_ease-in-out_infinite_reverse]
-                                    "
-                                />
-
-
-                                {/* Floating sparkle */}
-
-                                <span
-                                    className="
-                                        absolute
-                                        left-[21%]
-                                        top-[12%]
-                                        text-xl
-                                        text-[#a79bd8]/70
-                                        motion-safe:animate-[kokoStar_8s_ease-in-out_infinite]
-                                    "
-                                >
-                                    ✦
-                                </span>
-
-
-                                <span
-                                    className="
-                                        absolute
-                                        right-[8%]
-                                        bottom-[33%]
-                                        text-sm
-                                        text-[#7a6cc0]/50
-                                        motion-safe:animate-[kokoStar_6s_ease-in-out_infinite_reverse]
-                                    "
-                                >
-                                    ✧
-                                </span>
-
                             </div>
 
                         </div>
@@ -952,7 +762,7 @@ export default function GalleryPage() {
                     "
                 >
 
-                    <div className="mx-auto max-w-7xl">
+                    <div className="mx-auto max-w-[1240px]">
 
                         <div
                             className="
@@ -1094,7 +904,7 @@ export default function GalleryPage() {
                             relative
                             z-10
                             mx-auto
-                            max-w-7xl
+                            max-w-[1240px]
                         "
                     >
 
@@ -1177,7 +987,7 @@ export default function GalleryPage() {
                             relative
                             mx-auto
                             grid
-                            max-w-7xl
+                            max-w-[1240px]
                             items-center
                             gap-12
                             lg:grid-cols-[1fr_0.85fr]

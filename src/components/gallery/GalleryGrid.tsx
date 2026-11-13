@@ -1272,7 +1272,7 @@ export default function GalleryGrid() {
                             flex
                             max-h-[96vh]
                             w-full
-                            max-w-7xl
+                            max-w-[1240px]
                             flex-col
                             overflow-hidden
                             rounded-[2px]
