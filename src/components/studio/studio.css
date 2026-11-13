@@ -574,3 +574,9 @@
 .koko-studio details>summary::after{content:"+";flex:none;display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--ink);border-radius:2px;font-size:20px;line-height:1;font-weight:400;transition:background .2s,color .2s}
 .koko-studio details[open]>summary::after{content:"\2212";background:var(--ink);color:#fff}
 .koko-studio details>summary:hover{text-decoration:underline;text-underline-offset:4px}
+
+/* Home hero: soft brand glow + tighter rhythm */
+.studio-apple .studio-hero{position:relative;padding-bottom:40px}
+.studio-apple .studio-hero::before{content:"";position:absolute;inset:-60px -10vw auto -10vw;height:620px;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 45% 55% at 78% 40%,rgba(167,155,216,.22),transparent 70%),radial-gradient(ellipse 35% 45% at 95% 15%,rgba(127,178,238,.18),transparent 70%),radial-gradient(ellipse 35% 45% at 55% 60%,rgba(217,138,174,.14),transparent 70%)}
+.studio-apple .studio-services{padding-top:72px}
+@media(max-width:900px){.studio-apple .studio-hero::before{height:480px;inset:-40px -20vw auto -20vw}}

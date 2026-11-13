@@ -132,7 +132,7 @@ export default function Hero3D({ moving = true }: { moving?: boolean }) {
             renderer.setSize(w, h, false);
             camera.aspect = w / h;
             // Keep the whole composition in frame on narrow screens
-            camera.position.z = w / h < 1 ? 13.5 : 10;
+            camera.position.z = w / h < 1 ? 15 : 12.5;
             camera.updateProjectionMatrix();
         };
         resize();
@@ -166,7 +166,7 @@ export default function Hero3D({ moving = true }: { moving?: boolean }) {
             // Prints drift in a slow halo around the camera
             prints.forEach(({ print, phase }) => {
                 const a = t * 0.22 + phase;
-                print.position.set(Math.cos(a) * 3.3, Math.sin(a) * 1.75 + Math.sin(t * 0.9 + phase) * 0.08, Math.sin(a) * -0.8 - 0.3);
+                print.position.set(Math.cos(a) * 3.1, Math.sin(a) * 1.6 + Math.sin(t * 0.9 + phase) * 0.08, Math.sin(a) * -0.8 - 0.3);
                 print.rotation.set(0, -Math.cos(a) * 0.35, Math.sin(a + phase) * 0.18);
             });
             renderer.render(scene, camera);
