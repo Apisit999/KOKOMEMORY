@@ -417,3 +417,32 @@
 .studio-apple .studio-actions>a{width:100%;justify-content:center}
 .studio-apple .studio-end{padding:56px 24px!important;margin-bottom:56px!important}
 }
+/* Apple-style: services + photobooth pages */
+.studio-apple .services-intro,.studio-apple .rental-hero{text-align:center;padding-block:150px 56px}
+.studio-apple .services-intro h1,.studio-apple .rental-hero h1{margin-inline:auto;max-width:900px;text-wrap:balance}
+.studio-apple .services-intro>p:not(.studio-eyebrow),.studio-apple .rental-hero>div>p:not(.studio-eyebrow){margin-inline:auto;max-width:600px}
+.studio-apple .rental-hero{grid-template-columns:1fr;gap:56px}
+.studio-apple .rental-photo{height:min(56vw,560px);transform:none;border:0;padding:0;background:none}
+.studio-apple .services-choice,.studio-apple .services-flow,.studio-apple .rental-packages,.studio-apple .rental-how{padding-block:110px;text-align:center}
+.studio-apple .services-choice-grid{gap:20px;margin-block:40px}
+.studio-apple .services-choice-card{min-height:190px;padding:28px;align-items:center;text-align:center}
+.studio-apple .services-choice-card[aria-pressed=true]{border-color:var(--ink);outline:none;box-shadow:inset 0 0 0 1px var(--ink)}
+.studio-apple .services-next{text-align:left;padding:44px;gap:48px}
+.studio-apple .rental-highlights{text-align:center;gap:24px;padding-block:20px 40px}
+.studio-apple .rental-highlights article{padding:36px 28px;display:flex;flex-direction:column;align-items:center}
+.studio-apple .rental-package-group{margin-top:56px}
+.studio-apple .rental-package-group>h3{text-align:center;margin-bottom:24px}
+.studio-apple .rental-grid{gap:24px;text-align:left}
+.studio-apple .rental-card{padding:32px}
+.studio-apple .rental-auth-note{margin-inline:auto;max-width:620px}
+.studio-apple .rental-inquiry{flex-direction:column;text-align:center;background:var(--ivory);border:1px solid var(--hairline);border-radius:2px;padding:64px 32px;margin-block:0 100px}
+.studio-apple .rental-inquiry p:not(.studio-eyebrow){margin-inline:auto}
+.studio-apple .rental-inquiry .studio-actions{justify-content:center}
+@media(max-width:800px){
+.studio-apple .services-intro,.studio-apple .rental-hero{padding-block:120px 32px;gap:32px}
+.studio-apple .services-choice,.studio-apple .services-flow,.studio-apple .rental-packages,.studio-apple .rental-how{padding-block:64px}
+.studio-apple .services-next{padding:26px;gap:20px}
+.studio-apple .rental-highlights article{display:flex}
+.studio-apple .rental-inquiry{padding:40px 22px;margin-bottom:56px}
+.studio-apple .rental-inquiry .studio-actions{width:100%;align-items:stretch}
+}
