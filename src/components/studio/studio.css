@@ -561,3 +561,16 @@
 .studio-apple .studio-hero h1,.studio-apple .rental-hero h1,.studio-apple .about-hero h1,.studio-apple .contact-hero h1{font-size:clamp(34px,3.7vw,54px)!important}
 .studio-apple .studio-faq h2{font-size:clamp(30px,3vw,44px)!important}
 .koko-studio footer h3{color:rgba(255,255,255,.65)!important}
+/* Software / product pages: left-aligned like every other page (beats the older centered rule) */
+.studio-apple.koko-studio .studio-product{text-align:left;padding-top:150px}
+.studio-apple .studio-product>.studio-eyebrow{margin-top:28px!important}
+.studio-apple .studio-product>img{margin-inline:0!important}
+.studio-apple .studio-product>.studio-text-link{display:inline-flex;border:1px solid var(--ink);padding:10px 16px;border-radius:2px;font-size:14px}
+.studio-apple .studio-product h1{margin-inline:0!important}
+@media(max-width:800px){.studio-apple.koko-studio .studio-product{padding-top:120px}}
+/* FAQ: show clearly that rows open and close */
+.koko-studio details>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;cursor:pointer}
+.koko-studio details>summary::-webkit-details-marker{display:none}
+.koko-studio details>summary::after{content:"+";flex:none;display:grid;place-items:center;width:32px;height:32px;border:1px solid var(--ink);border-radius:2px;font-size:20px;line-height:1;font-weight:400;transition:background .2s,color .2s}
+.koko-studio details[open]>summary::after{content:"\2212";background:var(--ink);color:#fff}
+.koko-studio details>summary:hover{text-decoration:underline;text-underline-offset:4px}
