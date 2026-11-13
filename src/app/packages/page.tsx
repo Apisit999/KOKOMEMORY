@@ -48,10 +48,10 @@ export default function PackagesPage() {
                 MAIN
             ================================================== */}
 
-            <main className="studio-packages min-h-screen px-4 pb-20 pt-32 sm:px-6 sm:pt-36">
-                <div className="mx-auto max-w-7xl">
-                    <header className="mx-auto max-w-3xl text-center">
-                        <p className="studio-eyebrow justify-center">PACKAGES</p>
+            <main className="studio-packages min-h-screen px-5 pb-20 pt-32 sm:px-10 sm:pt-36">
+                <div className="mx-auto max-w-[1240px]">
+                    <header className="max-w-3xl">
+                        <p className="studio-eyebrow">PACKAGES</p>
                         <h1 className="mt-4 text-3xl font-black sm:text-5xl">เลือกแพ็กเกจสำหรับงานของคุณ</h1>
                         <p className="mt-5 text-sm leading-7 sm:text-base">ดูราคา ระยะเวลา และสิ่งที่ได้รับก่อนเริ่มจอง</p>
                         <Link href="/photobooth" className="studio-text-link mt-4">← ดูบริการ Photobooth</Link>
@@ -63,7 +63,7 @@ export default function PackagesPage() {
                         { category: "360", title: "360 Photobooth" },
                     ].map((group) => (
                         <section key={group.category} className="mt-14 sm:mt-16">
-                            <h2 className="text-center text-2xl font-black sm:text-3xl">{group.title}</h2>
+                            <h2 className="text-2xl font-black sm:text-3xl">{group.title}</h2>
                             <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
                                 {packages.filter((item) => item.category === group.category).map((item) => (
                                     <article key={item.id} className="studio-package-card flex h-full flex-col rounded-2xl border p-6 shadow-sm sm:p-7">
