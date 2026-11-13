@@ -170,7 +170,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="mx-auto flex min-h-[calc(100svh-3rem)] w-full max-w-[520px] items-center">
 
-                    <section className="w-full rounded-[24px] border border-[#e8e8e6] bg-white p-5 shadow-[0_25px_70px_-35px_rgba(20, 21, 22,0.42)] sm:rounded-[28px] sm:p-9">
+                    <section className="w-full rounded-[4px] border border-[#e8e8e6] bg-white p-5 shadow-[0_25px_70px_-35px_rgba(20,21,22,0.42)] sm:rounded-[4px] sm:p-9">
 
                         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fafaf9] text-[#7a6cc0] sm:h-16 sm:w-16">
                             <MailCheck
@@ -190,7 +190,7 @@ export default function ForgotPasswordPage() {
                         </p>
 
 
-                        <div className="mt-5 rounded-[14px] border border-[#e8e8e6] bg-[#fafaf9] px-4 py-3">
+                        <div className="mt-5 rounded-[2px] border border-[#e8e8e6] bg-[#fafaf9] px-4 py-3">
 
                             <p className="text-[12px] font-semibold text-[#3C3C37] sm:text-[12px]">
                                 อีเมลที่ใช้รีเซ็ตรหัสผ่าน
@@ -203,7 +203,7 @@ export default function ForgotPasswordPage() {
                         </div>
 
 
-                        <div className="mt-3 rounded-[14px] border border-[#e8e8e6] bg-[#FCFAFB] px-4 py-3">
+                        <div className="mt-3 rounded-[2px] border border-[#e8e8e6] bg-[#FCFAFB] px-4 py-3">
 
                             <p className="text-[12px] font-semibold text-[#3C3C37] sm:text-[12px]">
                                 ยังไม่พบอีเมล?
@@ -233,7 +233,7 @@ export default function ForgotPasswordPage() {
                                     loginHref,
                                 )
                             }
-                            className="mt-5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-br from-[#141516] to-[#141516] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_25px_-10px_rgba(20, 21, 22,0.55)] transition hover:-translate-y-px active:translate-y-0"
+                            className="mt-5 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[2px] bg-gradient-to-br from-[#141516] to-[#141516] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_25px_-10px_rgba(20,21,22,0.55)] transition hover:-translate-y-px active:translate-y-0"
                         >
                             <ArrowLeft size={17} />
                             กลับเข้าสู่ระบบ
@@ -269,7 +269,7 @@ export default function ForgotPasswordPage() {
 
             <div className="mx-auto flex w-full max-w-[1120px] items-center lg:min-h-[calc(100svh-4rem)]">
 
-                <div className="koko-auth-shell grid w-full overflow-hidden rounded-[24px] border border-[#e8e8e6] bg-white shadow-[0_35px_90px_-35px_rgba(20, 21, 22,0.34)] sm:rounded-[30px] lg:grid-cols-2">
+                <div className="koko-auth-shell grid w-full overflow-hidden rounded-[4px] border border-[#e8e8e6] bg-white shadow-[0_35px_90px_-35px_rgba(20,21,22,0.34)] sm:rounded-[4px] lg:grid-cols-2">
 
 
                     {/* ==================================================
@@ -278,7 +278,7 @@ export default function ForgotPasswordPage() {
 
                     <section className="koko-visual relative order-1 overflow-hidden lg:order-1">
 
-                        <div className="absolute inset-0 bg-[linear-gradient(145deg,#F58CAF_0%,#E75B88_50%,#C94776_100%)]" />
+                        <div className="absolute inset-0 bg-[linear-gradient(145deg,#1b1b1b_0%,#151515_55%,#2b2738_100%)]" />
 
                         <div className="absolute -left-24 -top-24 h-[300px] w-[300px] rounded-full bg-white/20 blur-[75px]" />
 
@@ -369,7 +369,7 @@ export default function ForgotPasswordPage() {
                         </div>
 
 
-                        <div className="relative z-30 mx-5 mb-5 mt-auto rounded-[16px] border border-white/20 bg-[#1F2020]/30 px-4 py-3 backdrop-blur-md sm:mx-8 sm:mb-7 sm:px-5 sm:py-3.5 lg:mx-9 lg:mb-8">
+                        <div className="relative z-30 mx-5 mb-5 mt-auto rounded-[2px] border border-white/20 bg-[#1F2020]/30 px-4 py-3 backdrop-blur-md sm:mx-8 sm:mb-7 sm:px-5 sm:py-3.5 lg:mx-9 lg:mb-8">
 
                             <div className="mb-1.5 h-px w-8 bg-white/80" />
 
@@ -412,7 +412,7 @@ export default function ForgotPasswordPage() {
 
                             <div className="mb-6 sm:mb-7">
 
-                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[12px] bg-[#fafaf9] text-[#7a6cc0] sm:h-11 sm:w-11">
+                                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[2px] bg-[#fafaf9] text-[#7a6cc0] sm:h-11 sm:w-11">
                                     <MailCheck size={20} />
                                 </div>
 
@@ -432,7 +432,7 @@ export default function ForgotPasswordPage() {
                             {error && (
                                 <div
                                     role="alert"
-                                    className="mb-4 rounded-[13px] border border-red-100 bg-red-50 px-3.5 py-3 text-[12px] leading-5 text-red-600 sm:text-xs"
+                                    className="mb-4 rounded-[2px] border border-red-100 bg-red-50 px-3.5 py-3 text-[12px] leading-5 text-red-600 sm:text-xs"
                                 >
                                     {error}
                                 </div>
@@ -471,7 +471,7 @@ export default function ForgotPasswordPage() {
                                     disabled={
                                         loading
                                     }
-                                    className="box-border block min-h-[48px] w-full rounded-[13px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 text-[13px] text-[#141516] outline-none placeholder:text-[#8A8A82] transition focus:border-[#141516] focus:ring-4 focus:ring-[#141516]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[50px] sm:text-sm"
+                                    className="box-border block min-h-[48px] w-full rounded-[2px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 text-[13px] text-[#141516] outline-none placeholder:text-[#8A8A82] transition focus:border-[#141516] focus:ring-4 focus:ring-[#141516]/10 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[50px] sm:text-sm"
                                 />
 
 
@@ -480,7 +480,7 @@ export default function ForgotPasswordPage() {
                                     disabled={
                                         loading
                                     }
-                                    className="mt-4 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[13px] bg-gradient-to-br from-[#141516] to-[#141516] px-4 py-3 text-[13px] font-semibold text-white shadow-[0_13px_25px_-11px_rgba(20, 21, 22,0.6)] transition hover:-translate-y-px active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[50px] sm:text-sm"
+                                    className="mt-4 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[2px] bg-gradient-to-br from-[#141516] to-[#141516] px-4 py-3 text-[13px] font-semibold text-white shadow-[0_13px_25px_-11px_rgba(20,21,22,0.6)] transition hover:-translate-y-px active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[50px] sm:text-sm"
                                 >
 
                                     {loading ? (
@@ -501,7 +501,7 @@ export default function ForgotPasswordPage() {
                             </form>
 
 
-                            <div className="mt-5 rounded-[13px] border border-[#e8e8e6] bg-white px-3.5 py-3">
+                            <div className="mt-5 rounded-[2px] border border-[#e8e8e6] bg-white px-3.5 py-3">
 
                                 <p className="text-[12px] leading-5 text-[#6B6B64] sm:text-[12px]">
                                     เพื่อความปลอดภัย ระบบจะไม่แจ้งว่าอีเมลนี้มีบัญชีอยู่หรือไม่

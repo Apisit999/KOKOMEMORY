@@ -490,3 +490,10 @@
 .koko-studio .rental-card>a{font-size:15px!important}
 .koko-studio .rental-highlights h2{font-size:19px}
 .koko-studio .rental-highlights p{font-size:15px!important}
+/* Apple-style: pricing page */
+.studio-apple .pricing-lead{margin-inline:auto}
+.studio-apple .pricing-steps{margin-top:48px}
+.studio-apple .pricing-pilot{align-items:center;text-align:center}
+.studio-apple .pricing-grid,.studio-apple .pricing-faq,.studio-apple .pricing-faq *{text-align:left}
+.studio-apple .pricing-faq{margin-inline:auto}
+.studio-apple .pricing-card li,.studio-apple .pricing-card li span,.studio-apple .pricing-card small{font-size:15px}

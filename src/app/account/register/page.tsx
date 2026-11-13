@@ -453,13 +453,13 @@ export default function RegisterPage() {
 
             <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[1080px] items-center sm:min-h-[calc(100vh-3rem)] lg:min-h-[640px]">
 
-                <div className="grid w-full overflow-hidden rounded-[24px] bg-white shadow-[0_40px_90px_-30px_rgba(20, 21, 22,0.35),0_4px_14px_rgba(60,36,48,0.06)] sm:rounded-[30px] lg:grid-cols-[1.05fr_0.95fr]">
+                <div className="grid w-full overflow-hidden rounded-[4px] bg-white shadow-[0_40px_90px_-30px_rgba(20,21,22,0.35),0_4px_14px_rgba(60,36,48,0.06)] sm:rounded-[4px] lg:grid-cols-[1.05fr_0.95fr]">
 
                     {/* ==================================================
                         VISUAL PANEL
                     ================================================== */}
 
-                    <section className="relative isolate min-h-[390px] overflow-hidden bg-[#141516] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:h-[640px] lg:min-h-[640px] lg:px-10 lg:py-10">
+                    <section className="relative isolate min-h-[390px] overflow-hidden bg-[#141516] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:min-h-[640px] lg:px-10 lg:py-10">
 
                         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
 
@@ -563,9 +563,9 @@ export default function RegisterPage() {
 
                                 <div className="relative rounded-[18px] bg-gradient-to-br from-white via-[#fafaf9] to-[#8A8A82] p-[6px] shadow-[0_34px_45px_-20px_rgba(45,8,25,0.7)]">
 
-                                    <div className="absolute inset-[2px] rounded-[16px] border border-white/80" />
+                                    <div className="absolute inset-[2px] rounded-[2px] border border-white/80" />
 
-                                    <div className="absolute inset-[6px] rounded-[12px] border border-[#1F2020]/25" />
+                                    <div className="absolute inset-[6px] rounded-[2px] border border-[#1F2020]/25" />
 
 
                                     <div className="relative overflow-hidden rounded-[11px] bg-[#1F2020]">
@@ -577,7 +577,7 @@ export default function RegisterPage() {
                                         />
 
 
-                                        <div className="absolute inset-x-[8%] bottom-[9%] rounded-[12px] border border-white/35 bg-[#1F2020]/88 px-3 py-2.5 text-center shadow-[0_10px_22px_rgba(35,5,20,0.35)] backdrop-blur-[3px]">
+                                        <div className="absolute inset-x-[8%] bottom-[9%] rounded-[2px] border border-white/35 bg-[#1F2020]/88 px-3 py-2.5 text-center shadow-[0_10px_22px_rgba(35,5,20,0.35)] backdrop-blur-[3px]">
 
                                             <p className="font-serif text-[13px] font-medium leading-[1.35] text-white sm:text-[14px]">
                                                 เก็บทุกช่วงเวลา
@@ -666,7 +666,7 @@ export default function RegisterPage() {
                             {error && (
                                 <div
                                     role="alert"
-                                    className="mb-5 rounded-[14px] border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-red-600"
+                                    className="mb-5 rounded-[2px] border border-red-100 bg-red-50 px-4 py-3 text-xs leading-5 text-red-600"
                                 >
                                     {error}
 
@@ -701,7 +701,7 @@ export default function RegisterPage() {
                                         ชื่อ
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[2px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20,21,22,0.15)]">
 
                                         <input
                                             id="name"
@@ -741,7 +741,7 @@ export default function RegisterPage() {
                                         อีเมล
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[2px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20,21,22,0.15)]">
 
                                         <input
                                             id="email"
@@ -782,7 +782,7 @@ export default function RegisterPage() {
                                         รหัสผ่าน
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[2px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20,21,22,0.15)]">
 
                                         <input
                                             id="password"
@@ -862,7 +862,7 @@ export default function RegisterPage() {
                                         ยืนยันรหัสผ่าน
                                     </label>
 
-                                    <div className="flex min-h-[48px] items-center rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20, 21, 22,0.15)]">
+                                    <div className="flex min-h-[48px] items-center rounded-[2px] border-[1.5px] border-[#e8e8e6] bg-white px-3.5 transition focus-within:border-[#141516] focus-within:shadow-[0_0_0_4px_rgba(20,21,22,0.15)]">
 
                                         <input
                                             id="confirmPassword"
@@ -941,7 +941,7 @@ export default function RegisterPage() {
                                         loading ||
                                         googleLoading
                                     }
-                                    className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[14px] border-none bg-gradient-to-br from-[#141516] to-[#141516] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_26px_-10px_rgba(20, 21, 22,0.55)] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[2px] border-none bg-gradient-to-br from-[#141516] to-[#141516] px-4 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_26px_-10px_rgba(20,21,22,0.55)] transition hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
                                 >
 
                                     {loading ? (
@@ -990,7 +990,7 @@ export default function RegisterPage() {
                                     loading ||
                                     googleLoading
                                 }
-                                className="flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[14px] border-[1.5px] border-[#e8e8e6] bg-white px-4 py-3 text-sm font-medium text-[#141516] transition hover:border-[#141516] hover:bg-[#fafaf9] disabled:cursor-not-allowed disabled:opacity-60"
+                                className="flex min-h-[46px] w-full items-center justify-center gap-2.5 rounded-[2px] border-[1.5px] border-[#e8e8e6] bg-white px-4 py-3 text-sm font-medium text-[#141516] transition hover:border-[#141516] hover:bg-[#fafaf9] disabled:cursor-not-allowed disabled:opacity-60"
                             >
 
                                 {googleLoading ? (

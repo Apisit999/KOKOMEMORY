@@ -30,7 +30,7 @@ export default function PricingContent() {
   const plans = CLOUD_PLANS.filter(plan => plan.billingPeriod === period);
   const colors = ["studio-cream", "studio-lime", "studio-pink"];
   return (
-    <div className="koko-studio">
+    <div className="koko-studio studio-apple">
       <Navbar />
       <main className="studio-product studio-wrap pricing-page">
         <Link className="studio-text-link" href="/software/photobooth">← {t("โปรแกรม Photobooth", "Photobooth software")}</Link>
