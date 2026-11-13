@@ -403,7 +403,7 @@ export default function ForgotPasswordPage() {
 
                             <Link
                                 href={loginHref}
-                                className="mb-6 inline-flex min-h-[34px] items-center gap-2 text-[12px] font-medium text-[#5F5F58] transition hover:text-[#7a6cc0] sm:mb-8 sm:text-[13px]"
+                                className="mb-6 inline-flex min-h-11 items-center gap-2 text-[13px] font-medium text-[#5F5F58] transition hover:text-[#7a6cc0] sm:mb-8 sm:text-[13px]"
                             >
                                 <ArrowLeft size={15} />
                                 กลับเข้าสู่ระบบ

@@ -829,7 +829,7 @@ export default function RegisterPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#7a6cc0]"
+                                            className="-mr-2 flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-[2px] p-1 text-[#5F5F58] hover:text-[#7a6cc0]"
                                         >
                                             {showPassword ? (
                                                 <EyeOff
@@ -911,7 +911,7 @@ export default function RegisterPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="flex shrink-0 items-center justify-center rounded-md p-1 text-[#5F5F58] hover:text-[#7a6cc0]"
+                                            className="-mr-2 flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-[2px] p-1 text-[#5F5F58] hover:text-[#7a6cc0]"
                                         >
                                             {showConfirmPassword ? (
                                                 <EyeOff

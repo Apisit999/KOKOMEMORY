@@ -542,7 +542,7 @@ export default function LoginPage() {
                                                     ? "ซ่อนรหัสผ่าน"
                                                     : "แสดงรหัสผ่าน"
                                             }
-                                            className="-mr-2 flex shrink-0 items-center justify-center rounded-md p-2.5 text-[#5F5F58] transition hover:text-[#7a6cc0] focus-visible:outline-2 focus-visible:outline-[#151515]"
+                                            className="-mr-2 flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-[2px] p-2.5 text-[#5F5F58] transition hover:text-[#7a6cc0] focus-visible:outline-2 focus-visible:outline-[#151515]"
                                         >
                                             {showPassword ? (
                                                 <EyeOff size={19} />
