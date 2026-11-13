@@ -582,7 +582,7 @@ export default function GalleryPage() {
                                             justify-center
                                             rounded-full
                                             border
-                                            border-[#151515]/10
+                                            border-[#151515]/25
                                             bg-white/70
                                             px-7
                                             py-3.5
@@ -593,8 +593,8 @@ export default function GalleryPage() {
                                             transition-all
                                             duration-300
                                             hover:-translate-y-1
-                                            hover:border-[#151515]/10
-                                            hover:bg-[#151515]/[0.06]
+                                            hover:border-[#151515]/60
+                                            hover:bg-white
                                         "
                                     >
 
