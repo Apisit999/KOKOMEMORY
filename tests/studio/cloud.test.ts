@@ -276,10 +276,14 @@ test("revoked, expired, forged and malformed links are indistinguishable; a new 
   assert.equal((await f.cloud.viewShare(token)).photos.length, 1);
   await f.cloud.manageShare("uid-a", { action: "revoke", sessionId: "s1" });
   const errors: string[] = [];
-  for (const attempt of [token, "A".repeat(43), "short", "", undefined, 42]) {
+  for (const attempt of [token, "short", "", undefined, 42]) {
     try { await f.cloud.viewShare(attempt); errors.push("allowed"); } catch (e) { errors.push((e as { code: string; status: number }).code + (e as { status: number }).status); }
   }
   assert.deepEqual(new Set(errors), new Set(["share_unavailable404"]));
+  // A well-formed token nobody registered (an offline QR, or a guess) waits with no photos; it never opens anything.
+  const unknown = await f.cloud.viewShare("A".repeat(43));
+  assert.equal(unknown.pending, true);
+  assert.deepEqual(unknown.photos, []);
   const second = await f.cloud.createSessionShare({ ...f.input, sessionId: "s1" });
   assert.notEqual(tokenOf(second.url), token);
   assert.equal((await f.cloud.viewShare(tokenOf(second.url))).photos.length, 1);
@@ -412,7 +416,8 @@ test("without the right token or code there is no way to the photos", async () =
   const eventId = await makeEvent(f);
   await uploadIn(f, eventId, "a", "guest-one");
   const made = await f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token: boothToken() });
-  await assert.rejects(f.cloud.viewShare(boothToken()), { code: "share_unavailable" });
+  const guess = await f.cloud.viewShare(boothToken());
+  assert.deepEqual([guess.pending, guess.photos.length], [true, 0]);
   await assert.rejects(f.cloud.viewShare(undefined), { code: "share_unavailable" });
   // A code only works with its own event.
   await assert.rejects(f.cloud.viewShortCode(ID("e"), made.shortCode), { code: "share_unavailable" });

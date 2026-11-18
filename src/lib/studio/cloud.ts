@@ -505,8 +505,15 @@ export class CloudService {
     return { bytes, name: `KOKO-${String(index + 1).padStart(2, "0")}.jpg` };
   }
 
+  /**
+   * A well-formed token nobody registered yet is most likely a QR the booth printed while offline: the page waits for it
+   * instead of showing an error. Every unknown token looks the same, so this reveals nothing; revoked and expired links stay unavailable.
+   */
   async viewShare(tokenInput: unknown, pinInput?: unknown) {
-    return this.present(await this.shareContents(tokenInput, pinInput));
+    if (typeof tokenInput === "string" && TOKEN.test(tokenInput) && !(await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", hash(tokenInput))))) {
+      return { scope: "session" as const, pending: true, pinProtected: false, eventName: null, expiresAt: iso(this.now() + SESSION_SHARE_DAYS * 86400000), expectedCount: null, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: [] };
+    }
+    return { ...(await this.present(await this.shareContents(tokenInput, pinInput))), pending: false };
   }
 
   /** Public: the 8-character code printed under the QR, valid only together with its event. Callers must rate limit. */
