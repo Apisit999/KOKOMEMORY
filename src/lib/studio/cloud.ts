@@ -8,7 +8,12 @@ import { PRODUCT_ID, effectivePlanId, StudioError, type License, type Plan, type
  * Layout: owner account -> event -> photo. Files live in object storage under studio/{ownerUid}/{eventId}/{photoId}.jpg.
  */
 export type CloudEvent = { id: string; ownerUid: string; licenseId: string; clientEventId: string; name: string; date: string | null; status: "active" | "archived"; photoCount: number; bytes: number; createdAt: string; updatedAt: string };
-export type CloudPhoto = { id: string; eventId: string; ownerUid: string; sessionId: string | null; key: string; size: number; sha256: string; status: "pending" | "ready" | "hidden" | "deleted"; createdAt: string; updatedAt: string; readyAt: string | null };
+export type CloudPhoto = { id: string; eventId: string; ownerUid: string; sessionId: string | null; key: string; size: number; sha256: string; status: "pending" | "ready" | "hidden" | "deleted"; createdAt: string; updatedAt: string; readyAt: string | null; derivatives?: DerivativeKind[] };
+/** Smaller copies made after upload so phones never load the original: grid, full screen, and the default saved file. */
+export type DerivativeKind = "thumb" | "preview" | "download";
+export type Derivative = { kind: DerivativeKind; bytes: Uint8Array; contentType: "image/webp" | "image/jpeg" };
+export type DerivativeMaker = (original: Uint8Array) => Promise<Derivative[]>;
+export const derivativeKey = (key: string, kind: DerivativeKind) => key.replace(/.jpg$/, kind === "download" ? ".download.jpg" : `.${kind}.webp`);
 export type CloudUsage = { ownerUid: string; bytes: number; photos: number; updatedAt: string };
 type Input = Record<string, unknown>;
 /** Customer photos need signed, short-lived read URLs and deletion on top of the release storage contract. */
@@ -18,6 +23,7 @@ export interface PhotoStorage extends ReleaseStorage {
   remove(key: string): Promise<void>;
   /** Whole object as bytes (photos are capped at MAX_PHOTO_BYTES); null when missing. */
   read(key: string): Promise<Uint8Array | null>;
+  write(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
 }
 /** Who is asking: a customer sees only their own photos; an admin sees everything. */
 export type CloudScope = { ownerUid: string } | { admin: true };
@@ -33,8 +39,19 @@ const PIN_LOCK_MS = 15 * 60_000;
 const pinDigest = (pin: string, salt: string) => scryptSync(pin, salt, 32).toString("hex");
 export const EVENT_SHARE_DAYS = 90;
 const TOKEN = /^[A-Za-z0-9_-]{43}$/;
+/** A capture session registered by the booth. The booth makes its token offline, so the QR prints before the server knows it. */
+export type CloudSession = { id: string; ownerUid: string; eventId: string; sessionId: string; shareId: string; shortCode: string; expectedCount: number | null; createdAt: string; expiresAt: string };
+export type ShortCodeRecord = { id: string; eventId: string; shareId: string; expiresAt: string };
+/** No look-alike characters (0/O, 1/I). 8 of 32 symbols = 40 bits, only valid together with its event and rate limited. */
+const SHORT_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+const SHORT_CODE = /^[2-9A-HJ-NP-Z]{8}$/;
+const MAX_EXPECTED = 100;
+const shortCodeId = (eventId: string, code: string) => hash(`shortcode:${eventId}:${code}`);
+function newShortCode() { return [...randomBytes(8)].map(b => SHORT_CODE_ALPHABET[b & 31]).join(""); }
 
 export const MAX_PHOTO_BYTES = 25 * 1024 * 1024;
+/** Photos one event or link can show. The Firestore store allows up to this many per query. */
+export const MAX_LIST_PHOTOS = 1000;
 const iso = (time: number) => new Date(time).toISOString();
 function text(value: unknown, min: number, max: number) {
   if (typeof value !== "string" || value.length < min || value.length > max || /[\u0000-\u001f]/.test(value)) throw new StudioError("invalid_request");
@@ -44,8 +61,9 @@ function pattern(value: unknown, re: RegExp) { const v = text(value, 1, 128); if
 export const photoKey = (ownerUid: string, eventId: string, photoId: string) => `studio/${ownerUid}/${eventId}/${photoId}.jpg`;
 
 export class CloudService {
-  private store: Store; private signer: EntitlementSigner; private storage: PhotoStorage; private now: () => number; private origin: string; private secret: string;
-  constructor(options: { store: Store; signer: EntitlementSigner; storage: PhotoStorage; now?: () => number; origin: string; shareSecret: string }) {
+  private store: Store; private signer: EntitlementSigner; private storage: PhotoStorage; private now: () => number; private origin: string; private secret: string; private makeDerivatives: DerivativeMaker | null;
+  constructor(options: { store: Store; signer: EntitlementSigner; storage: PhotoStorage; now?: () => number; origin: string; shareSecret: string; makeDerivatives?: DerivativeMaker }) {
+    this.makeDerivatives = options.makeDerivatives ?? null;
     if (options.shareSecret.length < 32) throw new Error("A share secret of at least 32 characters is required");
     this.origin = options.origin.replace(/\/+$/, "");
     this.secret = options.shareSecret;
@@ -130,7 +148,7 @@ export class CloudService {
     const found = await this.storage.inspect(pending.key);
     if (!found) throw new StudioError("file_missing", 409);
     if (found.size !== pending.size || found.sha256 !== pending.sha256) throw new StudioError("upload_mismatch", 409);
-    return this.store.transaction(async tx => {
+    const confirmed = await this.store.transaction(async tx => {
       const auth = await this.authorize(tx, input);
       const photo = await tx.get<CloudPhoto>("studioPhotos", pending.id);
       if (!photo || photo.ownerUid !== auth.ownerUid) throw new StudioError("not_found", 404);
@@ -145,7 +163,38 @@ export class CloudService {
       tx.set<CloudUsage>("studioUsage", auth.ownerUid, { ownerUid: auth.ownerUid, bytes: usage.bytes + photo.size, photos: usage.photos + 1, updatedAt: at });
       return { photoId: photo.id, status: "ready" as const };
     });
+    if (confirmed.status === "ready") await this.buildDerivatives(pending);
+    return confirmed;
   }
+
+  /**
+   * Best effort: a photo without derivatives still works (pages fall back to the original), so a failure never fails the upload.
+   * Derivatives do not count against the quota; they are a fraction of the original and are deleted with it.
+   */
+  private async buildDerivatives(photo: CloudPhoto) {
+    if (!this.makeDerivatives) return;
+    try {
+      const original = await this.storage.read(photo.key);
+      if (!original) return;
+      const made = await this.makeDerivatives(original);
+      for (const d of made) await this.storage.write(derivativeKey(photo.key, d.kind), d.bytes, d.contentType);
+      const kinds = made.map(d => d.kind);
+      await this.store.transaction(async tx => {
+        const fresh = await tx.get<CloudPhoto>("studioPhotos", photo.id);
+        if (fresh && fresh.status !== "deleted") tx.set<CloudPhoto>("studioPhotos", photo.id, { ...fresh, derivatives: kinds });
+      });
+    } catch { /* keep serving the original */ }
+  }
+  /** Admin: make phone-sized copies for photos uploaded before they existed. Bounded per run; safe to run again. */
+  async backfillDerivatives(limit = 50) {
+    if (!this.makeDerivatives) throw new StudioError("not_configured", 503);
+    const ready = await this.store.list<CloudPhoto>("studioPhotos", { field: "status", value: "ready" }, MAX_LIST_PHOTOS);
+    const todo = ready.filter(p => !p.derivatives?.length).slice(0, Math.max(1, Math.min(limit, 200)));
+    let made = 0;
+    for (const photo of todo) { await this.buildDerivatives(photo); const fresh = await this.store.transaction(tx => tx.get<CloudPhoto>("studioPhotos", photo.id)); if (fresh?.derivatives?.length) made += 1; }
+    return { checked: todo.length, made, failed: todo.length - made, remaining: Math.max(0, ready.filter(p => !p.derivatives?.length).length - made) };
+  }
+  private viewKey(photo: CloudPhoto, kind: DerivativeKind) { return photo.derivatives?.includes(kind) ? derivativeKey(photo.key, kind) : photo.key; }
 
   // ---------- customer and admin side ----------
   private scopeAllows(scope: CloudScope, ownerUid: string) { return "admin" in scope || scope.ownerUid === ownerUid; }
@@ -177,7 +226,7 @@ export class CloudService {
     const id = pattern(eventId, /^[0-9a-f]{32}$/);
     const event = await this.store.transaction(tx => tx.get<CloudEvent>("studioEvents", id));
     if (!event || !this.scopeAllows(scope, event.ownerUid)) throw new StudioError("not_found", 404);
-    const all = await this.store.list<CloudPhoto>("studioPhotos", { field: "eventId", value: id }, 100);
+    const all = await this.store.list<CloudPhoto>("studioPhotos", { field: "eventId", value: id }, MAX_LIST_PHOTOS);
     const visible = all.filter(p => p.ownerUid === event.ownerUid && (p.status === "ready" || ("admin" in scope && p.status === "hidden")))
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     const photos = await Promise.all(visible.map(async p => ({ id: p.id, status: p.status, size: p.size, createdAt: p.createdAt, url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS) })));
@@ -212,7 +261,7 @@ export class CloudService {
       return { photo: { ...photo, status: next as CloudPhoto["status"] }, removeFile: false };
     });
     // The database is already authoritative; a failed file removal is retried by deleting again.
-    if (result.removeFile) { try { await this.storage.remove(result.photo.key); } catch { throw new StudioError("storage_unavailable", 503); } }
+    if (result.removeFile) { try { for (const kind of result.photo.derivatives ?? []) await this.storage.remove(derivativeKey(result.photo.key, kind)); await this.storage.remove(result.photo.key); } catch { throw new StudioError("storage_unavailable", 503); } }
     return { photoId, status: result.photo.status };
   }
 
@@ -254,7 +303,8 @@ export class CloudService {
   private shareToken(ownerUid: string, scope: ShareScope, target: string, generation: number) {
     return createHmac("sha256", this.secret).update(`share:${ownerUid}:${scope}:${target}:${generation}`).digest("base64url");
   }
-  private shareUrl(token: string) { return `${this.origin}/s/${token}`; }
+  /** openExternalBrowser=1 makes LINE open the link in the phone's real browser, where saving works. */
+  private shareUrl(token: string) { return `${this.origin}/s/${token}?openExternalBrowser=1`; }
 
   private async ensureShare(tx: Transaction, ownerUid: string, scope: ShareScope, target: string, eventId: string | null, days: number) {
     const indexId = hash(`shareindex:${ownerUid}:${scope}:${target}`);
@@ -292,12 +342,61 @@ export class CloudService {
     return { revoked: true };
   }
 
+  /**
+   * Desktop: register a session whose token the booth generated itself (43 base64url characters = 256 random bits).
+   * Called whenever the booth is back online; sending the same session and token again returns the same result.
+   */
+  async registerSession(input: Input) {
+    const sessionId = pattern(input.sessionId, /^[A-Za-z0-9_-]{1,64}$/);
+    const eventId = pattern(input.eventId, /^[0-9a-f]{32}$/);
+    const token = pattern(input.token, TOKEN);
+    let expectedCount: number | null = null;
+    if (input.expectedCount !== undefined && input.expectedCount !== null) {
+      if (typeof input.expectedCount !== "number" || !Number.isSafeInteger(input.expectedCount) || input.expectedCount < 0 || input.expectedCount > MAX_EXPECTED) throw new StudioError("invalid_request");
+      expectedCount = input.expectedCount;
+    }
+    const candidates = [newShortCode(), newShortCode(), newShortCode()];
+    const made = await this.store.transaction(async tx => {
+      const auth = await this.authorize(tx, input);
+      const event = await tx.get<CloudEvent>("studioEvents", eventId);
+      if (!event || event.ownerUid !== auth.ownerUid) throw new StudioError("not_found", 404);
+      if (event.status !== "active") throw new StudioError("event_archived", 409);
+      const id = hash(`session:${auth.ownerUid}:${sessionId}`).slice(0, 32);
+      const shareId = hash(token);
+      const existing = await tx.get<CloudSession>("studioSessions", id);
+      const share = await tx.get<ShareRecord>("studioShares", shareId);
+      if (existing) {
+        if (existing.shareId !== shareId || existing.eventId !== eventId) throw new StudioError("session_conflict", 409);
+        if (existing.expectedCount !== expectedCount && expectedCount !== null) tx.set<CloudSession>("studioSessions", id, { ...existing, expectedCount });
+        return existing;
+      }
+      // A token already used by anything else is refused, so one token can never open two sessions.
+      if (share) throw new StudioError("session_conflict", 409);
+      const taken = await Promise.all(candidates.map(code => tx.get<ShortCodeRecord>("studioShortCodes", shortCodeId(eventId, code))));
+      const free = candidates.findIndex((code, i) => !taken[i] || Date.parse(taken[i]!.expiresAt) <= this.now());
+      if (free < 0) throw new StudioError("try_again", 503);
+      const at = iso(this.now()); const expiresAt = iso(this.now() + SESSION_SHARE_DAYS * 86400000);
+      const session: CloudSession = { id, ownerUid: auth.ownerUid, eventId, sessionId, shareId, shortCode: candidates[free], expectedCount, createdAt: at, expiresAt };
+      tx.set<ShareRecord>("studioShares", shareId, { id: shareId, ownerUid: auth.ownerUid, scope: "session", eventId, sessionId, createdAt: at, expiresAt, revoked: false, revokedAt: null });
+      tx.set<ShortCodeRecord>("studioShortCodes", shortCodeId(eventId, session.shortCode), { id: shortCodeId(eventId, session.shortCode), eventId, shareId, expiresAt });
+      tx.set<CloudSession>("studioSessions", id, session);
+      return session;
+    });
+    // eventUrl is printed under the code for guests who cannot scan: they open it and type the code.
+    return { url: this.shareUrl(token), eventUrl: `${this.origin}/e/${eventId}`, shortCode: made.shortCode, expiresAt: made.expiresAt, expectedCount: expectedCount ?? made.expectedCount };
+  }
+
   /** Desktop: cancel the QR link of one session, e.g. when a guest asks for their photos to be private again. */
   async revokeSessionShare(input: Input) {
     const sessionId = pattern(input.sessionId, /^[A-Za-z0-9_-]{1,64}$/);
     return this.store.transaction(async tx => {
       const auth = await this.authorize(tx, input);
-      return this.revokeIn(tx, auth.ownerUid, "session", sessionId);
+      // A booth-made token is not derivable, so its link is found through the registered session.
+      const session = await tx.get<CloudSession>("studioSessions", hash(`session:${auth.ownerUid}:${sessionId}`).slice(0, 32));
+      const own = session ? await tx.get<ShareRecord>("studioShares", session.shareId) : null;
+      const derived = await this.revokeIn(tx, auth.ownerUid, "session", sessionId);
+      if (own && !own.revoked) tx.set<ShareRecord>("studioShares", own.id, { ...own, revoked: true, revokedAt: iso(this.now()) });
+      return derived;
     });
   }
 
@@ -354,11 +453,14 @@ export class CloudService {
   /** Validates a public link (and its PIN) and returns the photos it shows, oldest first. */
   private async shareContents(tokenInput: unknown, pinInput?: unknown) {
     if (typeof tokenInput !== "string" || !TOKEN.test(tokenInput)) throw new StudioError("share_unavailable", 404);
-    const share = await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", hash(tokenInput)));
+    return this.shareContentsById(hash(tokenInput), pinInput);
+  }
+  private async shareContentsById(shareId: string, pinInput?: unknown) {
+    const share = await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", shareId));
     if (!share || share.revoked || Date.parse(share.expiresAt) <= this.now()) throw new StudioError("share_unavailable", 404);
     await this.checkPin(share, pinInput);
     const filter = share.scope === "event" ? { field: "eventId", value: share.eventId ?? "" } : { field: "sessionId", value: share.sessionId ?? "" };
-    const all = await this.store.list<CloudPhoto>("studioPhotos", filter, 100);
+    const all = await this.store.list<CloudPhoto>("studioPhotos", filter, MAX_LIST_PHOTOS);
     // The owner check keeps a share from ever showing photos of another account, even if ids collide.
     const photos = all.filter(p => p.status === "ready" && p.ownerUid === share.ownerUid).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     return { share, photos };
@@ -385,10 +487,10 @@ export class CloudService {
     const share = await this.store.transaction(tx => tx.get<ShareRecord>("studioShares", claim.s!));
     if (!share || share.revoked || Date.parse(share.expiresAt) <= this.now()) throw new StudioError("share_unavailable", 404);
     const filter = share.scope === "event" ? { field: "eventId", value: share.eventId ?? "" } : { field: "sessionId", value: share.sessionId ?? "" };
-    const photos = (await this.store.list<CloudPhoto>("studioPhotos", filter, 100)).filter(p => p.status === "ready" && p.ownerUid === share.ownerUid).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const photos = (await this.store.list<CloudPhoto>("studioPhotos", filter, MAX_LIST_PHOTOS)).filter(p => p.status === "ready" && p.ownerUid === share.ownerUid).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     const index = photos.findIndex(p => p.id === claim.p);
     if (index < 0) throw new StudioError("share_unavailable", 404);
-    const bytes = await this.storage.read(photos[index].key);
+    const bytes = await this.storage.read(this.viewKey(photos[index], "download"));
     if (!bytes) throw new StudioError("file_missing", 404);
     return { bytes, name: `KOKO-${String(index + 1).padStart(2, "0")}.jpg` };
   }
@@ -398,20 +500,36 @@ export class CloudService {
     const { photos } = await this.shareContents(tokenInput, pinInput);
     const index = photos.findIndex(p => p.id === photoIdInput);
     if (index < 0) throw new StudioError("share_unavailable", 404);
-    const bytes = await this.storage.read(photos[index].key);
+    const bytes = await this.storage.read(this.viewKey(photos[index], "download"));
     if (!bytes) throw new StudioError("file_missing", 404);
     return { bytes, name: `KOKO-${String(index + 1).padStart(2, "0")}.jpg` };
   }
 
   async viewShare(tokenInput: unknown, pinInput?: unknown) {
-    const { share, photos } = await this.shareContents(tokenInput, pinInput);
+    return this.present(await this.shareContents(tokenInput, pinInput));
+  }
+
+  /** Public: the 8-character code printed under the QR, valid only together with its event. Callers must rate limit. */
+  async viewShortCode(eventIdInput: unknown, codeInput: unknown, pinInput?: unknown) {
+    if (typeof eventIdInput !== "string" || !/^[0-9a-f]{32}$/.test(eventIdInput) || typeof codeInput !== "string") throw new StudioError("share_unavailable", 404);
+    const code = codeInput.trim().toUpperCase();
+    if (!SHORT_CODE.test(code)) throw new StudioError("share_unavailable", 404);
+    const record = await this.store.transaction(tx => tx.get<ShortCodeRecord>("studioShortCodes", shortCodeId(eventIdInput, code)));
+    if (!record || record.eventId !== eventIdInput || Date.parse(record.expiresAt) <= this.now()) throw new StudioError("share_unavailable", 404);
+    return this.present(await this.shareContentsById(record.shareId, pinInput));
+  }
+
+  private async present({ share, photos }: { share: ShareRecord; photos: CloudPhoto[] }) {
+    const session = share.scope === "session" && share.sessionId ? await this.store.transaction(tx => tx.get<CloudSession>("studioSessions", hash(`session:${share.ownerUid}:${share.sessionId}`).slice(0, 32))) : null;
+    const expectedCount = session && session.shareId === share.id ? session.expectedCount : null;
     const eventId = share.eventId ?? photos[0]?.eventId ?? null;
     const event = eventId ? await this.store.transaction(tx => tx.get<CloudEvent>("studioEvents", eventId)) : null;
     const items = await Promise.all(photos.map(async p => ({
       id: p.id, createdAt: p.createdAt,
-      url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS),
+      url: await this.storage.presignDownload(this.viewKey(p, "preview"), VIEW_URL_SECONDS),
+      thumbUrl: await this.storage.presignDownload(this.viewKey(p, "thumb"), VIEW_URL_SECONDS),
       downloadUrl: `${this.origin}/api/studio/share/photo?t=${this.downloadToken(share.id, p.id)}`,
     })));
-    return { scope: share.scope, pinProtected: Boolean(share.pinHash), eventName: event && event.ownerUid === share.ownerUid ? event.name : null, expiresAt: share.expiresAt, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
+    return { scope: share.scope, pinProtected: Boolean(share.pinHash), eventName: event && event.ownerUid === share.ownerUid ? event.name : null, expiresAt: share.expiresAt, expectedCount, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
   }
 }

@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createHash, generateKeyPairSync } from "node:crypto";
+import { createHash, generateKeyPairSync, randomBytes } from "node:crypto";
 import { EntitlementSigner } from "../../src/lib/studio/crypto.ts";
-import { CloudService, photoKey, type PhotoStorage } from "../../src/lib/studio/cloud.ts";
+import { CloudService, derivativeKey, photoKey, type DerivativeMaker, type PhotoStorage } from "../../src/lib/studio/cloud.ts";
 import { PRODUCT_ID, type Claims, type License, type Plan } from "../../src/lib/studio/types.ts";
 import { MemoryStore } from "./memory-store.ts";
 
@@ -15,7 +15,7 @@ const photo = Buffer.from("fake jpeg bytes");
 const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 const ID = (n: string) => n.repeat(32).slice(0, 32);
 
-function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?: string | null; status?: License["status"] } = {}) {
+function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?: string | null; status?: License["status"]; makeDerivatives?: DerivativeMaker } = {}) {
   const store = new MemoryStore();
   const files = new Map<string, Buffer>();
   const removed: string[] = [];
@@ -25,6 +25,7 @@ function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?
     read: async key => { const f = files.get(key); return f ? new Uint8Array(f) : null; },
     remove: async key => { if (failures.remove) throw new Error("r2 down"); removed.push(key); files.delete(key); },
     presignUpload: async key => `https://upload.example.invalid/${key}?sig=1`,
+    write: async (key, bytes) => { files.set(key, Buffer.from(bytes)); },
     inspect: async key => { const f = files.get(key); return f ? { size: f.length, sha256: sha(f) } : null; },
   };
   const features = options.features ?? ["capture", "printing", "templates", "cloud_sync"];
@@ -33,7 +34,7 @@ function setup(options: { quota?: number; features?: Plan["features"]; ownerUid?
   store.documents.set("studioLicenses/lic-1", license);
   const claims: Claims = { schemaVersion: 1, keyId: "local-test", licenseId: "lic-1", deviceId: DEVICE, productId: PRODUCT_ID, issuedAt: iso(NOW), startsAt: iso(NOW - 1e6), expiresAt: null, refreshAfter: iso(NOW + 1e6), offlineUntil: iso(NOW + 2e6), features };
   const input = { deviceId: DEVICE, productId: PRODUCT_ID, entitlement: signer.sign(claims) };
-  const cloud = new CloudService({ store, signer, storage, now: () => NOW, origin: "https://studio.example.invalid", shareSecret: "test-share-secret-0123456789-abcdef-xyz" });
+  const cloud = new CloudService({ store, signer, storage, now: () => NOW, origin: "https://studio.example.invalid", shareSecret: "test-share-secret-0123456789-abcdef-xyz", makeDerivatives: options.makeDerivatives });
   const at = (offsetMs: number) => new CloudService({ store, signer, storage, now: () => NOW + offsetMs, origin: "https://studio.example.invalid", shareSecret: "test-share-secret-0123456789-abcdef-xyz" });
   return { store, files, cloud, input, license, removed, failures, at };
 }
@@ -117,10 +118,10 @@ test("the Firestore store accepts every collection the cloud service uses (the i
     runTransaction: async (work: (tx: unknown) => Promise<unknown>) => work({ get: async (ref: { name: string }) => { touched.push(ref.name); return { exists: false }; }, set: (ref: { name: string }) => { touched.push(ref.name); } }),
   };
   const store = new FirestoreStore(fakeDb as never);
-  for (const name of ["studioEvents", "studioPhotos", "studioUsage", "studioShareIndex", "studioShares"]) {
+  for (const name of ["studioEvents", "studioPhotos", "studioUsage", "studioShareIndex", "studioShares", "studioSessions", "studioShortCodes"]) {
     await store.transaction(async tx => { await tx.get(name, "abc"); tx.set(name, "abc", { ok: true }); });
   }
-  assert.deepEqual([...new Set(touched)].sort(), ["studioEvents", "studioPhotos", "studioShareIndex", "studioShares", "studioUsage"]);
+  assert.deepEqual([...new Set(touched)].sort(), ["studioEvents", "studioPhotos", "studioSessions", "studioShareIndex", "studioShares", "studioShortCodes", "studioUsage"]);
   await assert.rejects(store.transaction(async tx => { await tx.get("notAStudioCollection", "abc"); }), /Invalid Studio document path/);
 });
 
@@ -208,7 +209,7 @@ test("permissions: customers cannot hide photos or touch other accounts photos; 
   assert.equal(f.removed.length, 0);
 });
 
-const tokenOf = (url: string) => url.split("/s/")[1] as string;
+const tokenOf = (url: string) => url.split("/s/")[1].split("?")[0] as string;
 async function uploadIn(f: ReturnType<typeof setup>, eventId: string, letter: string, sessionId: string, owner = "uid-a") {
   const body = Buffer.from(`photo ${letter}`);
   await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID(letter), size: body.length, sha256: sha(body), sessionId });
@@ -224,7 +225,7 @@ test("a session link shows only that guest's photos; the event link shows all; l
   await uploadIn(f, eventId, "c", "guest-two");
   const one = await f.cloud.createSessionShare({ ...f.input, sessionId: "guest-one" });
   const two = await f.cloud.createSessionShare({ ...f.input, sessionId: "guest-two" });
-  assert.match(one.url, /^https:\/\/studio\.example\.invalid\/s\/[A-Za-z0-9_-]{43}$/);
+  assert.match(one.url, /^https:\/\/studio\.example\.invalid\/s\/[A-Za-z0-9_-]{43}\?openExternalBrowser=1$/);
   assert.notEqual(one.url, two.url);
   assert.equal((await f.cloud.createSessionShare({ ...f.input, sessionId: "guest-one" })).url, one.url, "asking again returns the same link");
   const viewOne = await f.cloud.viewShare(tokenOf(one.url));
@@ -336,7 +337,7 @@ test("a PIN-protected link needs the PIN, locks after five wrong guesses, and ca
   const f = setup(); const eventId = await makeEvent(f);
   const buf = Buffer.from("pin photo"); await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID("c"), sha256: sha(buf), size: buf.length });
   f.files.set(photoKey("uid-a", eventId, ID("c")), buf); await f.cloud.confirmPhoto({ ...f.input, photoId: ID("c") });
-  const token = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url.split("/s/")[1];
+  const token = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url.split("/s/")[1].split("?")[0];
   await assert.rejects(() => f.cloud.manageShare("uid-a", { action: "setPin", eventId, pin: "12" }), { code: "invalid_pin" });
   await assert.rejects(() => f.cloud.manageShare("uid-b", { action: "setPin", eventId, pin: "123456" }), { code: "not_found" });
   assert.equal(((await f.cloud.manageShare("uid-a", { action: "setPin", eventId, pin: "123456" })) as { pinProtected: boolean }).pinProtected, true);
@@ -354,7 +355,7 @@ test("a share link serves its own photo bytes through our origin, honours the PI
   const f = setup(); const eventId = await makeEvent(f);
   const buf = Buffer.from("same origin bytes"); await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID("d"), sha256: sha(buf), size: buf.length });
   f.files.set(photoKey("uid-a", eventId, ID("d")), buf); await f.cloud.confirmPhoto({ ...f.input, photoId: ID("d") });
-  const url = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url; const token = url.split("/s/")[1];
+  const url = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url; const token = url.split("/s/")[1].split("?")[0];
   const view = await f.cloud.viewShare(token); const id = view.photos[0].id;
   const file = await f.cloud.sharePhoto(token, id);
   assert.equal(Buffer.from(file.bytes).toString(), "same origin bytes"); assert.equal(file.name, "KOKO-01.jpg");
@@ -369,7 +370,7 @@ test("download links are plain signed URLs: one photo each, expire, die with the
   const f = setup(); const eventId = await makeEvent(f);
   const upload = async (n: string, body: string) => { const buf = Buffer.from(body); await f.cloud.initPhoto({ ...f.input, eventId, photoId: ID(n), sha256: sha(buf), size: buf.length }); f.files.set(photoKey("uid-a", eventId, ID(n)), buf); await f.cloud.confirmPhoto({ ...f.input, photoId: ID(n) }); };
   await upload("e", "photo one"); await upload("f", "photo two");
-  const tokenOf = (u: string) => u.split("/s/")[1];
+  const tokenOf = (u: string) => u.split("/s/")[1].split("?")[0];
   const link = ((await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string }).url;
   const view = await f.cloud.viewShare(tokenOf(link));
   const t = (u: string) => new URL(u).searchParams.get("t")!;
@@ -383,4 +384,126 @@ test("download links are plain signed URLs: one photo each, expire, die with the
   await assert.rejects(() => f.at(11 * 60_000).sharePhotoByToken(t(first.downloadUrl)), { code: "share_unavailable" });
   await f.cloud.manageShare("uid-a", { action: "revoke", eventId });
   await assert.rejects(() => f.cloud.sharePhotoByToken(t(first.downloadUrl)), { code: "share_unavailable" });
+});
+
+// ---------- M1: booth-made session tokens and short codes ----------
+const boothToken = () => randomBytes(32).toString("base64url");
+
+test("a booth-made token registers once, shows only its session, and is stored only as a hash", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "guest-one");
+  await uploadIn(f, eventId, "b", "guest-two");
+  const token = boothToken();
+  assert.equal(token.length, 43);
+  const made = await f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token, expectedCount: 4 });
+  assert.equal(made.url, `https://studio.example.invalid/s/${token}?openExternalBrowser=1`);
+  assert.match(made.shortCode, /^[2-9A-HJ-NP-Z]{8}$/);
+  const again = await f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token, expectedCount: 4 });
+  assert.equal(again.shortCode, made.shortCode, "re-sending after a reconnect is harmless");
+  const view = await f.cloud.viewShare(token);
+  assert.equal(view.photos.length, 1);
+  assert.equal(view.expectedCount, 4);
+  assert.ok(!JSON.stringify([...f.store.documents.values()]).includes(token));
+});
+
+test("without the right token or code there is no way to the photos", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "guest-one");
+  const made = await f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token: boothToken() });
+  await assert.rejects(f.cloud.viewShare(boothToken()), { code: "share_unavailable" });
+  await assert.rejects(f.cloud.viewShare(undefined), { code: "share_unavailable" });
+  // A code only works with its own event.
+  await assert.rejects(f.cloud.viewShortCode(ID("e"), made.shortCode), { code: "share_unavailable" });
+  await assert.rejects(f.cloud.viewShortCode(eventId, "AAAAAAAA"), { code: "share_unavailable" });
+  await assert.rejects(f.cloud.viewShortCode(eventId, "0OIl0OIl"), { code: "share_unavailable" });
+  assert.equal((await f.cloud.viewShortCode(eventId, made.shortCode.toLowerCase())).photos.length, 1);
+});
+
+test("a token cannot be reused for another session, and sessions keep their first token", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  const token = boothToken();
+  await f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token });
+  await assert.rejects(f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-two", token }), { code: "session_conflict" });
+  await assert.rejects(f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token: boothToken() }), { code: "session_conflict" });
+  await assert.rejects(f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-three", token: "short" }), { code: "invalid_request" });
+  await assert.rejects(f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-three", token: boothToken(), expectedCount: 1000 }), { code: "invalid_request" });
+});
+
+test("another account cannot register into an event it does not own", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  f.store.documents.set(`studioEvents/${eventId}`, { ...(f.store.documents.get(`studioEvents/${eventId}`) as object), ownerUid: "uid-b" });
+  await assert.rejects(f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token: boothToken() }), { code: "not_found" });
+});
+
+test("revoking a booth-made session link closes both the link and its short code; expiry does too", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "guest-one");
+  const token = boothToken();
+  const made = await f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token });
+  const late = f.at(31 * 86400000);
+  await assert.rejects(late.viewShortCode(eventId, made.shortCode), { code: "share_unavailable" });
+  await f.cloud.revokeSessionShare({ ...f.input, sessionId: "guest-one" });
+  await assert.rejects(f.cloud.viewShare(token), { code: "share_unavailable" });
+  await assert.rejects(f.cloud.viewShortCode(eventId, made.shortCode), { code: "share_unavailable" });
+});
+
+// ---------- M2: phone-sized copies ----------
+const fakeMaker: DerivativeMaker = async original => (["thumb", "preview", "download"] as const).map(kind => ({ kind, bytes: new Uint8Array(Buffer.from(`${kind}:${original.length}`)), contentType: kind === "download" ? "image/jpeg" as const : "image/webp" as const }));
+
+test("confirmed photos get thumb, preview and download copies; pages and saves use them, never the original", async () => {
+  const f = setup({ makeDerivatives: fakeMaker });
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "guest-one");
+  const key = photoKey("uid-a", eventId, ID("a"));
+  for (const kind of ["thumb", "preview", "download"] as const) assert.ok(f.files.has(derivativeKey(key, kind)), kind);
+  const share = await f.cloud.createSessionShare({ ...f.input, sessionId: "guest-one" });
+  const view = await f.cloud.viewShare(tokenOf(share.url));
+  assert.ok(view.photos[0].thumbUrl.includes(".thumb.webp"));
+  assert.ok(view.photos[0].url.includes(".preview.webp"));
+  const file = await f.cloud.sharePhoto(tokenOf(share.url), view.photos[0].id);
+  assert.match(Buffer.from(file.bytes).toString(), /^download:/);
+});
+
+test("a failed resize keeps the upload and serves the original; deleting removes every copy", async () => {
+  const broken = setup({ makeDerivatives: async () => { throw new Error("corrupt image"); } });
+  const eventId = await makeEvent(broken);
+  await uploadIn(broken, eventId, "a", "guest-one");
+  const share = await broken.cloud.createSessionShare({ ...broken.input, sessionId: "guest-one" });
+  const view = await broken.cloud.viewShare(tokenOf(share.url));
+  assert.equal(view.photos.length, 1);
+  assert.ok(!view.photos[0].url.includes(".preview.") && !view.photos[0].thumbUrl.includes(".thumb."));
+
+  const f = setup({ makeDerivatives: fakeMaker });
+  const id = await makeEvent(f);
+  await uploadIn(f, id, "b", "guest-one");
+  const photoId = (await f.cloud.eventPhotos({ ownerUid: "uid-a" }, id)).photos[0].id;
+  await f.cloud.managePhoto({ ownerUid: "uid-a" }, "uid-a", { action: "delete", photoId });
+  assert.deepEqual([...f.files.keys()].filter(k => k.includes(ID("b"))), []);
+});
+
+test("the booth gets an event page for the short code, and event links show more than 100 photos", async () => {
+  const f = setup({ quota: 1e9 });
+  const eventId = await makeEvent(f);
+  const made = await f.cloud.registerSession({ ...f.input, eventId, sessionId: "guest-one", token: randomBytes(32).toString("base64url") });
+  assert.equal(made.eventUrl, `https://studio.example.invalid/e/${eventId}`);
+  for (let i = 0; i < 120; i++) await uploadIn(f, eventId, i.toString(16).padStart(2, "0"), `guest-${i}`);
+  const host = (await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string };
+  assert.equal((await f.cloud.viewShare(tokenOf(host.url))).photos.length, 120);
+});
+
+test("backfill makes copies only for photos that lack them, and can run again", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await uploadIn(f, eventId, "a", "guest-one");
+  await uploadIn(f, eventId, "b", "guest-one");
+  const later = new CloudService({ store: f.store, signer, storage: (f.cloud as unknown as { storage: PhotoStorage }).storage, now: () => NOW, origin: "https://studio.example.invalid", shareSecret: "test-share-secret-0123456789-abcdef-xyz", makeDerivatives: fakeMaker });
+  assert.deepEqual(await later.backfillDerivatives(1), { checked: 1, made: 1, failed: 0, remaining: 1 });
+  assert.deepEqual(await later.backfillDerivatives(), { checked: 1, made: 1, failed: 0, remaining: 0 });
+  assert.deepEqual(await later.backfillDerivatives(), { checked: 0, made: 0, failed: 0, remaining: 0 });
+  await assert.rejects(f.cloud.backfillDerivatives(), { code: "not_configured" });
 });

@@ -1,6 +1,6 @@
 import type { Firestore, Transaction as FirebaseTransaction, DocumentData, Query } from "firebase-admin/firestore";
 import type { Store, Transaction } from "./types.ts";
-const collections = new Set(["studioPlans", "studioLicenses", "studioLicenseKeys", "studioDeviceAuthorizations", "studioLinkCodes", "studioIdempotency", "studioAuditLogs", "studioRateLimits", "studioSchema", "studioPilot", "studioOrders", "studioPaymentEvents", "studioReleases", "studioDownloads", "studioStatsDaily", "studioEvents", "studioPhotos", "studioUsage", "studioShareIndex", "studioShares"]);
+const collections = new Set(["studioPlans", "studioLicenses", "studioLicenseKeys", "studioDeviceAuthorizations", "studioLinkCodes", "studioIdempotency", "studioAuditLogs", "studioRateLimits", "studioSchema", "studioPilot", "studioOrders", "studioPaymentEvents", "studioReleases", "studioDownloads", "studioStatsDaily", "studioEvents", "studioPhotos", "studioUsage", "studioShareIndex", "studioShares", "studioSessions", "studioShortCodes"]);
 export class FirestoreStore implements Store {
   private db: Firestore;
   constructor(db: Firestore) { this.db = db; }
@@ -21,7 +21,7 @@ export class FirestoreStore implements Store {
     if (!collections.has(collection)) throw new Error("Invalid Studio collection");
     let query: Query = this.db.collection(collection);
     if (filter) query = query.where(filter.field, "==", filter.value);
-    const snapshot = await query.limit(Math.min(limit, 100)).get();
+    const snapshot = await query.limit(Math.min(limit, 1000)).get();
     return snapshot.docs.map(doc => doc.data() as T);
   }
 }

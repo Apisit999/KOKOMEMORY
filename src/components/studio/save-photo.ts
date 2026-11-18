@@ -18,6 +18,17 @@ export function inAppBrowserName(userAgent: string): string | null {
   return null;
 }
 
+/**
+ * Android only: an intent link that reopens this page in Chrome from Facebook / Instagram / other in-app browsers.
+ * LINE is handled by openExternalBrowser=1 in the QR link itself; iPhone has no equivalent, so it gets the ⋯ tip.
+ */
+export function androidChromeIntent(userAgent: string, href: string): string | null {
+  if (!/Android/i.test(userAgent) || !inAppBrowserName(userAgent)) return null;
+  const url = new URL(href);
+  if (url.protocol !== "https:") return null;
+  return `intent://${url.host}${url.pathname}${url.search}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(href)};end`;
+}
+
 async function toFile(item: SaveItem): Promise<File> {
   let blob: Blob | null = null;
   if (item.load) { try { blob = await item.load(); } catch { blob = null; } }
@@ -57,7 +68,9 @@ export async function savePhotos(items: SaveItem[]): Promise<SaveResult> {
   if (items.length > 1 && isIOS() && !canUseShareSheet()) return "manual";
   try {
     if (typeof navigator !== "undefined" && typeof navigator.canShare === "function" && typeof navigator.share === "function") {
-      const files = await Promise.all(items.map(toFile));
+      // One at a time: phones with little memory stall when every photo downloads at once.
+      const files: File[] = [];
+      for (const item of items) files.push(await toFile(item));
       if (navigator.canShare({ files })) {
         await navigator.share({ files });
         return "shared";

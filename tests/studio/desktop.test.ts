@@ -51,3 +51,20 @@ test("actual Desktop uploader sends deterministic IDs, checksum, init/upload/con
   assert.equal(repeated.alreadyUploaded, true); assert.equal(initId, photo.photoId.replaceAll("-", ""));
   assert.deepEqual(requests.map(request => request.method), ["POST", "PUT", "PATCH", "POST"]);
 });
+
+test("short-code guessing is rate limited per caller and per event", async () => {
+  const store = new MemoryStore(); await migrateStudio(store);
+  const pair = generateKeyPairSync("rsa", { modulusLength: 2048 }); const signer = new EntitlementSigner("code-test", pair.privateKey.export({ type: "pkcs8", format: "pem" }).toString());
+  const service = new StudioService({ store, signer, origin: "http://localhost:3040" });
+  const cloud = { viewShortCode: async () => { throw Object.assign(new Error("share_unavailable"), { code: "share_unavailable", status: 404 }); } };
+  let caller = "guesser-1";
+  const handler = createStudioHandler({ enabled: true, origin: "http://localhost:3040", service: async () => service, authenticate: async () => { throw new Error(); }, clientAddress: () => caller, cloud: async () => cloud as never });
+  const ask = () => handler(new Request("http://localhost:3040/api/studio/share/code", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ eventId: "a".repeat(32), code: "ABCDEFGH" }) }), "share/code");
+  const one = [];
+  for (let i = 0; i < 11; i++) one.push((await ask()).status);
+  assert.equal(one.filter(s => s === 429).length, 1, "the 11th guess in a minute from one caller is refused");
+  // Many callers together still hit the per-event budget of 30 per minute.
+  const many = [];
+  for (let i = 0; i < 30; i++) { caller = `guesser-${i + 2}`; many.push((await ask()).status); }
+  assert.ok(many.filter(s => s === 429).length >= 10);
+});

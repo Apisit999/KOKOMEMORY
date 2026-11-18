@@ -8,7 +8,7 @@ import { CloudService } from "./cloud.ts";
 import { NotificationService } from "./notifications.ts";
 import { createHash } from "node:crypto";
 import type { PublicRelease, ReleaseStorage } from "./types.ts";
-import type { PhotoStorage } from "./cloud.ts";
+import type { Derivative, PhotoStorage } from "./cloud.ts";
 let service: StudioService | null = null;
 let releaseService: ReleaseService | null = null;
 let cloudService: CloudService | null = null;
@@ -35,6 +35,23 @@ function r2Storage(bucketEnv: "R2_BUCKET_NAME" | "R2_PRIVATE_BUCKET_NAME" = "R2_
 }
 
 /** Private-bucket storage for customer photos: signed short-lived reads and deletion. */
+/** Phone-sized copies (thumb 400 px WebP, preview 1600 px WebP, download 2560 px JPEG). EXIF rotation is applied, metadata dropped. */
+async function makeDerivatives(original: Uint8Array): Promise<Derivative[]> {
+  const sharp = (await import("sharp")).default;
+  const base = () => sharp(original, { limitInputPixels: 80_000_000 }).rotate();
+  const fit = (size: number) => ({ width: size, height: size, fit: "inside" as const, withoutEnlargement: true });
+  const [thumb, preview, download] = await Promise.all([
+    base().resize(fit(400)).webp({ quality: 72 }).toBuffer(),
+    base().resize(fit(1600)).webp({ quality: 80 }).toBuffer(),
+    base().resize(fit(2560)).jpeg({ quality: 86, mozjpeg: true }).toBuffer(),
+  ]);
+  return [
+    { kind: "thumb", bytes: thumb, contentType: "image/webp" },
+    { kind: "preview", bytes: preview, contentType: "image/webp" },
+    { kind: "download", bytes: download, contentType: "image/jpeg" },
+  ];
+}
+
 function r2PhotoStorage(): PhotoStorage {
   const base = r2Storage("R2_PRIVATE_BUCKET_NAME");
   const bucket = () => { const name = (process.env.R2_PRIVATE_BUCKET_NAME ?? "").trim(); if (!name) throw new Error("R2_PRIVATE_BUCKET_NAME is not configured"); return name; };
@@ -50,6 +67,11 @@ function r2PhotoStorage(): PhotoStorage {
         const object = await r2.send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
         return object.Body ? await object.Body.transformToByteArray() : null;
       } catch (error) { if ((error as { name?: string }).name === "NoSuchKey") return null; throw error; }
+    },
+    async write(key, bytes, contentType) {
+      const [{ PutObjectCommand }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@/lib/r2")]);
+      // Derivatives never change once made, so phones and any CDN may keep them for a long time.
+      await r2.send(new PutObjectCommand({ Bucket: bucket(), Key: key, Body: bytes, ContentType: contentType, CacheControl: "private, max-age=31536000, immutable" }));
     },
     async remove(key) {
       const [{ DeleteObjectCommand }, { r2 }] = await Promise.all([import("@aws-sdk/client-s3"), import("@/lib/r2")]);
@@ -90,7 +112,7 @@ async function getCloud() {
   const { adminDb } = await import("@/lib/firebase-admin");
   const privatePem = (process.env.STUDIO_SIGNING_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
   const trusted = JSON.parse(process.env.STUDIO_TRUSTED_PUBLIC_KEYS_JSON ?? "{}") as Record<string, string>;
-  cloudService = new CloudService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(process.env.STUDIO_SIGNING_KEY_ID ?? "", privatePem, trusted), storage: r2PhotoStorage(),
+  cloudService = new CloudService({ store: new FirestoreStore(adminDb), signer: new EntitlementSigner(process.env.STUDIO_SIGNING_KEY_ID ?? "", privatePem, trusted), storage: r2PhotoStorage(), makeDerivatives,
     origin: process.env.STUDIO_WEB_ORIGIN ?? "",
     // Share links are derived from this secret. Changing it changes every derived link, so set STUDIO_SHARE_SECRET once and keep it.
     shareSecret: process.env.STUDIO_SHARE_SECRET || createHash("sha256").update(`share:${process.env.STUDIO_SIGNING_PRIVATE_KEY ?? ""}`).digest("hex") });
