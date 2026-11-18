@@ -51,7 +51,7 @@ export default function PackagesPage() {
             <main className="studio-packages min-h-screen px-5 pb-20 pt-32 sm:px-10 sm:pt-36">
                 <div className="mx-auto max-w-[1240px]">
                     <header className="max-w-3xl">
-                        <p className="studio-eyebrow">PACKAGES</p>
+                        <p className="studio-eyebrow">แพ็กเกจ</p>
                         <h1 className="mt-4 text-3xl font-black sm:text-5xl">เลือกแพ็กเกจสำหรับงานของคุณ</h1>
                         <p className="mt-5 text-sm leading-7 sm:text-base">ดูราคา ระยะเวลา และสิ่งที่ได้รับก่อนเริ่มจอง</p>
                         <Link href="/photobooth" className="studio-text-link mt-4">← ดูบริการ Photobooth</Link>

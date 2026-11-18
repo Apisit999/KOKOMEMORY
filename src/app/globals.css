@@ -754,3 +754,97 @@ body{font-variant-numeric:lining-nums}
 [data-account-shell] .text-pink-600 { color: #7a6cc0; }
 [data-account-shell] .border-pink-100,
 [data-account-shell] .border-pink-200 { border-color: #dcd7f0; }
+
+/* ============================================================
+   READABILITY v3 — nothing people need to read is under 15px or
+   lighter than #4a4a4a. Small labels stay small but solid.
+   ============================================================ */
+.koko-studio main p,.koko-studio main li,.koko-studio main summary{font-size:max(16px,1em)}
+.koko-studio main p{color:#333!important;line-height:1.75}
+.koko-studio .studio-intro,.koko-studio .studio-heading>p{font-size:18px!important}
+.koko-studio .studio-card>p,.koko-studio .about-service-card>p,.koko-studio .studio-steps p,.koko-studio .studio-faq details p{font-size:16px!important}
+.koko-studio .studio-card small,.koko-studio .studio-card-top span,.koko-studio .rental-meta,.koko-studio .rental-card li{font-size:14px!important;letter-spacing:.02em!important;color:#4a4a4a!important}
+.studio-eyebrow,.eyebrow{font-size:13px!important;letter-spacing:.08em!important;color:#4a4a4a!important}
+.koko-studio .studio-card>a,.koko-studio .rental-card>a,.koko-studio .studio-text-link,.koko-studio .studio-button{font-size:15px!important}
+.koko-studio .studio-steps h3,.koko-studio .studio-faq summary{font-size:18px!important}
+.koko-studio .studio-hero-foot,.koko-studio .studio-hero-foot button{font-size:14px!important;color:#4a4a4a}
+.koko-studio .studio-card .studio-card-price{margin-top:14px;font-size:20px!important;font-weight:700;color:#151515!important}
+/* The 3D stage must never be wider than the screen: it widened the whole page on phones and pushed the menu button off-screen. */
+.koko-studio .studio-hero>*{min-width:0}
+.koko-studio .studio-3d-stage{max-width:100%;overflow:hidden}
+/* The hero glow reaches past the screen edge on purpose; clip it so the page itself never gets wider than the phone. */
+.koko-studio{overflow-x:clip}
+
+/* ============================================================
+   DARK MODE (html.dark, set by next-themes). The site hard-codes
+   its light colours, so each common one is mapped here:
+   page #121214 · surface #1b1b1e · subtle #232327 · line #2e2e33
+   strong text #f2efe9 · body #cfccc6 · muted #a8a5a0 · accent #b9adf0
+   ============================================================ */
+html.dark{color-scheme:dark;--ink:#f2efe9;--ink-soft:#bdbab4;--background:#121214;--foreground:#f2efe9;--card:#1b1b1e;--border:#2e2e33;--input:#3a3a40}
+html.dark body{background:#121214;color:#cfccc6}
+html.dark .koko-studio{background:#121214;color:#f2efe9}
+html.dark :is(h1,h2,h3,h4,h5,h6){color:#f2efe9}
+
+/* Surfaces */
+html.dark :is(.bg-white,.bg-\[\#fafaf9\]){background-color:#1b1b1e}
+html.dark :is(.bg-white\/95,.bg-white\/80){background-color:rgb(18 18 20 / .92)}
+html.dark :is(.bg-slate-50,.bg-slate-50\/70,.bg-slate-100,.bg-\[\#f6f3fc\],.bg-\[\#f2f1fa\],.bg-\[\#f5f5f3\],.bg-\[\#f2f2f0\],.bg-\[\#ecebf7\]){background-color:#232327}
+html.dark main.bg-\[\#fafaf9\],html.dark [data-account-shell]{background-color:#121214}
+html.dark :is(.hover\:bg-\[\#f2f2f0\],.hover\:bg-\[\#f5f5f3\],.hover\:bg-\[\#fafaf9\],.hover\:bg-slate-50):hover{background-color:#26262b}
+
+/* Text */
+html.dark :is(.text-slate-900,.text-slate-950,.text-slate-800,.text-\[\#151515\],.text-\[\#141516\],.text-\[\#111116\],.text-black){color:#f2efe9}
+html.dark :is(.text-slate-700,.text-slate-600,.text-\[\#3d3d3d\],.text-\[\#4a4a4a\],.text-\[\#5F5F58\],.text-\[\#24251f\]){color:#cfccc6}
+html.dark :is(.text-slate-500,.text-slate-400,.text-slate-300,.text-\[\#5c5c5c\],.text-\[\#6b6b6b\],.text-\[\#8A8A82\],.text-\[\#9a9a96\]){color:#a8a5a0}
+html.dark :is(.text-\[\#7a6cc0\],.text-\[\#6a5cb0\],.text-\[\#5a4d9c\]){color:#b9adf0}
+html.dark :is(.hover\:text-\[\#151515\],.hover\:text-slate-950):hover{color:#fff}
+
+/* Lines */
+html.dark :is(.border-slate-100,.border-slate-200,.border-slate-200\/80,.border-slate-300,.border-\[\#e8e8e6\],.border-\[\#cfcfcb\],.border-\[\#eeeaf8\],.border-\[\#ddd7f1\],.border-\[\#c9c0e8\],.border-\[\#efefed\]){border-color:#2e2e33}
+html.dark :is(.divide-slate-100,.divide-\[\#efefed\])>*+*{border-color:#2e2e33}
+html.dark :is(.ring-slate-100,.ring-slate-200,.ring-\[\#eeeaf8\],.ring-\[\#f6f3fc\],.ring-\[\#ecebf7\]){--tw-ring-color:#2e2e33}
+html.dark .bg-\[\#efefed\],html.dark .bg-\[\#e8e8e6\]{background-color:#2e2e33}
+html.dark .hover\:border-\[\#151515\]:hover{border-color:#f2efe9}
+
+/* Dark buttons become light buttons with dark text, so they stay the strongest thing on a dark page. */
+html.dark :is(a,button):is(.btn-primary,.studio-button,.gallery-button,.studio-package-cta,[class*="bg-[#151515]"],[class*="bg-[#141516]"],[class*="bg-[#0b0b0f]"]):not(#\#){background-color:#f2efe9!important;color:#151515!important}
+html.dark :is(a,button):is(.btn-primary,.studio-button,.gallery-button,.studio-package-cta,[class*="bg-[#151515]"],[class*="bg-[#141516]"],[class*="bg-[#0b0b0f]"]):not(#\#):not(:disabled):hover{background-color:#fff!important}
+html.dark .bg-neutral-900{background-color:#f2efe9;color:#151515}
+html.dark .group:hover .group-hover\:bg-neutral-800,html.dark .hover\:bg-neutral-800:hover{background-color:#fff}
+html.dark .koko-studio .studio-text-link{border-color:#f2efe9}
+html.dark .koko-studio .studio-text-link:hover{background:#f2efe9;color:#151515}
+
+/* Form fields */
+html.dark :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]),select,textarea){background-color:#1b1b1e;color:#f2efe9;border-color:#3a3a40}
+html.dark :is(input,textarea)::placeholder{color:#7d7a75}
+
+/* Public pages: cards and the readability rules above use !important light colours */
+html.dark .koko-studio :is(.studio-card,.about-service-card,.rental-card,.services-choice-card,.services-next,.rental-highlights article,.studio-end){background:#1b1b1e!important;color:#f2efe9!important;border-color:#2e2e33!important}
+html.dark .koko-studio main p,html.dark .koko-studio :is(.studio-intro,.studio-heading>p,.studio-steps p,.studio-faq details p,.studio-card>p){color:#cfccc6!important}
+html.dark :is(.studio-eyebrow,.eyebrow),html.dark .koko-studio :is(.studio-card small,.studio-card-top span,.rental-meta,.rental-card li,.studio-hero-foot,.studio-hero-foot button){color:#a8a5a0!important}
+html.dark .koko-studio .studio-card .studio-card-price{color:#f2efe9!important}
+html.dark .koko-studio :is(.studio-card>a,.rental-card>a){border-color:#3a3a40}
+html.dark .koko-studio :is(.studio-faq details,.studio-process,.studio-showcase){border-color:#2e2e33}
+/* Public page sections and cards that studio.css paints light by class name */
+html.dark :is(.studio-packages,.three-d-detail,.three-d-detail>section:first-of-type,.three-d-detail>section:nth-of-type(3),.portfolio-detail-main,.portfolio-detail-main>section:first-of-type){background:#121214!important;color:#f2efe9!important}
+html.dark :is(.studio-package-card,.studio-package-popular,.pricing-popular,.pricing-card,.pricing-pilot,.contact-channel,.studio-cream,.about-end,.studio-free-plan,.three-d-detail>section:nth-of-type(2) .bg-white,.studio-enquiry input,.studio-enquiry select,.studio-enquiry textarea){background:#1b1b1e!important;color:#f2efe9!important;border-color:#2e2e33!important}
+html.dark :is(.studio-package-price,.contact-channel-action,.studio-free-plan h2,.studio-enquiry label,.three-d-detail>section:nth-of-type(3) :is(h2,p,a),.portfolio-detail-main>section:last-of-type :is(h2,p,a),.three-d-detail .text-slate-900,.three-d-detail .text-slate-800,.portfolio-detail-main .text-slate-900,.portfolio-detail-main .text-slate-800,.studio-filters button:hover){color:#f2efe9!important}
+html.dark .studio-filters button[aria-pressed=true]{background:#f2efe9!important;color:#151515!important}
+/* Older studio.css rules force grey text with high specificity; in dark mode body text and list items win back. */
+html.dark .koko-studio main :is(p,li):not(.studio-eyebrow):not(#\#){color:#cfccc6!important}
+html.dark .koko-studio :is(.studio-card small,.rental-meta,.studio-hero-foot):not(#\#){color:#a8a5a0!important}
+/* White fades over hero photos (portfolio) become dark fades */
+html.dark .from-white{--tw-gradient-from:#121214}
+html.dark .from-white\/95{--tw-gradient-from:rgb(18 18 20 / .95)}
+html.dark .via-white\/70{--tw-gradient-via:rgb(18 18 20 / .7)}
+html.dark .from-white\/40{--tw-gradient-from:rgb(18 18 20 / .4)}
+/* Found by the contrast check: light boxes that kept a light background in dark mode */
+html.dark .koko-studio :is(.studio-video,.rental-inquiry,.about-values){background:#1b1b1e!important;border-color:#2e2e33!important}
+html.dark .koko-studio .about-service-card span{color:#a8a5a0!important}
+html.dark .koko-studio .rental-card-title small,html.dark .koko-studio .studio-package-popular small{background:#f2efe9!important;color:#151515!important}
+html.dark :is(a,button)[class*="from-[#141516]"]:not(#\#){background-color:#f2efe9!important;color:#151515!important}
+html.dark .to-white{--tw-gradient-to:#121214}
+html.dark .bg-white\/70{background-color:rgb(27 27 30 / .7)}
+/* Faded ink text (text-[#151515]/70 and friends) */
+html.dark :is([class*="text-[#151515]/"],[class*="text-[#141516]/"]){color:#bdbab4}

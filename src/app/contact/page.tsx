@@ -23,7 +23,7 @@ export default function ContactPage() {
         <main>
             <section className="contact-hero studio-wrap">
                 <div>
-                    <p className="studio-eyebrow">CONTACT</p>
+                    <p className="studio-eyebrow">ติดต่อเรา</p>
                     <h1>มีไอเดียหรือคำถาม?<br /><span>คุยกับเราได้เลย</span></h1>
                     <p className="studio-intro">เล่าเรื่องงาน วันจัดอีเวนต์ แบบชิ้นงาน หรือโจทย์การใช้งานให้เราฟัง ทีมจะช่วยแนะนำช่องทางเริ่มต้นที่เหมาะกับคุณ</p>
                     <div className="contact-hero-actions">
@@ -34,11 +34,11 @@ export default function ContactPage() {
                 <div className="contact-hero-art" role="img" aria-label="บรรยากาศ Photobooth ในงานของ KOKO Memory"><span>GOOD TIMES<br />START HERE</span></div>
             </section>
             <section className="contact-channels studio-wrap" aria-labelledby="contact-options">
-                <div className="about-section-heading"><div><p className="studio-eyebrow">CONTACT OPTIONS</p><h2 id="contact-options">เลือกช่องทางที่สะดวก</h2></div><p>สอบถามบริการหรือแจ้งรายละเอียดงานได้โดยตรง รายการและข้อมูลติดต่อแสดงตามช่องทางที่ KOKO ใช้งานอยู่</p></div>
+                <div className="about-section-heading"><div><p className="studio-eyebrow">ช่องทางติดต่อ</p><h2 id="contact-options">เลือกช่องทางที่สะดวก</h2></div><p>สอบถามบริการหรือแจ้งรายละเอียดงานได้โดยตรง รายการและข้อมูลติดต่อแสดงตามช่องทางที่ KOKO ใช้งานอยู่</p></div>
                 <div className="contact-channel-grid">{channels.map(({ label, value, href, Icon, note }) => <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined} className="contact-channel"><span className="contact-channel-icon"><Icon size={23} /></span><span className="contact-channel-label">{label}</span><strong>{value}</strong><span className="contact-channel-note">{note}</span><span className="contact-channel-action">ติดต่อช่องทางนี้ <ArrowUpRight size={16} /></span></a>)}</div>
             </section>
             <section className="contact-next studio-wrap">
-                <div><p className="studio-eyebrow">START WITH A SERVICE</p><h2>ยังเลือกบริการไม่ถูก?</h2><p>ดูรายละเอียดบริการและผลงานก่อน แล้วส่งคำถามที่ตรงกับโปรเจกต์ของคุณมาได้เลย</p></div>
+                <div><p className="studio-eyebrow">เริ่มจากบริการ</p><h2>ยังเลือกบริการไม่ถูก?</h2><p>ดูรายละเอียดบริการและผลงานก่อน แล้วส่งคำถามที่ตรงกับโปรเจกต์ของคุณมาได้เลย</p></div>
                 <div className="contact-next-links"><Link href="/services">สำรวจบริการ <ArrowUpRight size={17} /></Link><Link href="/gallery/portfolio">ดูผลงาน <ArrowUpRight size={17} /></Link><Link href="/enquiry">เล่าโปรเจกต์ของคุณ <ArrowUpRight size={17} /></Link></div>
             </section>
         </main>

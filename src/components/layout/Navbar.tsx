@@ -8,6 +8,8 @@ import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { Box, BookOpen, CalendarDays, ChevronDown, FileText, LogIn, LogOut, Menu, Monitor, Settings2, Sparkles, UserCircle2, UserPlus, UserRound, X } from "lucide-react";
 import { auth } from "@/lib/firebase";
 import LanguageSwitcher from "./LanguageSwitcher";
+import UserMenu from "./UserMenu";
+import ThemeToggle from "./ThemeToggle";
 import { useI18n, type MessageKey } from "@/i18n";
 
 const serviceItems = [
@@ -129,14 +131,14 @@ export default function Navbar() {
     const drawerActive = "border-[#a79bd8] bg-[#fafaf9] font-medium text-[#151515] [&_svg]:text-[#151515]";
     const drawerSectionLabel = "eyebrow mb-2 px-4 !text-[11px]";
     const renderDrawerLink = (item: { title: string; href: string }, nested = false) => <Link key={item.href} href={item.href} onClick={close} aria-current={isActive(item.href) ? "page" : undefined} className={`${drawerItem} ${nested ? "ml-3 w-[calc(100%-0.75rem)]" : ""} ${isActive(item.href) ? drawerActive : ""}`}>{menuLabel(item)}</Link>;
-    const navLink = (active: boolean) => `relative inline-flex min-h-11 items-center gap-1 whitespace-nowrap px-2.5 py-2 text-[14px] transition 2xl:px-3 after:absolute after:inset-x-3 after:bottom-1.5 after:h-px after:bg-[linear-gradient(90deg,#d98aae,#a79bd8,#7fb2ee)] after:transition-transform after:duration-500 ${active ? "text-[#151515] after:scale-x-100" : "text-[#5c5c5c] hover:text-[#151515] after:scale-x-0 hover:after:scale-x-100"}`;
+    const navLink = (active: boolean) => `relative inline-flex min-h-11 items-center gap-1 whitespace-nowrap px-2.5 py-2 text-[15px] font-medium transition 2xl:px-3 after:absolute after:inset-x-3 after:bottom-1.5 after:h-px after:bg-[linear-gradient(90deg,#d98aae,#a79bd8,#7fb2ee)] after:transition-transform after:duration-500 ${active ? "text-[#151515] after:scale-x-100" : "text-[#3d3d3d] hover:text-[#151515] after:scale-x-0 hover:after:scale-x-100"}`;
 
     return <>
         <header className={`fixed left-0 right-0 top-0 z-[9999] border-b pt-[env(safe-area-inset-top)] text-[#151515] backdrop-blur-xl transition-colors duration-500 ${scrolled ? "border-[#e8e8e6] bg-white/95" : "border-transparent bg-white/80"}`}>
             <div className="mx-auto flex min-h-[72px] max-w-[90rem] items-center justify-between gap-3 px-4 sm:min-h-20 sm:px-6 lg:gap-4 lg:px-8">
                 <Link href="/" className="flex shrink-0 items-center" aria-label={locale === "en" ? "KOKO Memory home" : "KOKO Memory หน้าหลัก"}>
-                    <span className="sm:hidden"><BrandLogo size="sm" /></span>
-                    <span className="hidden sm:block"><BrandLogo size="md" /></span>
+                    <span className="sm:hidden"><BrandLogo size="sm" tone="ink" /></span>
+                    <span className="hidden sm:block"><BrandLogo size="md" tone="ink" /></span>
                 </Link>
 
                 <nav aria-label={t("common.menu")} className="hidden shrink-0 items-center gap-1 xl:flex 2xl:gap-2">
@@ -159,11 +161,12 @@ export default function Navbar() {
                 </nav>
 
                 <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                    <span className="hidden sm:contents"><ThemeToggle /></span>
                     <LanguageSwitcher appearance="light" />
-                    <Link href="/booking" aria-label={t("common.bookNow")} className="flex h-11 min-h-11 w-11 items-center justify-center gap-2 whitespace-nowrap rounded-[2px] bg-[#151515] px-0 text-[13px] font-medium tracking-[0.08em] text-white transition hover:bg-[#2e2e2e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] min-[380px]:h-auto min-[380px]:w-auto min-[380px]:px-3 min-[380px]:py-2.5 sm:px-5"><CalendarDays size={16} /><span className="hidden min-[380px]:inline sm:hidden">{locale === "th" ? "จอง" : "Book"}</span><span className="hidden sm:inline">{t("common.bookNow")}</span></Link>
+                    <Link href="/booking" aria-label={t("common.bookNow")} className="group inline-flex h-11 shrink-0 items-center rounded-full bg-[linear-gradient(120deg,#d98aae,#a79bd8,#7fb2ee)] p-[1.5px] shadow-[0_6px_18px_rgba(167,155,216,0.35)] transition hover:shadow-[0_8px_24px_rgba(167,155,216,0.55)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] focus-visible:ring-offset-2"><span className="inline-flex h-full items-center gap-2 rounded-full bg-neutral-900 px-3.5 text-[14px] font-semibold text-white transition group-hover:bg-neutral-800 sm:px-5"><CalendarDays size={16} aria-hidden="true" /><span className="sm:hidden">{locale === "th" ? "จอง" : "Book"}</span><span className="hidden sm:inline">{t("common.bookNow")}</span></span></Link>
                     {user
-                        ? <Link href="/account" aria-label={t("common.account")} title={user.displayName || user.email || undefined} className="hidden h-11 w-11 items-center justify-center rounded-[2px] bg-[linear-gradient(135deg,#d98aae,#a79bd8,#7fb2ee)] p-px transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] focus-visible:ring-offset-2 md:flex"><span className="flex h-full w-full items-center justify-center rounded-[2px] bg-white font-display text-[18px] italic text-[#151515]">{(user.displayName || user.email || "K").trim().charAt(0).toUpperCase()}</span></Link>
-                        : <Link href="/account/login" className="hidden min-h-11 items-center gap-2 border-b border-transparent text-[13px] tracking-[0.06em] text-[#5c5c5c] transition hover:border-[#151515] hover:text-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] md:inline-flex"><UserRound size={16} strokeWidth={1.5} />{t("common.login")}</Link>}
+                        ? <div className="hidden md:block"><UserMenu user={user} /></div>
+                        : <Link href="/account/login" className="hidden min-h-11 items-center gap-2 rounded-full border border-[#cfcfcb] bg-white px-4 text-[14px] font-medium text-[#151515] transition hover:border-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] md:inline-flex"><UserRound size={16} strokeWidth={1.75} />{t("common.login")}</Link>}
                     <button ref={menuButtonRef} type="button" aria-label={t("common.openMenu")} aria-expanded={menuOpen} aria-controls="public-navigation-drawer" onClick={() => setMenuOpen(true)} className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-[#e8e8e6] bg-white text-[#151515] transition hover:border-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] xl:hidden"><Menu size={22} /></button>
                 </div>
             </div>
@@ -171,7 +174,7 @@ export default function Navbar() {
 
         <div aria-hidden={!menuOpen} onClick={close} className={`fixed inset-0 z-[10000] overflow-hidden bg-black/30 backdrop-blur-[2px] ${menuOpen ? "flex" : "hidden"}`}>
             <aside ref={menuPanelRef} id="public-navigation-drawer" role="dialog" aria-modal="true" aria-label={t("common.menu")} onClick={(event) => event.stopPropagation()} className={`absolute right-0 top-0 flex h-full w-full max-w-[420px] flex-col border-l border-[#e8e8e6] bg-white text-[#151515] transition-transform duration-300 supports-[height:100dvh]:h-dvh ${menuOpen ? "translate-x-0" : "translate-x-full"}`}>
-                <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#e8e8e6] px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]"><Link href="/" onClick={close} className="flex min-w-0 items-center" aria-label="KOKO Memory"><BrandLogo size="sm" /></Link><button ref={closeButtonRef} type="button" aria-label={t("common.closeMenu")} onClick={close} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[2px] border border-[#e8e8e6] bg-white text-[#151515] transition hover:border-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8]"><X size={23} /></button></div>
+                <div className="flex shrink-0 items-center justify-between gap-2 border-b border-[#e8e8e6] px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))]"><Link href="/" onClick={close} className="flex min-w-0 items-center" aria-label="KOKO Memory"><BrandLogo size="sm" /></Link><div className="flex items-center gap-1"><ThemeToggle /><button ref={closeButtonRef} type="button" aria-label={t("common.closeMenu")} onClick={close} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[2px] border border-[#e8e8e6] bg-white text-[#151515] transition hover:border-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8]"><X size={23} /></button></div></div>
                 <nav aria-label={t("common.menu")} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-5 sm:py-6">
                     <p className={drawerSectionLabel}>{t("common.services")}</p>
                     <div className="space-y-1">{serviceItems.map((item) => renderDrawerLink(item))}</div>

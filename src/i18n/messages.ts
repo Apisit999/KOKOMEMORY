@@ -13,7 +13,7 @@ export const messages = {
             about: "เกี่ยวกับเรา", contact: "ติดต่อ", search: "ค้นหารูป", account: "บัญชี",
             myAccount: "บัญชีของฉัน", profile: "โปรไฟล์", bookings: "การจองของฉัน",
             accountSettings: "ตั้งค่าบัญชี", login: "เข้าสู่ระบบ", register: "สมัครสมาชิก",
-            logout: "ออกจากระบบ", bookNow: "จองคิว", menu: "เมนู", closeMenu: "ปิดเมนู",
+            logout: "ออกจากระบบ", bookNow: "จองวันงาน", menu: "เมนู", closeMenu: "ปิดเมนู",
         },
         gallery: {
             title: "ผลงาน", description: "ชมผลงาน Photobooth และ Event Experience จาก KOKO Memory",
@@ -50,7 +50,7 @@ export const messages = {
             about: "About us", contact: "Contact", search: "Search photos", account: "Account",
             myAccount: "My account", profile: "Profile", bookings: "My bookings",
             accountSettings: "Account settings", login: "Log in", register: "Register",
-            logout: "Log out", bookNow: "Book now", menu: "MENU", closeMenu: "Close menu",
+            logout: "Log out", bookNow: "Book a date", menu: "MENU", closeMenu: "Close menu",
         },
         gallery: {
             title: "Portfolio", description: "Explore Photobooth and Event Experiences by KOKO Memory",

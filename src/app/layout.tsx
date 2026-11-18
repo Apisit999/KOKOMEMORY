@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans_Thai, Cormorant_Garamond, Noto_Serif_Thai } from "next/font/google";
 import "./globals.css";
 import I18nRoot from "@/components/layout/I18nRoot";
+import ThemeRoot from "@/components/layout/ThemeRoot";
 
 // Self-hosted at build time by next/font: crisp Thai + Latin on every phone, no layout shift, no request to Google for visitors.
 const kokoSans = IBM_Plex_Sans_Thai({ subsets: ["thai", "latin"], weight: ["300", "400", "500", "600", "700"], display: "swap", variable: "--font-koko-thai" });
@@ -29,7 +30,7 @@ export default function RootLayout({
 
   return (
 
-    <html lang="th" className={`${kokoSans.variable} ${kokoDisplay.variable} ${kokoSerifThai.variable}`}>
+    <html lang="th" suppressHydrationWarning className={`${kokoSans.variable} ${kokoDisplay.variable} ${kokoSerifThai.variable}`}>
 
       <body
         className={`
@@ -37,7 +38,7 @@ export default function RootLayout({
         `}
       >
 
-        <I18nRoot>{children}</I18nRoot>
+        <ThemeRoot><I18nRoot>{children}</I18nRoot></ThemeRoot>
 
       </body>
 
