@@ -1,5 +1,7 @@
 "use client";
 
+import ThaiDateInput from "@/components/ui/thai-date-input";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -1822,15 +1824,7 @@ export default function NewThreeDOrderPage() {
                                             กำหนดส่ง / Due Date
                                         </FieldLabel>
 
-                                        <TextInput
-                                            value={
-                                                dueDate
-                                            }
-                                            onChange={
-                                                setDueDate
-                                            }
-                                            type="date"
-                                        />
+                                        <ThaiDateInput value={dueDate} onChange={setDueDate} />
                                     </div>
                                 </div>
                             </SectionCard>

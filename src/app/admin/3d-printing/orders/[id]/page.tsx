@@ -1,5 +1,7 @@
 "use client";
 
+import ThaiDateInput from "@/components/ui/thai-date-input";
+
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -836,21 +838,7 @@ export default function ThreeDOrderDetailPage({
                                 กำหนดส่ง
                             </p>
 
-                            <input
-                                type="date"
-                                value={
-                                    order.dueDate || ""
-                                }
-                                onChange={(event) =>
-                                    setOrder({
-                                        ...order,
-                                        dueDate:
-                                            event.target.value ||
-                                            undefined,
-                                    })
-                                }
-                                className="mt-1 w-full bg-transparent text-sm font-black text-slate-900 outline-none"
-                            />
+                            <ThaiDateInput className="mt-1 border-0 bg-transparent px-0 font-black" value={order.dueDate || ""} onChange={(v) => setOrder({ ...order, dueDate: v || undefined })} />
                         </div>
                     </div>
                 </Card>

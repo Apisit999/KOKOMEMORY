@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { CalendarDays, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { useI18n } from "@/i18n";
@@ -38,6 +39,8 @@ export default function ThaiDateInput({ value, onChange, id, min, max, disabled,
     const th = locale === "th";
     const [open, setOpen] = useState(false);
     const root = useRef<HTMLDivElement>(null);
+    const popup = useRef<HTMLDivElement>(null);
+    const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
     const popupId = useId();
     const selected = toDate(value);
     const minDate = min ? toDate(min) : undefined;
@@ -45,11 +48,20 @@ export default function ThaiDateInput({ value, onChange, id, min, max, disabled,
 
     useEffect(() => {
         if (!open) return;
-        const onClick = (event: MouseEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false); };
+        const onClick = (event: MouseEvent) => { const target = event.target as Node; if (!root.current?.contains(target) && !popup.current?.contains(target)) setOpen(false); };
         const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+        // The popup is portalled out of the form so cards with overflow-hidden cannot clip it.
+        const place = () => {
+            const rect = root.current?.getBoundingClientRect(); if (!rect) return;
+            const height = popup.current?.offsetHeight ?? 420, width = popup.current?.offsetWidth ?? 340;
+            const below = rect.bottom + 8, top = below + height > window.innerHeight && rect.top - 8 - height > 0 ? rect.top - 8 - height : below;
+            setPos({ top, left: Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) });
+        };
+        place(); const frame = requestAnimationFrame(place);
+        window.addEventListener("resize", place); window.addEventListener("scroll", place, true);
         document.addEventListener("mousedown", onClick);
         document.addEventListener("keydown", onKey);
-        return () => { document.removeEventListener("mousedown", onClick); document.removeEventListener("keydown", onKey); };
+        return () => { cancelAnimationFrame(frame); window.removeEventListener("resize", place); window.removeEventListener("scroll", place, true); document.removeEventListener("mousedown", onClick); document.removeEventListener("keydown", onKey); };
     }, [open]);
 
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -58,13 +70,13 @@ export default function ThaiDateInput({ value, onChange, id, min, max, disabled,
 
     return <div ref={root} className="relative">
         <button type="button" id={id} disabled={disabled} aria-haspopup="dialog" aria-expanded={open} aria-controls={popupId} aria-label={rest["aria-label"]} onClick={() => setOpen(v => !v)}
-            className={`flex min-h-11 w-full items-center gap-3 rounded-[2px] border border-[#d6d6d2] bg-white px-3.5 text-left text-[16px] text-[#151515] transition hover:border-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] disabled:cursor-not-allowed disabled:opacity-60 ${className}`}>
+            className={`flex min-h-11 w-full items-center gap-3 rounded-[2px] border border-[#d6d6d2] bg-white px-3.5 text-left text-[16px] font-normal text-[#151515] transition hover:border-[#151515] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#a79bd8] disabled:cursor-not-allowed disabled:opacity-60 ${className}`}>
             <CalendarDays size={18} strokeWidth={1.75} aria-hidden="true" className="shrink-0 text-[#7a6cc0]" />
             <span className={`flex-1 ${selected ? "" : "text-[#8a8a86]"}`}>{selected ? formatThaiDate(selected, locale, { weekday: "short", day: "numeric", month: "long", year: "numeric" }) : placeholder ?? (th ? "เลือกวันที่" : "Choose a date")}</span>
         </button>
         {/* Keeps native "required" validation working for the form around it. */}
         {required && <input tabIndex={-1} aria-hidden="true" required value={value} onChange={() => undefined} className="pointer-events-none absolute bottom-0 left-4 h-px w-px opacity-0" />}
-        {open && <div id={popupId} role="dialog" aria-label={th ? "เลือกวันที่" : "Choose a date"} className="absolute left-0 top-full z-50 mt-2 rounded-xl border border-[#e8e8e6] bg-white p-2 shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
+        {open && pos && createPortal(<div ref={popup} id={popupId} role="dialog" aria-label={th ? "เลือกวันที่" : "Choose a date"} style={{ top: pos.top, left: pos.left }} className="fixed z-[100] rounded-xl border border-[#e8e8e6] bg-white p-2 shadow-[0_16px_40px_rgba(0,0,0,0.12)]">
             <Calendar mode="single" selected={selected} defaultMonth={selected ?? minDate ?? today} onSelect={pick}
                 disabled={[...(minDate ? [{ before: minDate }] : []), ...(maxDate ? [{ after: maxDate }] : [])]}
                 className="[--cell-size:2.5rem]" />
@@ -72,6 +84,6 @@ export default function ThaiDateInput({ value, onChange, id, min, max, disabled,
                 <button type="button" disabled={!todayAllowed} onClick={() => pick(today)} className="min-h-10 rounded-full px-3 text-[14px] font-semibold text-[#7a6cc0] hover:bg-[#f2f1fa] disabled:opacity-40">{th ? "วันนี้" : "Today"}</button>
                 {value && !required && <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-[14px] text-[#4a4a4a] hover:bg-[#f5f5f3]"><X size={14} />{th ? "ล้าง" : "Clear"}</button>}
             </div>
-        </div>}
+        </div>, document.body)}
     </div>;
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import ThaiDateInput from "@/components/ui/thai-date-input";
+
 import {
     useCallback,
     useEffect,
@@ -1018,22 +1020,7 @@ export default function EditAdminPortfolioPage() {
                                 วันที่จัดงาน
                             </label>
 
-                            <input
-                                type="date"
-                                value={
-                                    eventDate
-                                }
-                                onChange={(
-                                    event
-                                ) =>
-                                    setEventDate(
-                                        event
-                                            .target
-                                            .value
-                                    )
-                                }
-                                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#eeeaf8]"
-                            />
+                            <ThaiDateInput value={eventDate} onChange={setEventDate} />
                         </div>
                     </div>
 

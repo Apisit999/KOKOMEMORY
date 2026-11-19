@@ -8,6 +8,9 @@ import {
   type Locale,
 } from "react-day-picker"
 
+import { th as thLocale } from "react-day-picker/locale/th"
+import { enGB } from "react-day-picker/locale/en-GB"
+import { useI18n } from "@/i18n"
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
@@ -26,6 +29,10 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const { locale: siteLocale } = useI18n()
+  const thai = siteLocale === "th"
+  locale = locale ?? (thai ? thLocale : enGB)
+  const lang = thai ? "th-TH-u-ca-buddhist" : "en-GB"
 
   return (
     <DayPicker
@@ -41,6 +48,10 @@ function Calendar({
       formatters={{
         formatMonthDropdown: (date) =>
           date.toLocaleString(locale?.code, { month: "short" }),
+        formatCaption: (date) =>
+          new Intl.DateTimeFormat(lang, { month: "long", year: "numeric" }).format(date),
+        formatYearDropdown: (date) =>
+          new Intl.DateTimeFormat(lang, { year: "numeric" }).format(date),
         ...formatters,
       }}
       classNames={{

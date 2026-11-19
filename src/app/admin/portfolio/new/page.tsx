@@ -1,5 +1,7 @@
 "use client";
 
+import ThaiDateInput from "@/components/ui/thai-date-input";
+
 import {
     ChangeEvent,
     DragEvent,
@@ -1400,23 +1402,7 @@ export default function NewAdminPortfolioPage() {
                                     วันที่จัดงาน
                                 </label>
 
-                                <input
-                                    id="portfolio-event-date"
-                                    type="date"
-                                    value={
-                                        form.eventDate
-                                    }
-                                    onChange={(
-                                        event
-                                    ) =>
-                                        updateField(
-                                            "eventDate",
-                                            event.target.value
-                                        )
-                                    }
-                                    disabled={saving}
-                                    className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-[#c9c0e8] focus:bg-white focus:ring-4 focus:ring-[#f6f3fc] disabled:cursor-not-allowed disabled:opacity-60"
-                                />
+                                <ThaiDateInput id="portfolio-event-date" value={form.eventDate} onChange={(v) => updateField("eventDate", v)} disabled={saving} />
 
                             </div>
 
