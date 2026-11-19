@@ -1127,11 +1127,11 @@ function ScheduleContent() {
 
                                     <div className="min-w-0">
 
-                                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7a6cc0] sm:text-sm sm:tracking-[0.2em]">
+                                        <p className="mb-1 text-xs leading-6 font-semibold uppercase tracking-[0.16em] text-[#7a6cc0] sm:text-sm sm:tracking-[0.2em]">
                                             {translate("เลือกวันจัดงาน")}
                                         </p>
 
-                                        <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">
+                                        <h1 className="text-2xl font-black leading-snug text-slate-900 sm:text-3xl">
                                             {translate("วันที่ต้องการใช้บริการ")}
                                         </h1>
 
