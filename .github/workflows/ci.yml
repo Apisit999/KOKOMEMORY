@@ -1,0 +1,40 @@
+name: CI
+on:
+  push:
+    branches: [main, "feat/**", "design/**"]
+  pull_request:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Types
+        run: npx tsc --noEmit
+      - name: Lint (warnings allowed, errors fail)
+        run: npx eslint
+      - name: Photo delivery tests (no secrets, no network)
+        run: npm run test:studio
+      - name: Auth tests
+        run: npm run test:auth
+      - name: Production build (dummy public settings only; no real keys are used or needed)
+        run: npm run build
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ci-dummy-key
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-ci.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-ci
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: demo-ci.appspot.com
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "0"
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:0"
+          NEXT_PUBLIC_APP_URL: https://ci.invalid
+          NEXT_PUBLIC_SITE_URL: https://ci.invalid
