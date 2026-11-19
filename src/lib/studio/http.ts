@@ -5,8 +5,9 @@ import type { ReleaseService } from "./releases.ts";
 import type { CloudService } from "./cloud.ts";
 import type { NotificationService } from "./notifications.ts";
 import { MemoryRateLimiter } from "./memory-rate-limit.ts";
+import { UNMETERED_PATHS, requestMetrics, type MonitorSnapshot } from "./monitoring.ts";
 type Identity = { uid: string; admin: boolean };
-type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService>; notifications?: () => Promise<NotificationService> };
+type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService>; notifications?: () => Promise<NotificationService>; monitor?: () => Promise<MonitorSnapshot> };
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 /** Counts guests opening and saving photos in memory: see memory-rate-limit.ts for why this is not a database transaction. */
 const guestReadLimiter = new MemoryRateLimiter();
@@ -29,12 +30,28 @@ async function body(request: Request): Promise<Input> {
   } catch (error) { if (error instanceof StudioError) throw error; throw new StudioError("invalid_request"); }
 }
 export function createStudioHandler(dependencies: Dependencies) {
+  const handle = studioHandler(dependencies);
+  return async (request: Request, path: string): Promise<Response> => {
+    const started = Date.now();
+    const response = await handle(request, path);
+    if (!UNMETERED_PATHS.has(path)) requestMetrics.record(path, response.status, Date.now() - started);
+    return response;
+  };
+}
+function studioHandler(dependencies: Dependencies) {
   return async (request: Request, path: string): Promise<Response> => {
     const requestId = randomUUID();
     try {
       const origin = request.headers.get("origin");
       if (origin && origin !== dependencies.origin) throw new StudioError("origin_denied", 403);
       if (path === "health" && request.method === "GET") return Response.json({ status: "ok", service: "koko-studio" }, { headers });
+      if (path === "monitor/snapshot" && request.method === "GET") {
+        // Own token (not the cron one), checked before anything else so a database outage can still be reported.
+        const secret = process.env.STUDIO_MONITOR_TOKEN ?? ""; const given = request.headers.get("x-monitor-token") ?? "";
+        const a = createHash("sha256").update(secret).digest(), b = createHash("sha256").update(given).digest();
+        if (secret.length < 32 || !dependencies.monitor || !timingSafeEqual(a, b)) throw new StudioError("not_found", 404);
+        return Response.json(await dependencies.monitor(), { headers });
+      }
       if (!dependencies.enabled) throw new StudioError("service_unavailable", 503);
       const service = await dependencies.service();
       await service.ready();

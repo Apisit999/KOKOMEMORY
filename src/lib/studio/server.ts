@@ -106,6 +106,13 @@ async function getNotifications() {
     } },
   });
 }
+/** Health and traffic numbers for the outside watcher (scripts/monitor.mjs). No customer data. */
+async function getMonitorSnapshot() {
+  const { buildSnapshot } = await import("./monitoring.ts");
+  await getService(); // same environment checks
+  const { adminDb } = await import("@/lib/firebase-admin");
+  return buildSnapshot({ store: new FirestoreStore(adminDb), storage: r2PhotoStorage() });
+}
 async function getCloud() {
   if (cloudService) return cloudService;
   await getService(); // same environment and project confirmation checks
@@ -146,6 +153,7 @@ export async function studioRequest(request: Request, path: string) {
     releases: getReleases,
     cloud: getCloud,
     notifications: getNotifications,
+    monitor: getMonitorSnapshot,
     authenticate: async req => {
       const { requireCustomerApi, isAdminToken } = await import("@/lib/customer-api-auth");
       const token = await requireCustomerApi(req);
