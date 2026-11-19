@@ -1023,7 +1023,7 @@ export default function RegisterPage() {
 
                                 <Link
                                     href={`/account/login?redirect=${encodeURIComponent(redirectTarget)}`}
-                                    className="font-semibold text-[#7a6cc0] hover:underline"
+                                    className="inline-flex min-h-11 items-center px-1 font-semibold text-[#7a6cc0] hover:underline"
                                 >
                                     เข้าสู่ระบบ
                                 </Link>
