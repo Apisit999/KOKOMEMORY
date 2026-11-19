@@ -68,3 +68,16 @@ test("short-code guessing is rate limited per caller and per event", async () =>
   for (let i = 0; i < 30; i++) { caller = `guesser-${i + 2}`; many.push((await ask()).status); }
   assert.ok(many.filter(s => s === 429).length >= 10);
 });
+
+test("booths behind one address: each device gets its own budget, and the address has a larger shared one", async () => {
+  const store = new MemoryStore(); await migrateStudio(store);
+  const pair = generateKeyPairSync("rsa", { modulusLength: 2048 }); const signer = new EntitlementSigner("booth-test", pair.privateKey.export({ type: "pkcs8", format: "pem" }).toString());
+  const service = new StudioService({ store, signer, origin: "http://localhost:3040" });
+  const cloud = { initPhoto: async () => ({ ok: true }) };
+  const handler = createStudioHandler({ enabled: true, origin: "http://localhost:3040", service: async () => service, authenticate: async () => { throw new Error(); }, clientAddress: () => "venue-wifi", cloud: async () => cloud as never });
+  const send = (deviceId: string) => handler(new Request("http://localhost:3040/api/studio/desktop/cloud/photos/init", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ deviceId }) }), "desktop/cloud/photos/init");
+  const a = randomUUID(), b = randomUUID();
+  let refusedA = 0; for (let i = 0; i < 61; i++) if ((await send(a)).status === 429) refusedA++;
+  assert.equal(refusedA, 1, "booth A: the 61st upload start in a minute is refused");
+  assert.equal((await send(b)).status, 200, "booth B on the same address is not blocked by booth A");
+});

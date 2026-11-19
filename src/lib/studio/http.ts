@@ -11,6 +11,8 @@ type Dependencies = { enabled: boolean; origin: string; service: () => Promise<S
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 /** Counts guests opening and saving photos in memory: see memory-rate-limit.ts for why this is not a database transaction. */
 const guestReadLimiter = new MemoryRateLimiter();
+/** Per booth path: one device may send 60 a minute; all booths behind one public address together 600. */
+const BOOTH_DEVICE_PER_MINUTE = 60, BOOTH_IP_PER_MINUTE = 600;
 async function body(request: Request): Promise<Input> {
   if (!request.headers.get("content-type")?.startsWith("application/json")) throw new StudioError("invalid_request", 415);
   const reader = request.body?.getReader();
@@ -67,7 +69,10 @@ function studioHandler(dependencies: Dependencies) {
       const principal = identity ? `uid:${identity.uid}` : dependencies.clientAddress(request);
       const maxPerMinute = path === "account/link" || path === "share/code" ? 10 : publicRead ? 300 : 30;
       // Guests of one event often share an address, so the busiest reads must not queue on one database document.
+      // Booths of one venue share one public address too: count them in memory (generous per address; fairness is per device, below).
+      const boothPath = path.startsWith("desktop/cloud/");
       if (path === "share/view" || path === "share/photo") guestReadLimiter.hit(`${path}:${principal}`, maxPerMinute, Date.now());
+      else if (boothPath) guestReadLimiter.hit(`${path}:${principal}`, BOOTH_IP_PER_MINUTE, Date.now());
       else await service.rateLimit(path, principal, maxPerMinute);
       const url = new URL(request.url);
       const releases = async () => { if (!dependencies.releases) throw new StudioError("not_found", 404); return dependencies.releases(); };
@@ -99,6 +104,8 @@ function studioHandler(dependencies: Dependencies) {
       if (request.method !== "POST") throw new StudioError("method_not_allowed", 405);
       if (path === "purchase") purchaseDisabled();
       const input = await body(request);
+      // The device id is not verified here, so it can only share out the per-address budget above, never exceed it.
+      if (boothPath && typeof input.deviceId === "string") guestReadLimiter.hit(`${path}:device:${input.deviceId.slice(0, 40)}`, BOOTH_DEVICE_PER_MINUTE, Date.now());
       let result: unknown;
       switch (path) {
         case "desktop/licenses/free/claim": result = await service.claimFree(input); break;
