@@ -725,6 +725,7 @@ body{font-variant-numeric:lining-nums}
 
 /* Body copy: bigger, darker, comfortable measure */
 @layer base { main p{color:#3d3d3d} }
+@layer base { html.dark main p{color:#cfccc6} }
 .koko-studio .studio-intro,.koko-studio .services-intro>p:not(.studio-eyebrow),.koko-studio .rental-hero>div>p:not(.studio-eyebrow){font-size:18px!important;line-height:1.8;color:#3d3d3d!important}
 .koko-studio .studio-card>p,.koko-studio .about-service-card>p,.koko-studio .studio-steps p,.koko-studio .studio-faq details p{color:#3d3d3d!important}
 
@@ -791,6 +792,7 @@ html.dark :is(.bg-white,.bg-\[\#fafaf9\]){background-color:#1b1b1e}
 html.dark :is(.bg-white\/95,.bg-white\/80){background-color:rgb(18 18 20 / .92)}
 html.dark :is(.bg-slate-50,.bg-slate-50\/70,.bg-slate-100,.bg-\[\#f6f3fc\],.bg-\[\#f2f1fa\],.bg-\[\#f5f5f3\],.bg-\[\#f2f2f0\],.bg-\[\#ecebf7\]){background-color:#232327}
 html.dark main.bg-\[\#fafaf9\],html.dark [data-account-shell]{background-color:#121214}
+html.dark [data-account-shell] main.bg-slate-50{background:#121214}
 html.dark :is(.hover\:bg-\[\#f2f2f0\],.hover\:bg-\[\#f5f5f3\],.hover\:bg-\[\#fafaf9\],.hover\:bg-slate-50):hover{background-color:#26262b}
 
 /* Text */
@@ -848,3 +850,12 @@ html.dark .to-white{--tw-gradient-to:#121214}
 html.dark .bg-white\/70{background-color:rgb(27 27 30 / .7)}
 /* Faded ink text (text-[#151515]/70 and friends) */
 html.dark :is([class*="text-[#151515]/"],[class*="text-[#141516]/"]){color:#bdbab4}
+
+/* Booking flow: booking.css pins light backgrounds with equal specificity, so dark mode needs its own, stronger rules */
+html.dark .booking-experience{background:#121214;color:#f2efe9}
+html.dark .booking-experience main.bg-slate-50{background-color:#121214}
+html.dark .booking-experience .bg-white{background-color:#1b1b1e}
+html.dark .booking-experience .bg-slate-50{background-color:#232327}
+html.dark .booking-experience .bg-slate-100{background-color:#2a2a2f}
+html.dark .booking-experience :is(.border-slate-100,.border-slate-200){border-color:#2e2e33}
+html.dark :is(.text-\[\#6B6B64\],.text-\[\#6b6b64\]){color:#a8a5a0}
