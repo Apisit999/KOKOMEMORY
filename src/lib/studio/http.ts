@@ -4,9 +4,12 @@ import type { Input, StudioService } from "./service.ts";
 import type { ReleaseService } from "./releases.ts";
 import type { CloudService } from "./cloud.ts";
 import type { NotificationService } from "./notifications.ts";
+import { MemoryRateLimiter } from "./memory-rate-limit.ts";
 type Identity = { uid: string; admin: boolean };
 type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService>; notifications?: () => Promise<NotificationService> };
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
+/** Counts guests opening and saving photos in memory: see memory-rate-limit.ts for why this is not a database transaction. */
+const guestReadLimiter = new MemoryRateLimiter();
 async function body(request: Request): Promise<Input> {
   if (!request.headers.get("content-type")?.startsWith("application/json")) throw new StudioError("invalid_request", 415);
   const reader = request.body?.getReader();
@@ -44,7 +47,11 @@ export function createStudioHandler(dependencies: Dependencies) {
       // Only trust a proxy address when the hosting platform strips inbound spoofed headers.
       const publicRead = path === "download" || path === "releases/latest" || path === "desktop/updates" || path === "share/view" || path === "share/photo" || path === "share/code";
       // Public download/update paths see far more traffic than license mutations; without a trusted proxy header every caller shares one bucket.
-      await service.rateLimit(path, identity ? `uid:${identity.uid}` : dependencies.clientAddress(request), path === "account/link" || path === "share/code" ? 10 : publicRead ? 300 : 30);
+      const principal = identity ? `uid:${identity.uid}` : dependencies.clientAddress(request);
+      const maxPerMinute = path === "account/link" || path === "share/code" ? 10 : publicRead ? 300 : 30;
+      // Guests of one event often share an address, so the busiest reads must not queue on one database document.
+      if (path === "share/view" || path === "share/photo") guestReadLimiter.hit(`${path}:${principal}`, maxPerMinute, Date.now());
+      else await service.rateLimit(path, principal, maxPerMinute);
       const url = new URL(request.url);
       const releases = async () => { if (!dependencies.releases) throw new StudioError("not_found", 404); return dependencies.releases(); };
       const cloud = async () => { if (!dependencies.cloud) throw new StudioError("not_found", 404); return dependencies.cloud(); };
