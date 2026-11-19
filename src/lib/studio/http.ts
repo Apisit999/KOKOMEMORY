@@ -13,6 +13,8 @@ const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options"
 const guestReadLimiter = new MemoryRateLimiter();
 /** Per booth path: one device may send 60 a minute; all booths behind one public address together 600. */
 const BOOTH_DEVICE_PER_MINUTE = 60, BOOTH_IP_PER_MINUTE = 600;
+// Only for local fault-injection tests that replay hours of booth traffic in minutes from one device.
+const boothDeviceLimit = () => process.env.STUDIO_ENV === "local" && Number(process.env.STUDIO_BOOTH_DEVICE_PER_MINUTE) > 0 ? Number(process.env.STUDIO_BOOTH_DEVICE_PER_MINUTE) : BOOTH_DEVICE_PER_MINUTE;
 async function body(request: Request): Promise<Input> {
   if (!request.headers.get("content-type")?.startsWith("application/json")) throw new StudioError("invalid_request", 415);
   const reader = request.body?.getReader();
@@ -105,7 +107,7 @@ function studioHandler(dependencies: Dependencies) {
       if (path === "purchase") purchaseDisabled();
       const input = await body(request);
       // The device id is not verified here, so it can only share out the per-address budget above, never exceed it.
-      if (boothPath && typeof input.deviceId === "string") guestReadLimiter.hit(`${path}:device:${input.deviceId.slice(0, 40)}`, BOOTH_DEVICE_PER_MINUTE, Date.now());
+      if (boothPath && typeof input.deviceId === "string") guestReadLimiter.hit(`${path}:device:${input.deviceId.slice(0, 40)}`, boothDeviceLimit(), Date.now());
       let result: unknown;
       switch (path) {
         case "desktop/licenses/free/claim": result = await service.claimFree(input); break;

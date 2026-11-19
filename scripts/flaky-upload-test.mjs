@@ -28,6 +28,8 @@ console.log(`Desktop uploader: ${DESKTOP}  |  ${SESSIONS} rounds x ${PHOTOS} pho
 // --- the bad network -------------------------------------------------------------------------------------------------------
 // The site limits each caller address per minute (30 photo uploads/min). The test runs far faster than a real booth, so every call comes
 // from a different address: this test measures correctness on a bad network, the per-minute limit is reported separately.
+// The per-device limit (60/min) cannot be dodged that way: start the site with STUDIO_BOOTH_DEVICE_PER_MINUTE=100000 for this test
+// (honoured only when STUDIO_ENV=local); scripts/booth-rate-limit-test.mjs checks the real limits.
 let ipCounter = 3_000_000;
 const nextIp = () => { ipCounter++; return `10.${(ipCounter >> 16) & 255}.${(ipCounter >> 8) & 255}.${ipCounter & 255}`; };
 function makeNetwork(profile) {
