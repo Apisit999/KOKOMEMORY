@@ -19,8 +19,6 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Types
-        run: npx tsc --noEmit
       - name: Lint (warnings allowed, errors fail)
         run: npx eslint
       - name: Photo delivery tests (no secrets, no network)
@@ -38,3 +36,6 @@ jobs:
           NEXT_PUBLIC_FIREBASE_APP_ID: "1:0:web:0"
           NEXT_PUBLIC_APP_URL: https://ci.invalid
           NEXT_PUBLIC_SITE_URL: https://ci.invalid
+      # After the build on purpose: the build writes next-env.d.ts, which is not committed but the type check needs it.
+      - name: Types
+        run: npx tsc --noEmit
