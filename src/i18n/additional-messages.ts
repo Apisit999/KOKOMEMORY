@@ -655,4 +655,5 @@ export const additionalRawMessages: Record<string, string> = {
     "ค้นหาคำขอ": "Search requests",
     "กรองตามสถานะ": "Filter by status",
     "เช่น 2 hours": "e.g. 2 hours",
+    "ภาพของคุณ | KOKO Memory": "Your photos | KOKO Memory",
 };
