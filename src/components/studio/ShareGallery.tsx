@@ -6,7 +6,7 @@ import "./share.css";
 
 type SharePhoto = { id: string; url: string; thumbUrl: string; downloadUrl: string; loadedAt: number };
 type ApiPhoto = Omit<SharePhoto, "loadedAt" | "thumbUrl"> & { thumbUrl?: string; createdAt: string };
-type View = { eventName: string | null; expiresAt: string; expectedCount: number | null; photos: SharePhoto[] };
+type View = { eventName: string | null; guestMessage: string | null; expiresAt: string; expectedCount: number | null; photos: SharePhoto[] };
 
 const POLL_MS = 15_000;
 // Signed photo links last 10 minutes; replace them well before that so an open page never shows broken images.
@@ -51,13 +51,13 @@ export default function ShareGallery({ token, eventId }: { token?: string; event
         pinRef.current = ""; setState("pin"); return;
       }
       if (!response.ok) throw new Error();
-      const body: { eventName: string | null; expiresAt: string; expectedCount?: number | null; photos: ApiPhoto[] } = await response.json();
+      const body: { eventName: string | null; guestMessage?: string | null; expiresAt: string; expectedCount?: number | null; photos: ApiPhoto[] } = await response.json();
       const now = Date.now();
       setView(previous => {
         const known = new Map((previous?.photos ?? []).map(photo => [photo.id, photo]));
         // Keep photos that are already on screen (no flicker) unless their signed link is getting old.
         const photos = body.photos.map(photo => { const old = known.get(photo.id); return old && now - old.loadedAt < URL_REFRESH_MS ? old : { id: photo.id, url: photo.url, thumbUrl: photo.thumbUrl ?? photo.url, downloadUrl: photo.downloadUrl, loadedAt: now }; });
-        return { eventName: body.eventName, expiresAt: body.expiresAt, expectedCount: body.expectedCount ?? null, photos };
+        return { eventName: body.eventName, guestMessage: body.guestMessage ?? null, expiresAt: body.expiresAt, expectedCount: body.expectedCount ?? null, photos };
       });
       setState("ready");
     } catch { setState(current => (current === "ready" ? current : "error")); }
@@ -105,6 +105,7 @@ export default function ShareGallery({ token, eventId }: { token?: string; event
     <header className="koko-share-head">
       <p className="koko-share-eyebrow"><span aria-hidden="true">✱</span> KOKO MEMORY</p>
       <h1>{view?.eventName ?? t("ภาพของคุณ", "Your photos")}</h1>
+      {view?.guestMessage && <p className="koko-share-message">{view.guestMessage}</p>}
       {state === "ready" && <p className="koko-share-sub">{photos.length > 0 ? t(`${photos.length} รูป · แตะรูปเพื่อดูภาพใหญ่และบันทึก`, `${photos.length} photo${photos.length === 1 ? "" : "s"} · tap a photo to view and save`) : ""}</p>}
     </header>
 

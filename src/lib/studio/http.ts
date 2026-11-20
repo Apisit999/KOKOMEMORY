@@ -142,6 +142,8 @@ function studioHandler(dependencies: Dependencies) {
         case "desktop/cloud/photos/init": result = await (await cloud()).initPhoto(input); break;
         case "desktop/cloud/photos/confirm": result = await (await cloud()).confirmPhoto(input); break;
         case "account/cloud/photos/manage": result = await (await cloud()).managePhoto({ ownerUid: identity!.uid }, identity!.uid, input); break;
+        case "account/cloud/photos/delete-many": result = await (await cloud()).deletePhotos({ ownerUid: identity!.uid }, identity!.uid, input); break;
+        case "account/cloud/events/update": result = await (await cloud()).updateEventSettings(identity!.uid, input); break;
         case "admin/cloud/retention-sweep": if (!identity?.admin) throw new StudioError("forbidden", 403); result = await (await cloud()).sweepExpiredPhotos(`admin:${identity.uid}`); break;
         case "admin/cloud/derivatives/backfill": result = await (await cloud()).backfillDerivatives(typeof input.limit === "number" ? input.limit : 50); break;
         case "admin/cloud/photos/manage": result = await (await cloud()).managePhoto({ admin: true }, identity!.uid, input); break;

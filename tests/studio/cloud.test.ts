@@ -512,3 +512,47 @@ test("backfill makes copies only for photos that lack them, and can run again", 
   assert.deepEqual(await later.backfillDerivatives(), { checked: 0, made: 0, failed: 0, remaining: 0 });
   await assert.rejects(f.cloud.backfillDerivatives(), { code: "not_configured" });
 });
+
+test("owner dashboard: delete several photos or a whole event in one request, counters stay right, other accounts refused", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  const a = await uploadReady(f, eventId, "a");
+  const b = await uploadReady(f, eventId, "b", Buffer.from("second photo bytes"));
+  await uploadReady(f, eventId, "c", Buffer.from("third photo bytes!!"));
+  const many = await f.cloud.deletePhotos(OWNER, "uid-a", { photoIds: [a.photoId, b.photoId, a.photoId] });
+  assert.deepEqual(many, { deleted: 2, failed: [] });
+  assert.equal((await f.cloud.eventPhotos(OWNER, eventId)).photos.length, 1);
+  await assert.rejects(f.cloud.deletePhotos({ ownerUid: "uid-b" }, "uid-b", { eventId }), /not_found/);
+  const other = await f.cloud.deletePhotos({ ownerUid: "uid-b" }, "uid-b", { photoIds: [ID("c")] });
+  assert.deepEqual(other, { deleted: 0, failed: [ID("c")] });
+  const all = await f.cloud.deletePhotos(OWNER, "uid-a", { eventId });
+  assert.equal(all.deleted, 1);
+  const usage = f.store.documents.get("studioUsage/uid-a") as { photos: number; bytes: number };
+  assert.deepEqual([usage.photos, usage.bytes], [0, 0]);
+  assert.equal((f.store.documents.get(`studioEvents/${eventId}`) as { photoCount: number }).photoCount, 0);
+  await assert.rejects(f.cloud.deletePhotos(OWNER, "uid-a", { photoIds: [] }), /invalid_request/);
+  await assert.rejects(f.cloud.deletePhotos(OWNER, "uid-a", { photoIds: Array.from({ length: 201 }, (_, i) => ID(String(i % 10))) }), /invalid_request/);
+});
+
+test("owner dashboard: guest title and message show on the guest page, survive booth re-sync, and are owner-only", async () => {
+  const f = setup();
+  const eventId = await makeEvent(f);
+  await f.cloud.updateEventSettings("uid-a", { eventId, guestTitle: "  งานแต่ง นก & บีม  ", guestMessage: "ขอบคุณที่มาร่วมงาน\u0007" });
+  let event = f.store.documents.get(`studioEvents/${eventId}`) as { guestTitle: string; guestMessage: string; name: string };
+  assert.deepEqual([event.guestTitle, event.guestMessage], ["งานแต่ง นก & บีม", "ขอบคุณที่มาร่วมงาน"]);
+  // The booth sends the event again (rename on the booth): the owner's guest fields stay.
+  await f.cloud.upsertEvent({ ...f.input, clientEventId: "event-0001", name: "Wedding A (booth)", date: "2026-11-20" });
+  event = f.store.documents.get(`studioEvents/${eventId}`) as typeof event;
+  assert.deepEqual([event.name, event.guestTitle], ["Wedding A (booth)", "งานแต่ง นก & บีม"]);
+  await uploadReady(f, eventId, "a");
+  const share = (await f.cloud.manageShare("uid-a", { action: "create", eventId })) as { url: string };
+  const view = await f.cloud.viewShare(share.url.split("/s/")[1].split("?")[0]);
+  assert.deepEqual([view.eventName, (view as { guestMessage?: string | null }).guestMessage], ["งานแต่ง นก & บีม", "ขอบคุณที่มาร่วมงาน"]);
+  // Empty text clears back to the booth name.
+  await f.cloud.updateEventSettings("uid-a", { eventId, guestTitle: "", guestMessage: null });
+  const cleared = await f.cloud.viewShare(share.url.split("/s/")[1].split("?")[0]);
+  assert.deepEqual([cleared.eventName, (cleared as { guestMessage?: string | null }).guestMessage], ["Wedding A (booth)", null]);
+  await assert.rejects(f.cloud.updateEventSettings("uid-b", { eventId, guestTitle: "x" }), /not_found/);
+  await assert.rejects(f.cloud.updateEventSettings("uid-a", { eventId, guestTitle: "x".repeat(81) }), /text_too_long/);
+  await assert.rejects(f.cloud.updateEventSettings("uid-a", { eventId, guestMessage: 5 }), /invalid_request/);
+});

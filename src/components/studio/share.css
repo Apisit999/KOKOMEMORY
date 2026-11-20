@@ -60,3 +60,6 @@
 .koko-share-pin[aria-invalid=true]{border-color:#d98aae}
 .koko-share-lightbox .koko-share-btn{background:#fff;color:#151515}
 .koko-share-lightbox-top button,.koko-share-lightbox-bar>button:not(.koko-share-btn){border-radius:2px}
+
+/* Owner message under the event title (set in the account dashboard). */
+.koko-share-message { margin: .5rem 0 0; max-width: 36rem; color: #3f3f3a; font-size: 1rem; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }

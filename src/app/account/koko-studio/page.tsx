@@ -1,2 +1,2 @@
-import StudioDashboard from "@/components/studio/StudioDashboard";
-export default function KokoStudioAccountPage() { return <StudioDashboard />; }
+import CustomerStudioDashboard from "@/components/studio/CustomerStudioDashboard";
+export default function KokoStudioAccountPage() { return <CustomerStudioDashboard />; }

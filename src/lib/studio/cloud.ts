@@ -7,7 +7,9 @@ import { PRODUCT_ID, effectivePlanId, StudioError, type License, type Plan, type
  * Ownership comes from the server-side license (ownerUid), never from anything the Desktop app claims.
  * Layout: owner account -> event -> photo. Files live in object storage under studio/{ownerUid}/{eventId}/{photoId}.jpg.
  */
-export type CloudEvent = { id: string; ownerUid: string; licenseId: string; clientEventId: string; name: string; date: string | null; status: "active" | "archived"; photoCount: number; bytes: number; createdAt: string; updatedAt: string };
+export type CloudEvent = { id: string; ownerUid: string; licenseId: string; clientEventId: string; name: string; date: string | null; status: "active" | "archived"; photoCount: number; bytes: number; createdAt: string; updatedAt: string;
+  /** Set by the owner on the web; the booth never overwrites these. */
+  guestTitle?: string | null; guestMessage?: string | null };
 export type CloudPhoto = { id: string; eventId: string; ownerUid: string; sessionId: string | null; key: string; size: number; sha256: string; status: "pending" | "ready" | "hidden" | "deleted"; createdAt: string; updatedAt: string; readyAt: string | null; derivatives?: DerivativeKind[] };
 /** Smaller copies made after upload so phones never load the original: grid, full screen, and the default saved file. */
 export type DerivativeKind = "thumb" | "preview" | "download";
@@ -229,7 +231,7 @@ export class CloudService {
     const all = await this.store.list<CloudPhoto>("studioPhotos", { field: "eventId", value: id }, MAX_LIST_PHOTOS);
     const visible = all.filter(p => p.ownerUid === event.ownerUid && (p.status === "ready" || ("admin" in scope && p.status === "hidden")))
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-    const photos = await Promise.all(visible.map(async p => ({ id: p.id, status: p.status, size: p.size, createdAt: p.createdAt, url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS) })));
+    const photos = await Promise.all(visible.map(async p => ({ id: p.id, status: p.status, size: p.size, createdAt: p.createdAt, url: await this.storage.presignDownload(p.key, VIEW_URL_SECONDS), thumbUrl: await this.storage.presignDownload(this.viewKey(p, "thumb"), VIEW_URL_SECONDS) })));
     return { event, photos, urlExpiresInSeconds: VIEW_URL_SECONDS };
   }
 
@@ -263,6 +265,49 @@ export class CloudService {
     // The database is already authoritative; a failed file removal is retried by deleting again.
     if (result.removeFile) { try { for (const kind of result.photo.derivatives ?? []) await this.storage.remove(derivativeKey(result.photo.key, kind)); await this.storage.remove(result.photo.key); } catch { throw new StudioError("storage_unavailable", 503); } }
     return { photoId, status: result.photo.status };
+  }
+
+  /** Owner: what guests see on this event's pages (title and a short message). Empty text clears it. */
+  async updateEventSettings(ownerUid: string, input: Input) {
+    const eventId = pattern(input.eventId, /^[0-9a-f]{32}$/);
+    const clean = (value: unknown, max: number) => {
+      if (value === undefined) return undefined;
+      if (value === null) return null;
+      if (typeof value !== "string") throw new StudioError("invalid_request");
+      const v = value.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "").trim();
+      if (v.length > max) throw new StudioError("text_too_long");
+      return v || null;
+    };
+    const guestTitle = clean(input.guestTitle, 80);
+    const guestMessage = clean(input.guestMessage, 280);
+    return this.store.transaction(async tx => {
+      const event = await tx.get<CloudEvent>("studioEvents", eventId);
+      if (!event || event.ownerUid !== ownerUid) throw new StudioError("not_found", 404);
+      const next: CloudEvent = { ...event, ...(guestTitle !== undefined ? { guestTitle } : {}), ...(guestMessage !== undefined ? { guestMessage } : {}), updatedAt: iso(this.now()) };
+      tx.set("studioEvents", eventId, next);
+      return { event: next };
+    });
+  }
+
+  /** Owner or admin: delete several photos, or every photo of one event, in one request. Each photo is deleted exactly like a single delete. */
+  async deletePhotos(scope: CloudScope, actor: string, input: Input) {
+    let ids: string[];
+    if (input.eventId !== undefined) {
+      const eventId = pattern(input.eventId, /^[0-9a-f]{32}$/);
+      const event = await this.store.transaction(tx => tx.get<CloudEvent>("studioEvents", eventId));
+      if (!event || !this.scopeAllows(scope, event.ownerUid)) throw new StudioError("not_found", 404);
+      const all = await this.store.list<CloudPhoto>("studioPhotos", { field: "eventId", value: eventId }, MAX_LIST_PHOTOS);
+      ids = all.filter(p => p.ownerUid === event.ownerUid && p.status !== "deleted").map(p => p.id);
+    } else {
+      if (!Array.isArray(input.photoIds) || input.photoIds.length === 0 || input.photoIds.length > 200) throw new StudioError("invalid_request");
+      ids = [...new Set(input.photoIds.map(id => pattern(id, /^[0-9a-f]{32}$/)))];
+    }
+    let deleted = 0; const failed: string[] = [];
+    for (const photoId of ids) {
+      try { await this.managePhoto(scope, actor, { photoId, action: "delete" }); deleted++; }
+      catch { failed.push(photoId); }
+    }
+    return { deleted, failed };
   }
 
   /**
@@ -537,6 +582,7 @@ export class CloudService {
       thumbUrl: await this.storage.presignDownload(this.viewKey(p, "thumb"), VIEW_URL_SECONDS),
       downloadUrl: `${this.origin}/api/studio/share/photo?t=${this.downloadToken(share.id, p.id)}`,
     })));
-    return { scope: share.scope, pinProtected: Boolean(share.pinHash), eventName: event && event.ownerUid === share.ownerUid ? event.name : null, expiresAt: share.expiresAt, expectedCount, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
+    const ownEvent = event && event.ownerUid === share.ownerUid ? event : null;
+    return { scope: share.scope, pinProtected: Boolean(share.pinHash), eventName: ownEvent ? ownEvent.guestTitle || ownEvent.name : null, guestMessage: ownEvent?.guestMessage ?? null, expiresAt: share.expiresAt, expectedCount, urlExpiresInSeconds: VIEW_URL_SECONDS, photos: items };
   }
 }

@@ -2,6 +2,7 @@
 // as that customer, and moves the linked license to a cloud plan. Usage:
 //   node scripts/rehearsal-account.mjs approve <USER_CODE> [webOrigin]
 //   node scripts/rehearsal-account.mjs plan
+//   node scripts/rehearsal-account.mjs password <NEW_PASSWORD>
 import { randomUUID } from "node:crypto";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
@@ -48,6 +49,11 @@ if (command === "approve") {
   if (!target) throw new Error("No cloud plan found");
   for (const doc of licenses.docs) await doc.ref.update({ planId: target.id, status: "active" });
   console.log("linked licenses moved to", target.id, "count", licenses.size);
+} else if (command === "password") {
+  // Sets a known password for signing in through the real web pages during a rehearsal.
+  const user = await auth.getUserByEmail(email);
+  await auth.updateUser(user.uid, { password: arg, emailVerified: true });
+  console.log("password set for", email);
 } else {
-  console.log("Usage: approve <USER_CODE> | plan");
+  console.log("Usage: approve <USER_CODE> | plan | password <NEW_PASSWORD>");
 }
