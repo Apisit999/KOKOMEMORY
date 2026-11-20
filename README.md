@@ -1,37 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KOKO Memory — เว็บไซต์ + KOKO Studio (ระบบส่งรูป)
 
-## Getting Started
+Next.js 16 + Tailwind 4 + Firebase (Auth, Firestore) + Cloudflare R2 เว็บไซต์ร้าน (จองบูธ, งานพิมพ์ 3D) และระบบ KOKO Studio:
+สิทธิ์ใช้งานโปรแกรมตู้, คลาวด์รูป, หน้ารูปของแขก `/s/<token>`, แดชบอร์ดลูกค้า `/account/koko-studio`, ชำระเงินผ่าน Omise
 
-First, run the development server:
+## ต้องมี
+- Node.js 24 (เวอร์ชันเดียวกับ CI), npm · Java 21 (สำหรับ Firebase emulator) · ไฟล์ `.env.studio.local` สร้างด้วย `node scripts/studio-local-config.mjs`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Development
+เว็บไซต์ทั่วไป: `npm ci` แล้ว `npm run dev` → http://localhost:3000
+
+ระบบ Studio แบบแยกจากข้อมูลจริง (ใช้ระบบจำลองทั้งหมด):
+```
+npx --yes --package=firebase-tools firebase emulators:start --only auth,firestore --project demo-kokomemory-local --config firebase.json
+node scripts/local-s3-mock.mjs          # ที่เก็บรูปจำลอง 127.0.0.1:9199
+node scripts/studio-start-local.mjs     # เว็บที่ http://127.0.0.1:3040 (โหมดพัฒนา)
+# อีกหน้าต่าง: FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099
+npm run studio:migrate
+node scripts/studio-seed-demo.mjs       # ข้อมูลตัวอย่าง (ต้องเปิดที่เก็บรูปจำลองก่อน)
+```
+การล็อกอินในเบราว์เซอร์ต่อระบบจำลองได้เฉพาะโหมดพัฒนา (`src/lib/firebase.ts`) ซ้อมแบบ production ผ่าน HTTPS จริงดู `docs/VPS_READINESS_2026-11-20.md`
+
+## Tests
+```
+npm run test:studio     # ระบบ Studio (5 รายการข้ามถ้าไม่ได้เปิด emulator)
+npm run test:auth
+npm run lint
+npx next build && npx tsc --noEmit
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Production
+ขึ้นบน VPS (Docker + Nginx) ตาม `deploy/hostinger/README.md` และรายการตรวจ `docs/VPS_READINESS_2026-11-20.md`
+ค่าตั้งของเซิร์ฟเวอร์ (ชื่อตัวแปรเท่านั้น ไม่มีค่าจริงในรีโป): `deploy/hostinger/.env.staging.example`
+ห้ามตั้ง `STUDIO_ENV=local` หรือ `R2_LOCAL_ENDPOINT` บนเซิร์ฟเวอร์จริง
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-"# KOKOwedding" 
+## เอกสาร (`docs/`)
+- โครงสร้าง, data model, API: `ARCHITECTURE.md`
+- ผลทดสอบตาม Milestone: `TEST_REPORT_2026-11-20.md` · Load test: `LOAD_TEST_2026-11-19.md`
+- สำรอง/กู้คืน: `BACKUP_RESTORE.md` · เฝ้าระวัง: `MONITORING.md` · ต้นทุน: `COST_PER_EVENT_2026-11-19.md`
+- สัญญาอนุญาตและช่องโหว่: `LICENSES_AND_SECURITY_2026-11-20.md`, SBOM `sbom/sbom.cdx.json`
+- โปรแกรมตู้และคู่มือหน้างาน: repo `PhotoboothKoKo` (`README.md`, `docs/RUNBOOK_ONSITE_TH.md`)
