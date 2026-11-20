@@ -75,7 +75,8 @@ export class BillingService {
       throw error;
     }
     await this.store.transaction(async tx => { const o = await tx.get<PaidOrder>("studioOrders", order.id); if (o) tx.set("studioOrders", o.id, { ...o, chargeId: charge.id }); });
-    const settled = charge.status === "successful" ? await this.settle(charge.id) : null;
+    // A card can be paid or declined at once; record either outcome now instead of leaving the order pending.
+    const settled = charge.status === "successful" || charge.status === "failed" ? await this.settle(charge.id) : null;
     return { orderId: order.id, amountMinor: order.amountMinor, status: settled?.status ?? (charge.status === "failed" ? "failed" : "pending"),
       qrImageUrl: charge.source?.scannable_code?.image?.download_uri ?? null, authorizeUri: method === "card" ? charge.authorize_uri ?? null : null, expiresAt: charge.expires_at ?? null };
   }
