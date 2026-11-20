@@ -125,6 +125,11 @@ async function getCloud() {
     shareSecret: process.env.STUDIO_SHARE_SECRET || createHash("sha256").update(`share:${process.env.STUDIO_SIGNING_PRIVATE_KEY ?? ""}`).digest("hex") });
   return cloudService;
 }
+async function getBilling() {
+  await getService(); // same environment checks
+  const [{ adminDb }, { BillingService, omiseGateway }] = await Promise.all([import("@/lib/firebase-admin"), import("./billing.ts")]);
+  return new BillingService({ store: new FirestoreStore(adminDb), gateway: omiseGateway(process.env.OMISE_SECRET_KEY ?? ""), origin: process.env.STUDIO_WEB_ORIGIN ?? "" });
+}
 /** Demo-only: lets a phone on the home Wi-Fi reach the local stack over plain HTTP. Ignored unless the environment is `local` on a demo project. */
 function lanTestHost() { return process.env.STUDIO_ENV === "local" && (process.env.GCLOUD_PROJECT ?? "").startsWith("demo-") ? process.env.STUDIO_LAN_HOST || undefined : undefined; }
 async function getService() {
@@ -154,6 +159,8 @@ export async function studioRequest(request: Request, path: string) {
     cloud: getCloud,
     notifications: getNotifications,
     monitor: getMonitorSnapshot,
+    // Payments stay off until real Omise keys are set and STUDIO_PAYMENTS_ENABLED=true.
+    billing: process.env.STUDIO_PAYMENTS_ENABLED === "true" ? getBilling : undefined,
     authenticate: async req => {
       const { requireCustomerApi, isAdminToken } = await import("@/lib/customer-api-auth");
       const token = await requireCustomerApi(req);

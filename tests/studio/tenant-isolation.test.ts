@@ -6,19 +6,21 @@ import { CloudService, photoKey, type PhotoStorage } from "../../src/lib/studio/
 import { StudioService } from "../../src/lib/studio/service.ts";
 import { createStudioHandler } from "../../src/lib/studio/http.ts";
 import { migrateStudio } from "../../src/lib/studio/migration.ts";
-import { LEGAL_VERSION, PRODUCT_ID, type Claims, type License, type Plan } from "../../src/lib/studio/types.ts";
+import { LEGAL_VERSION, PRODUCT_ID, type Claims, type Feature, type License, type Plan } from "../../src/lib/studio/types.ts";
 import { MemoryStore } from "./memory-store.ts";
 
 /**
  * M6 acceptance: customer account B must not see or change anything of customer account A through any API.
  * Every account and booth route is called as B (signed-in user B or booth B) against A's ids.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Json = Record<string, any>;
 const ORIGIN = "http://localhost:3040";
 const NOW = Date.now();
 const iso = (t: number) => new Date(t).toISOString();
 const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 const DEVICE = { a: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", b: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" } as const;
-const FEATURES = ["capture", "printing", "templates", "cloud_sync"];
+const FEATURES: Feature[] = ["capture", "printing", "templates", "cloud_sync"];
 
 async function setup() {
   const store = new MemoryStore(); await migrateStudio(store);
@@ -50,7 +52,7 @@ async function setup() {
     const url = new URL(`${ORIGIN}/api/studio/${path}`); for (const [k, v] of Object.entries(options.query ?? {})) url.searchParams.set(k, v);
     const response = await handler(new Request(url, { method: options.body ? "POST" : "GET", headers: { "content-type": "application/json", ...(options.as ? { "x-test-uid": options.as } : {}) }, body: options.body ? JSON.stringify(options.body) : undefined }), path);
     const type = response.headers.get("content-type") ?? "";
-    return { status: response.status, json: type.includes("json") ? await response.json() as Record<string, any> : null };
+    return { status: response.status, json: type.includes("json") ? await response.json() as Json : null };
   };
   const booth = (who: "a" | "b", extra: object) => ({ deviceId: DEVICE[who], productId: PRODUCT_ID, entitlement: entitlement[who], ...extra });
 

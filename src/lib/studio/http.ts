@@ -4,10 +4,11 @@ import type { Input, StudioService } from "./service.ts";
 import type { ReleaseService } from "./releases.ts";
 import type { CloudService } from "./cloud.ts";
 import type { NotificationService } from "./notifications.ts";
+import type { BillingService } from "./billing.ts";
 import { MemoryRateLimiter } from "./memory-rate-limit.ts";
 import { UNMETERED_PATHS, requestMetrics, type MonitorSnapshot } from "./monitoring.ts";
 type Identity = { uid: string; admin: boolean };
-type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService>; notifications?: () => Promise<NotificationService>; monitor?: () => Promise<MonitorSnapshot> };
+type Dependencies = { enabled: boolean; origin: string; service: () => Promise<StudioService>; authenticate: (request: Request) => Promise<Identity>; clientAddress: (request: Request) => string; releases?: () => Promise<ReleaseService>; cloud?: () => Promise<CloudService>; notifications?: () => Promise<NotificationService>; monitor?: () => Promise<MonitorSnapshot>; billing?: () => Promise<BillingService> };
 const headers = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" };
 /** Counts guests opening and saving photos in memory: see memory-rate-limit.ts for why this is not a database transaction. */
 const guestReadLimiter = new MemoryRateLimiter();
@@ -66,7 +67,7 @@ function studioHandler(dependencies: Dependencies) {
         if (path.startsWith("admin/") && !identity.admin) throw new StudioError("forbidden", 403);
       }
       // Only trust a proxy address when the hosting platform strips inbound spoofed headers.
-      const publicRead = path === "download" || path === "releases/latest" || path === "desktop/updates" || path === "share/view" || path === "share/photo" || path === "share/code";
+      const publicRead = path === "billing/omise/webhook" || path === "download" || path === "releases/latest" || path === "desktop/updates" || path === "share/view" || path === "share/photo" || path === "share/code";
       // Public download/update paths see far more traffic than license mutations; without a trusted proxy header every caller shares one bucket.
       const principal = identity ? `uid:${identity.uid}` : dependencies.clientAddress(request);
       const maxPerMinute = path === "account/link" || path === "share/code" ? 10 : publicRead ? 300 : 30;
@@ -79,6 +80,7 @@ function studioHandler(dependencies: Dependencies) {
       const url = new URL(request.url);
       const releases = async () => { if (!dependencies.releases) throw new StudioError("not_found", 404); return dependencies.releases(); };
       const cloud = async () => { if (!dependencies.cloud) throw new StudioError("not_found", 404); return dependencies.cloud(); };
+      const billing = async () => { if (!dependencies.billing) throw new StudioError("purchase_unavailable", 503); return dependencies.billing(); };
       if (request.method === "GET") {
         if (path === "releases/latest") return Response.json(await (await releases()).latest({ channel: url.searchParams.get("channel") }), { headers: { ...headers, "Cache-Control": "public, max-age=60" } });
         if (path === "download") {
@@ -98,6 +100,9 @@ function studioHandler(dependencies: Dependencies) {
         if (path === "account/cloud/photos" && identity) return Response.json(await (await cloud()).eventPhotos({ ownerUid: identity.uid }, url.searchParams.get("eventId")), { headers });
         if (path === "admin/cloud/events" && identity?.admin) return Response.json(await (await cloud()).adminEvents(url.searchParams.get("ownerUid") ?? undefined), { headers });
         if (path === "admin/cloud/photos" && identity?.admin) return Response.json(await (await cloud()).eventPhotos({ admin: true }, url.searchParams.get("eventId")), { headers });
+        if (path === "account/billing/plans" && identity) return Response.json(await (await billing()).plans(), { headers });
+        if (path === "account/billing/orders" && identity) return Response.json(await (await billing()).history(identity.uid), { headers });
+        if (path === "account/billing/order" && identity) return Response.json(await (await billing()).orderStatus(identity.uid, url.searchParams.get("orderId")), { headers });
         if (path === "desktop/plans") return Response.json(await service.plans(), { headers });
         if (path === "account/licenses" && identity) return Response.json(await service.account(identity.uid), { headers });
         if (path === "admin/licenses" && identity?.admin) return Response.json(await service.admin(), { headers });
@@ -110,6 +115,8 @@ function studioHandler(dependencies: Dependencies) {
       if (boothPath && typeof input.deviceId === "string") guestReadLimiter.hit(`${path}:device:${input.deviceId.slice(0, 40)}`, boothDeviceLimit(), Date.now());
       let result: unknown;
       switch (path) {
+        case "account/billing/checkout": result = await (await billing()).checkout(identity!.uid, input); break;
+        case "billing/omise/webhook": result = await (await billing()).webhook(input); break;
         case "desktop/licenses/free/claim": result = await service.claimFree(input); break;
         case "desktop/licenses/activate": result = await service.activate(input); break;
         case "desktop/leases/refresh": result = await service.refresh(input); break;
