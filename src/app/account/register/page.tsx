@@ -122,6 +122,12 @@ export default function RegisterPage() {
 
         setLoading(true);
 
+        // Once the account exists, a later problem (profile write, verification email)
+        // must not be reported as a failed registration: the user would retry and hit
+        // "email already in use".
+        let accountCreated = false;
+        let verificationSent = true;
+
         try {
             /* ====================================================
                CREATE FIREBASE USER
@@ -134,38 +140,49 @@ export default function RegisterPage() {
                     password,
                 );
 
+            accountCreated = true;
+
             /* ====================================================
                UPDATE DISPLAY NAME
             ==================================================== */
 
-            await updateProfile(
-                result.user,
-                {
-                    displayName: cleanName,
-                },
-            );
+            try {
+                await updateProfile(
+                    result.user,
+                    {
+                        displayName: cleanName,
+                    },
+                );
+            } catch (profileError) {
+                console.error("Register display name error:", profileError);
+            }
 
             /* ====================================================
                CREATE / UPDATE CUSTOMER PROFILE
             ==================================================== */
 
-            const userRef = doc(db, "users", result.user.uid);
-            const profileSnapshot = await getDoc(userRef);
+            // The login page re-creates this profile on first sign in, so a failure here is not fatal.
+            try {
+                const userRef = doc(db, "users", result.user.uid);
+                const profileSnapshot = await getDoc(userRef);
 
-            await setDoc(
-                userRef,
-                {
-                    uid: result.user.uid,
-                    name: cleanName,
-                    email: cleanEmail,
-                    provider: "password",
-                    updatedAt: serverTimestamp(),
-                    ...(profileSnapshot.exists()
-                        ? {}
-                        : { createdAt: serverTimestamp() }),
-                },
-                { merge: true },
-            );
+                await setDoc(
+                    userRef,
+                    {
+                        uid: result.user.uid,
+                        name: cleanName,
+                        email: cleanEmail,
+                        provider: "password",
+                        updatedAt: serverTimestamp(),
+                        ...(profileSnapshot.exists()
+                            ? {}
+                            : { createdAt: serverTimestamp() }),
+                    },
+                    { merge: true },
+                );
+            } catch (profileError) {
+                console.error("Register profile error:", profileError);
+            }
 
             /* ====================================================
                SEND VERIFICATION EMAIL
@@ -183,56 +200,36 @@ export default function RegisterPage() {
                Customer Email
             ==================================================== */
 
-            const idToken =
-                await result.user.getIdToken(
-                    true,
-                );
+            // The account exists from here on. Sending the verification email may fail
+            // (mail service down, not configured); that must not look like a failed sign up.
+            try {
+                const idToken = await result.user.getIdToken(true);
+                const verificationResponse = await fetch("/api/auth/send-verification", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${idToken}` },
+                });
+                const verificationResult = (await verificationResponse
+                    .json()
+                    .catch(() => ({}))) as { success?: boolean; error?: string };
 
-            const verificationResponse =
-                await fetch(
-                    "/api/auth/send-verification",
-                    {
-                        method: "POST",
-
-                        headers: {
-                            Authorization:
-                                `Bearer ${idToken}`,
-                        },
-                    },
-                );
-
-            const verificationResult =
-                (await verificationResponse.json()) as {
-                    success?: boolean;
-                    error?: string;
-                    message?: string;
-                };
-
-            /* ====================================================
-               HANDLE VERIFICATION ERROR
-            ==================================================== */
-
-            if (
-                !verificationResponse.ok ||
-                verificationResult.success !==
-                    true
-            ) {
-                console.error(
-                    "KOKO REGISTER VERIFICATION ERROR:",
-                    verificationResult,
-                );
-
-                throw new Error(
-                    verificationResult.error ||
-                        "SEND_VERIFICATION_FAILED",
-                );
+                if (!verificationResponse.ok || verificationResult.success !== true) {
+                    console.error("KOKO REGISTER VERIFICATION ERROR:", verificationResult);
+                    verificationSent = false;
+                }
+            } catch (verificationError) {
+                console.error("KOKO REGISTER VERIFICATION ERROR:", verificationError);
+                verificationSent = false;
             }
 
             /* ====================================================
                SIGN OUT AFTER REGISTRATION
             ==================================================== */
 
-            await signOut(auth);
+            try {
+                await signOut(auth);
+            } catch (signOutError) {
+                console.error("Register Sign Out Error:", signOutError);
+            }
 
             /* ====================================================
                REDIRECT TO LOGIN
@@ -241,7 +238,7 @@ export default function RegisterPage() {
             router.replace(
                 `/account/login?registered=1&provider=email&email=${encodeURIComponent(
                     cleanEmail,
-                )}&redirect=${encodeURIComponent(
+                )}${verificationSent ? "" : "&emailSent=0"}&redirect=${encodeURIComponent(
                     redirectTarget,
                 )}`,
             );
@@ -251,6 +248,15 @@ export default function RegisterPage() {
                 "Customer Register Error:",
                 getFirebaseErrorCode(error),
             );
+
+            if (accountCreated) {
+                router.replace(
+                    `/account/login?registered=1&provider=email&email=${encodeURIComponent(
+                        cleanEmail,
+                    )}&emailSent=0&redirect=${encodeURIComponent(redirectTarget)}`,
+                );
+                return;
+            }
 
             switch (
                 getFirebaseErrorCode(error)
@@ -459,7 +465,7 @@ export default function RegisterPage() {
                         VISUAL PANEL
                     ================================================== */}
 
-                    <section className="relative isolate min-h-[390px] overflow-hidden bg-[#141516] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:min-h-[640px] lg:px-10 lg:py-10">
+                    <section className="relative isolate min-h-[210px] overflow-hidden bg-[#141516] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:min-h-[640px] lg:px-10 lg:py-10">
 
                         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
 
@@ -531,13 +537,6 @@ export default function RegisterPage() {
                                 caption="เก็บวันนี้ไว้ ให้เป็นของวันหน้า"
                             />
 
-                            <FloatingCard
-                                image="/illustrations/idea-to-reality.svg"
-                                className="right-[4%] top-[18%] sm:right-[14%] sm:top-[11%] lg:right-[8%] lg:left-auto lg:top-[16%]"
-                                delay="2.6s"
-                                rotate="8deg"
-                                caption="หนึ่งช็อต หนึ่งความทรงจำที่ไม่มีวันซ้ำ"
-                            />
 
                             <FloatingCard
                                 image="/hero/wedding.jpg"
@@ -552,7 +551,7 @@ export default function RegisterPage() {
 
                         {/* 3D MEMORY FRAME */}
 
-                        <div className="pointer-events-none absolute left-1/2 top-[53%] z-20 w-[210px] -translate-x-1/2 -translate-y-1/2 sm:top-[53%] sm:w-[235px] lg:top-[51%] lg:w-[245px]">
+                        <div className="pointer-events-none absolute left-1/2 top-[53%] z-20 hidden w-[210px] -translate-x-1/2 -translate-y-1/2 sm:top-[53%] sm:block sm:w-[235px] lg:top-[51%] lg:w-[245px]">
 
                             <div className="relative overflow-visible koko-float">
 
@@ -617,7 +616,7 @@ export default function RegisterPage() {
                         </div>
 
 
-                        <div className="pointer-events-none absolute left-[50%] top-[30%] z-30 flex h-6 w-6 -translate-x-1/2 koko-sparkle items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-lg backdrop-blur-md sm:left-[43%] sm:top-[32%]">
+                        <div className="pointer-events-none absolute left-[50%] top-[30%] z-30 hidden h-6 w-6 -translate-x-1/2 koko-sparkle items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-lg backdrop-blur-md sm:left-[43%] sm:top-[32%] sm:flex">
                             ✦
                         </div>
 
@@ -657,7 +656,7 @@ export default function RegisterPage() {
                                 </h1>
 
                                 <p className="mt-2 text-sm leading-6 text-[#5F5F58]">
-                                    สมัครสมาชิกเพื่อดูและจัดการการจองของคุณ
+                                    สมัครสมาชิกเพื่อจัดการการจอง รูปถ่าย และแพ็กเกจของคุณ
                                 </p>
 
                             </div>

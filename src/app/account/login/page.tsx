@@ -35,6 +35,7 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [registrationNotice, setRegistrationNotice] = useState(false);
     const [registrationEmail, setRegistrationEmail] = useState("");
+    const [registrationEmailSent, setRegistrationEmailSent] = useState(true);
     const [registrationProvider, setRegistrationProvider] = useState<
         "email" | "google"
     >("email");
@@ -49,9 +50,12 @@ export default function LoginPage() {
             params.get("provider") === "google" ? "google" : "email",
         );
         setRegistrationEmail(params.get("email") || "");
+        const emailSent = params.get("emailSent") !== "0";
+        setRegistrationEmailSent(emailSent);
         setRegistrationNotice(true);
 
         params.delete("registered");
+        params.delete("emailSent");
         params.delete("provider");
         params.delete("email");
 
@@ -61,9 +65,10 @@ export default function LoginPage() {
             `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash}`,
         );
 
+        // A warning about the verification email needs more time to read than a plain success.
         const timer = window.setTimeout(() => {
             setRegistrationNotice(false);
-        }, 6500);
+        }, emailSent ? 9000 : 15000);
 
         return () => window.clearTimeout(timer);
     }, []);
@@ -284,7 +289,9 @@ export default function LoginPage() {
                             <p className="mt-0.5 text-xs leading-5 text-[#6C8174]">
                                 {registrationProvider === "google"
                                     ? "บัญชี Google พร้อมใช้งานแล้ว กรุณาเข้าสู่ระบบ"
-                                    : "สร้างบัญชีเรียบร้อยแล้ว กรุณาเข้าสู่ระบบ"}
+                                    : registrationEmailSent
+                                      ? "สร้างบัญชีเรียบร้อยแล้ว เราส่งอีเมลยืนยันให้แล้ว กรุณากดลิงก์ในอีเมล (ดูในสแปมด้วย) แล้วเข้าสู่ระบบ"
+                                      : "สร้างบัญชีเรียบร้อยแล้ว แต่ส่งอีเมลยืนยันไม่สำเร็จ กรุณาเข้าสู่ระบบ แล้วกดส่งอีเมลยืนยันอีกครั้งที่หน้าความปลอดภัย"}
                             </p>
 
                             {registrationProvider === "email" &&
@@ -310,7 +317,7 @@ export default function LoginPage() {
             <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-[1080px] items-center sm:min-h-[calc(100vh-3rem)] lg:min-h-[640px]">
                 <div className="grid w-full overflow-hidden rounded-[4px] bg-white shadow-[0_40px_90px_-30px_rgba(20,21,22,0.35),0_4px_14px_rgba(60,36,48,0.06)] sm:rounded-[4px] lg:grid-cols-[1fr_1fr]">
                     {/* Visual panel */}
-                    <section className="relative isolate min-h-[390px] overflow-hidden bg-[#141516] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:min-h-[640px] lg:px-10 lg:py-10">
+                    <section className="relative isolate min-h-[210px] overflow-hidden bg-[#141516] px-5 py-6 sm:min-h-[430px] sm:px-8 sm:py-8 lg:min-h-[640px] lg:px-10 lg:py-10">
                         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
                             <div className="absolute -left-32 -top-32 h-[420px] w-[420px] rounded-full bg-[#fafaf9]/70 blur-[100px]" />
                             <div className="absolute -bottom-48 -right-32 h-[520px] w-[520px] rounded-full bg-[#1F2020]/40 blur-[110px]" />
@@ -369,13 +376,6 @@ export default function LoginPage() {
                                 caption="เก็บวันนี้ไว้ ให้เป็นของวันหน้า"
                             />
 
-                            <FloatingCard
-                                image="/illustrations/idea-to-reality.svg"
-                                className="right-[4%] top-[18%] sm:right-[14%] sm:top-[11%] lg:right-[8%] lg:left-auto lg:top-[16%]"
-                                delay="2.6s"
-                                rotate="8deg"
-                                caption="หนึ่งช็อต หนึ่งความทรงจำที่ไม่มีวันซ้ำ"
-                            />
 
                             <FloatingCard
                                 image="/hero/wedding.jpg"
@@ -386,7 +386,7 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        <div className="pointer-events-none absolute left-1/2 top-[53%] z-20 w-[210px] -translate-x-1/2 -translate-y-1/2 sm:top-[53%] sm:w-[235px] lg:top-[51%] lg:w-[245px]">
+                        <div className="pointer-events-none absolute left-1/2 top-[53%] z-20 hidden w-[210px] -translate-x-1/2 -translate-y-1/2 sm:top-[53%] sm:block sm:w-[235px] lg:top-[51%] lg:w-[245px]">
                             <div className="relative overflow-visible koko-float">
                                 <div className="absolute left-1/2 top-1/2 -z-20 h-[82%] w-[86%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/25 blur-[55px]" />
 
@@ -432,7 +432,7 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <div className="pointer-events-none absolute left-[50%] top-[30%] z-30 flex h-6 w-6 -translate-x-1/2 koko-sparkle items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-lg backdrop-blur-md sm:left-[43%] sm:top-[32%]">
+                        <div className="pointer-events-none absolute left-[50%] top-[30%] z-30 hidden h-6 w-6 -translate-x-1/2 koko-sparkle items-center justify-center rounded-full border border-white/30 bg-white/15 text-white shadow-lg backdrop-blur-md sm:left-[43%] sm:top-[32%] sm:flex">
                             ✦
                         </div>
 
