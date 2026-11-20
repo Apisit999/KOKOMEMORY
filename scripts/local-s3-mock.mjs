@@ -14,6 +14,9 @@ http.createServer((req, res) => {
   const url = new URL(req.url, "http://127.0.0.1");
   const key = decodeURIComponent(url.pathname);
   if (req.method === "OPTIONS") { res.writeHead(204, cors); return res.end(); }
+  // When published through a tunnel, only presigned requests are served (the web app signs every URL it hands out).
+  if (process.env.S3_MOCK_REQUIRE_SIGNATURE === "1" && !url.searchParams.get("X-Amz-Signature") && !String(req.headers.authorization ?? "").startsWith("AWS4-HMAC-SHA256") && url.pathname !== "/healthz") { res.writeHead(403, cors); return res.end(); }
+  if (url.pathname === "/healthz") { res.writeHead(200, cors); return res.end("ok"); }
   if (req.method === "PUT") {
     const chunks = [];
     req.on("data", c => chunks.push(c));

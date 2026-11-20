@@ -2,7 +2,7 @@
 // Usage: node scripts/studio-start-prod-local.mjs build   then   node scripts/studio-start-prod-local.mjs
 import dotenv from "dotenv";
 import { spawnSync, spawn } from "node:child_process";
-const config = dotenv.config({ path: ".env.studio.local", quiet: true }).parsed;
+const config = dotenv.config({ path: process.env.STUDIO_ENV_FILE ?? ".env.studio.local", quiet: true }).parsed;
 if (config?.GCLOUD_PROJECT !== "demo-kokomemory-local" || config.STUDIO_ENV !== "local") throw new Error("Demo local environment required");
 // Same as staging behind nginx: the client address comes from X-Real-IP, so each caller gets its own rate-limit bucket.
 const env = { ...process.env, ...config, STUDIO_ISOLATED_BUILD: "true", STUDIO_TRUSTED_CLIENT_IP_HEADER: "x-real-ip" };

@@ -39,7 +39,10 @@ function getR2Client() {
     // Local-only override: a loopback S3 mock (scripts/local-s3-mock.mjs) for the isolated studio stack.
     const localEndpoint = (process.env.R2_LOCAL_ENDPOINT ?? "").trim();
     if (localEndpoint) {
-        if (!/^http:\/\/(127\.0\.0\.1|localhost|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(localEndpoint)) {
+        const privateHttp = /^http:\/\/(127\.0\.0\.1|localhost|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/.test(localEndpoint);
+        // A rehearsal of the real setup may publish the mock over HTTPS (e.g. a tunnel), but only in the isolated local environment.
+        const rehearsalHttps = process.env.STUDIO_ENV === "local" && /^https:\/\/[a-z0-9.-]+\.[a-z]{2,}$/i.test(localEndpoint);
+        if (!privateHttp && !rehearsalHttps) {
             throw new Error("R2_LOCAL_ENDPOINT must be a loopback or private-network http URL");
         }
         client = new S3Client({
