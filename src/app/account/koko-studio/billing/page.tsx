@@ -76,19 +76,20 @@ export default function BillingPage() {
     <p className="mt-3 text-sm leading-7 text-slate-600">เลือกเครื่องบูธและแพ็กเกจ แล้วจ่ายด้วย PromptPay หรือบัตร ระบบเปิดสิทธิ์ให้ทันทีเมื่อได้รับเงิน</p>
     {licenses.length === 0 ? <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm">ยังไม่มีเครื่องบูธที่เชื่อมกับบัญชีนี้ <Link href="/account/koko-studio/link" className="underline">เชื่อมอุปกรณ์</Link></p> : <section className="mt-7 space-y-5 rounded-2xl border bg-white p-6">
       <label className="block"><span className="font-semibold">เครื่องบูธ</span>
-        <select value={licenseId} onChange={e => setLicenseId(e.target.value)} className="mt-2 w-full rounded-xl border p-3">{licenses.map(l => <option key={l.id} value={l.id}>{Object.values(l.devices)[0]?.name ?? l.id} — ตอนนี้: {l.planId}{l.planExpiresAt ? ` (ถึง ${date(l.planExpiresAt)})` : ""}</option>)}</select></label>
+        <select value={licenseId} onChange={e => setLicenseId(e.target.value)} className="mt-2 w-full rounded-xl border p-3">{licenses.map(l => <option key={l.id} value={l.id}>{Object.values(l.devices)[0]?.name ?? l.id} — ตอนนี้: {plans.find(p => p.id === l.planId)?.name ?? (l.planId === "free" ? "ฟรี" : l.planId)}{l.planExpiresAt ? ` (ถึง ${date(l.planExpiresAt)})` : ""}</option>)}</select></label>
       <fieldset><legend className="font-semibold">แพ็กเกจ</legend><div className="mt-2 grid gap-3 sm:grid-cols-2">{plans.map(p => <label key={p.id} className={`cursor-pointer rounded-xl border p-4 ${p.id === planId ? "border-slate-900 ring-2 ring-slate-900" : ""}`}><input type="radio" name="plan" className="sr-only" checked={p.id === planId} onChange={() => setPlanId(p.id)} /><span className="block font-bold">{p.name}</span><span className="block text-lg">{baht(p.amountMinor)} {period(p.billingPeriod)}</span><span className="block text-sm text-slate-600">ใช้ได้ {p.deviceLimit} เครื่อง</span></label>)}</div></fieldset>
       <div className="flex flex-wrap gap-3">
         <button disabled={busy || !plan || !!pending} onClick={() => void checkout("promptpay")} className="rounded-full bg-slate-900 px-6 py-3 font-bold text-white disabled:opacity-50">จ่ายด้วย PromptPay</button>
         <button disabled={busy || !plan || !!pending} onClick={payByCard} className="rounded-full border border-slate-900 px-6 py-3 font-bold disabled:opacity-50">จ่ายด้วยบัตร</button>
       </div>
     </section>}
-    {pending && <section className="mt-6 rounded-2xl border bg-white p-6 text-center">
+    {/* On a phone the QR is far below the plan list: bring it into view. */}
+    {pending && <section ref={el => el?.scrollIntoView({ behavior: "smooth", block: "start" })} className="mt-6 rounded-2xl border bg-white p-6 text-center">
       {pending.qrImageUrl ? <><h2 className="text-xl font-bold">สแกนเพื่อจ่าย {plan ? baht(plan.amountMinor) : ""}</h2><img src={pending.qrImageUrl} alt="QR PromptPay" className="mx-auto mt-4 w-64" /><p className="mt-3 text-sm">ใช้แอปธนาคารใดก็ได้ QR หมดอายุ {pending.expiresAt ? new Date(pending.expiresAt).toLocaleTimeString("th-TH") : "ภายในเวลาที่กำหนด"}</p></> : <h2 className="text-xl font-bold">กำลังตรวจสอบการชำระเงิน…</h2>}
       <p className="mt-2 text-sm text-slate-600">หน้านี้จะอัปเดตเองเมื่อได้รับเงิน</p>
     </section>}
     {message && <p role="status" className="mt-6 rounded-xl bg-amber-50 p-4 text-sm">{message}</p>}
-    {orders.length > 0 && <section className="mt-8"><h2 className="text-xl font-bold">ประวัติการชำระ</h2><table className="mt-3 w-full text-sm"><thead><tr className="text-left"><th className="py-2">วันที่</th><th>แพ็กเกจ</th><th>ยอด</th><th>สถานะ</th><th>ใช้ได้ถึง</th></tr></thead><tbody>{orders.map(o => <tr key={o.id} className="border-t"><td className="py-2">{date(o.paidAt ?? o.createdAt)}</td><td>{o.planId}</td><td>{baht(o.amountMinor)}</td><td>{o.status === "paid" ? "ชำระแล้ว" : o.status === "pending" ? "รอชำระ" : o.status}</td><td>{date(o.periodEnd)}</td></tr>)}</tbody></table></section>}
+    {orders.length > 0 && <section className="mt-8"><h2 className="text-xl font-bold">ประวัติการชำระ</h2><table className="mt-3 w-full text-sm"><thead><tr className="text-left"><th className="py-2">วันที่</th><th>แพ็กเกจ</th><th>ยอด</th><th>สถานะ</th><th>ใช้ได้ถึง</th></tr></thead><tbody>{orders.map(o => <tr key={o.id} className="border-t"><td className="py-2">{date(o.paidAt ?? o.createdAt)}</td><td>{plans.find(p => p.id === o.planId)?.name ?? o.planId}</td><td>{baht(o.amountMinor)}</td><td>{o.status === "paid" ? "ชำระแล้ว" : o.status === "pending" ? "รอชำระ" : o.status}</td><td>{date(o.periodEnd)}</td></tr>)}</tbody></table></section>}
     <Link href="/account/koko-studio" className="mt-7 inline-block text-sm underline">กลับไป KOKO Studio ของคุณ</Link>
   </main>;
 }
